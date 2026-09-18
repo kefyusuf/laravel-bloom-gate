@@ -124,14 +124,16 @@ Storage identity is the pair `FilterName + FilterVersion`.
 ### Required semantics
 
 - `provision` creates empty storage.
-- Repeating `provision` with the same layout is safe and must not clear existing bits.
+- Repeating `provision` with a value-equivalent layout is safe and must not clear existing bits.
 - Re-provisioning the same identity with a different layout fails with `BloomLayoutConflict`.
 - `add` monotonically sets all supplied positions.
 - Repeating the same `add` is safe.
 - `mightContain` returns `true` only when every supplied position is set.
 - Missing storage is not interpreted as absence; `add` and `mightContain` fail with `BloomFilterNotProvisioned`.
+- Layout matching is semantic/value-based rather than object-identity-based; positions from an equivalent layout instance are valid.
 - Layout mismatch fails with `BloomLayoutMismatch`.
-- `destroy` removes the generation and is retry-safe.
+- Filter-name identity remains exact and case-sensitive at the driver boundary.
+- `destroy` removes only the requested generation, preserves sibling versions, and is retry-safe.
 
 The shared contract suite is the executable definition of these backend semantics.
 
