@@ -1,7 +1,7 @@
 # Core Semantics
 
 **Milestone:** M1  
-**Status:** implemented pending M1 merge
+**Status:** implemented
 
 M1 introduces only the smallest framework-independent vocabulary required by later drivers and application use cases.
 
