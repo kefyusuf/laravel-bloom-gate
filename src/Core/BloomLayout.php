@@ -59,6 +59,15 @@ final readonly class BloomLayout
     {
         return $this->bitCount === $other->bitCount
             && $this->hashCount === $other->hashCount
-            && $this->probeAlgorithm === $other->probeAlgorithm;
+            && $this->sameProbeAlgorithmAs($other);
+    }
+
+    private function sameProbeAlgorithmAs(self $other): bool
+    {
+        return match ($this->probeAlgorithm) {
+            ProbeAlgorithm::Sha256DoubleHashV1 => match ($other->probeAlgorithm) {
+                ProbeAlgorithm::Sha256DoubleHashV1 => true,
+            },
+        };
     }
 }
