@@ -1,9 +1,10 @@
 # Core Semantics
 
 **Milestone:** M1  
-**Status:** design locked pending merge of the M1 design gate
+**Status:** implemented pending M1 merge
 
 M1 introduces only the smallest framework-independent vocabulary required by later drivers and application use cases.
+
 
 ## Scope
 
@@ -430,7 +431,7 @@ All M1 source files live under `Kefyusuf\BloomGate\Core` and use PHP/SPL only.
 
 # Public surface planned for M1
 
-Conceptual API only; implementation begins after this design gate is accepted.
+The following public surface is implemented by M1.
 
 ```php
 FilterName::fromString(string $value): FilterName

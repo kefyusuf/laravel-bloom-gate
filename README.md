@@ -1,6 +1,6 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — repository bootstrap is in progress. No production Bloom Filter lookup API is shipped yet.
+> **Status:** pre-release — M1 core semantics are implemented. No production Bloom Filter lookup API is shipped yet.
 
 Laravel Bloom Gate is being built as a production-safe probabilistic query gate for Laravel applications. Its purpose is to let applications skip authoritative lookups only when a healthy, active Bloom filter can prove that a value is definitely absent.
 
@@ -26,9 +26,17 @@ A positive result is never authoritative. Database constraints, caches, idempote
 
 ## Current milestone
 
-**M0 — package bootstrap**
+**M1 — core semantics**
 
-M0 establishes package metadata, Laravel package discovery, configuration, Testbench, quality gates, architecture rules, documentation, and CI. It intentionally does not implement Bloom membership operations.
+M1 defines and implements the framework-independent domain vocabulary used by later drivers and application services:
+
+- filter identity and generation versions;
+- membership semantics;
+- independent lifecycle and health states;
+- extensible bypass reasons;
+- byte-exact normalized values.
+
+M1 intentionally does not implement Bloom membership operations, Redis commands, lifecycle orchestration, or Eloquent synchronization.
 
 ## Safety principles
 
@@ -40,7 +48,7 @@ M0 establishes package metadata, Laravel package discovery, configuration, Testb
 
 ## Architecture
 
-See [docs/architecture/overview.md](docs/architecture/overview.md) and the accepted decisions in [docs/adr](docs/adr).
+See [docs/architecture/overview.md](docs/architecture/overview.md), [docs/architecture/core-semantics.md](docs/architecture/core-semantics.md), and the accepted decisions in [docs/adr](docs/adr).
 
 ## Requirements
 
@@ -55,8 +63,8 @@ Support claims are considered official only after automated compatibility eviden
 
 ## Roadmap
 
-- **M0:** repository/package bootstrap
-- **M1:** core semantic value objects
+- **M0:** repository/package bootstrap — complete
+- **M1:** core semantic value objects — implemented
 - **M2:** memory reference driver and contract suite
 - **M3:** Redis foundation
 - **M4:** lifecycle and verification
