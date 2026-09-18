@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use ReflectionClass;
 use ReflectionNamedType;
+use RuntimeException;
 
 it('defines the framework-neutral redis command executor contract exactly', function (): void {
     $contract = new ReflectionClass(RedisCommandExecutor::class);
@@ -19,17 +20,18 @@ it('defines the framework-neutral redis command executor contract exactly', func
         ->and($parameters[1]->getName())->toBe('keys')
         ->and($parameters[2]->getName())->toBe('arguments');
 
-    $scriptType = $parameters[0]->getType();
-    $keysType = $parameters[1]->getType();
-    $argumentsType = $parameters[2]->getType();
-    $returnType = $method->getReturnType();
+    $types = [
+        'script' => [$parameters[0]->getType(), 'string'],
+        'keys' => [$parameters[1]->getType(), 'array'],
+        'arguments' => [$parameters[2]->getType(), 'array'],
+        'return' => [$method->getReturnType(), 'int'],
+    ];
 
-    expect($scriptType)->toBeInstanceOf(ReflectionNamedType::class)
-        ->and($scriptType->getName())->toBe('string')
-        ->and($keysType)->toBeInstanceOf(ReflectionNamedType::class)
-        ->and($keysType->getName())->toBe('array')
-        ->and($argumentsType)->toBeInstanceOf(ReflectionNamedType::class)
-        ->and($argumentsType->getName())->toBe('array')
-        ->and($returnType)->toBeInstanceOf(ReflectionNamedType::class)
-        ->and($returnType->getName())->toBe('int');
+    foreach ($types as $label => [$type, $expected]) {
+        if (! $type instanceof ReflectionNamedType) {
+            throw new RuntimeException(sprintf('Expected [%s] to have a named type.', $label));
+        }
+
+        expect($type->getName())->toBe($expected);
+    }
 });
