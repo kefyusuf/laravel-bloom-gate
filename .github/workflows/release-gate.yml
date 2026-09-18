@@ -1,0 +1,86 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.4'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.5'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.3'
+            laravel: '^13.0'
+            testbench: '^11.0'
+          - php: '8.4'
+            laravel: '^13.0'
+            testbench: '^11.0'
+          - php: '8.5'
+            laravel: '^13.0'
+            testbench: '^11.0'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Pin compatibility target
+        run: >
+          composer require --dev
+          "laravel/framework:${{ matrix.laravel }}"
+          "orchestra/testbench:${{ matrix.testbench }}"
+          --no-update
+          --no-interaction
+
+      - name: Resolve dependencies
+        run: composer update --with-all-dependencies --prefer-dist --no-interaction --no-progress
+
+      - name: Audit installed dependencies
+        run: composer audit
+
+      - name: Verify package
+        run: composer check
+
+  prefer-lowest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Pin Laravel 12
+        run: >
+          composer require --dev
+          "laravel/framework:^12.0"
+          "orchestra/testbench:^10.0"
+          --no-update
+          --no-interaction
+
+      - name: Resolve minimum supported dependencies
+        run: composer update --prefer-lowest --with-all-dependencies --prefer-dist --no-interaction --no-progress
+
+      - name: Verify minimum dependency set
+        run: composer check

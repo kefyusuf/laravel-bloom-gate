@@ -1,0 +1,54 @@
+name: Redis Integration
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'config/**'
+      - 'tests/Integration/Redis/**'
+      - 'composer.json'
+      - '.github/workflows/redis-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: redis-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  redis-environment:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Verify Redis service reachability
+        run: |
+          php -r '$s = fsockopen("127.0.0.1", 6379, $errno, $error, 2); if ($s === false) { fwrite(STDERR, "$error\n"); exit(1); } fwrite($s, "PING\r\n"); $reply = fgets($s); if (trim((string) $reply) !== "+PONG") { exit(1); } echo "Redis service reachable\n";'
+
+      - name: Run package fast tests
+        run: composer test:fast

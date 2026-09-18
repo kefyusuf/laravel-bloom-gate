@@ -1,0 +1,9 @@
+providers:
+  - Kefyusuf\BloomGate\Laravel\BloomGateServiceProvider
+
+workbench:
+  welcome: false
+  install: false
+  web: false
+  api: false
+  commands: false

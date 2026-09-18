@@ -1,0 +1,71 @@
+{
+    "name": "kefyusuf/laravel-bloom-gate",
+    "description": "Production-safe probabilistic query gates for Laravel applications.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "bloom-filter",
+        "redis",
+        "probabilistic",
+        "performance",
+        "query-optimization"
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/console": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/redis": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.12",
+        "laravel/pint": "^1.24",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-arch": "^4.0",
+        "phpstan/phpstan": "^2.2.14"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kefyusuf\\BloomGate\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kefyusuf\\BloomGate\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kefyusuf\\BloomGate\\Laravel\\BloomGateServiceProvider"
+            ]
+        }
+    },
+    "suggest": {
+        "ext-redis": "Recommended Redis client for production Laravel applications.",
+        "predis/predis": "Alternative Redis client supported by Laravel."
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "format": "pint",
+        "lint": "pint --test",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "test": "pest",
+        "test:fast": "pest tests/Arch tests/Feature",
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test:fast"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
