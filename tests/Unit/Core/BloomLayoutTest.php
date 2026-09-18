@@ -38,7 +38,7 @@ it('enforces the sha256 double-hash v1 bit-count range', function (): void {
         ProbeAlgorithm::Sha256DoubleHashV1,
     )->bitCount())->toBe($maximum);
 
-    if (PHP_INT_MAX > $maximum) {
+    if ($maximum < PHP_INT_MAX) {
         expect(fn (): BloomLayout => BloomLayout::create(
             PHP_INT_MAX,
             1,
