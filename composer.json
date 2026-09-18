@@ -59,7 +59,7 @@
         "lint": "pint --test",
         "analyse": "phpstan analyse --memory-limit=1G",
         "test": "pest",
-        "test:fast": "pest tests/Arch tests/Feature",
+        "test:fast": "pest tests/Arch tests/Unit tests/Feature",
         "check": [
             "@lint",
             "@analyse",
