@@ -1,6 +1,6 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M1 core semantics are implemented. No production Bloom Filter lookup API is shipped yet.
+> **Status:** pre-release — M2 probe semantics, driver contract, and memory reference driver are implemented. The production Redis driver is not shipped yet.
 
 Laravel Bloom Gate is being built as a production-safe probabilistic query gate for Laravel applications. Its purpose is to let applications skip authoritative lookups only when a healthy, active Bloom filter can prove that a value is definitely absent.
 
@@ -26,17 +26,19 @@ A positive result is never authoritative. Database constraints, caches, idempote
 
 ## Current milestone
 
-**M1 — core semantics**
+**M2 — memory reference driver and contract suite**
 
-M1 defines and implements the framework-independent domain vocabulary used by later drivers and application services:
+M2 adds the framework-independent Bloom probe and storage contract required by later production drivers:
 
-- filter identity and generation versions;
-- membership semantics;
-- independent lifecycle and health states;
-- extensible bypass reasons;
-- byte-exact normalized values.
+- versioned `sha256-double-hash-v1` probe generation in Core;
+- immutable Bloom layout and layout-bound bit positions;
+- backend-neutral `BloomDriver` operations and typed contract failures;
+- a reusable driver conformance suite;
+- a process-local sparse memory reference driver for deterministic development and testing.
 
-M1 intentionally does not implement Bloom membership operations, Redis commands, lifecycle orchestration, or Eloquent synchronization.
+Probe generation remains in Core. Drivers receive only validated bit positions and do not own normalization or hashing.
+
+M2 intentionally does not implement Redis Bloom commands, lifecycle orchestration, active-version resolution, or Eloquent synchronization.
 
 ## Safety principles
 
@@ -48,7 +50,7 @@ M1 intentionally does not implement Bloom membership operations, Redis commands,
 
 ## Architecture
 
-See [docs/architecture/overview.md](docs/architecture/overview.md), [docs/architecture/core-semantics.md](docs/architecture/core-semantics.md), and the accepted decisions in [docs/adr](docs/adr).
+See [docs/architecture/overview.md](docs/architecture/overview.md), [docs/architecture/core-semantics.md](docs/architecture/core-semantics.md), [docs/architecture/bloom-probe-and-driver-contract.md](docs/architecture/bloom-probe-and-driver-contract.md), and the accepted decisions in [docs/adr](docs/adr).
 
 ## Requirements
 
@@ -65,7 +67,7 @@ Support claims are considered official only after automated compatibility eviden
 
 - **M0:** repository/package bootstrap — complete
 - **M1:** core semantic value objects — implemented
-- **M2:** memory reference driver and contract suite
+- **M2:** memory reference driver and contract suite — implemented
 - **M3:** Redis foundation
 - **M4:** lifecycle and verification
 - **M5:** Laravel/Eloquent integration
