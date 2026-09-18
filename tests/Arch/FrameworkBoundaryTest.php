@@ -12,11 +12,11 @@ it('keeps framework-neutral layers free from framework and backend imports', fun
     ];
 
     $forbiddenImports = [
-        'use Illuminate\\\\',
-        'use Predis\\\\',
-        'use Symfony\\\\',
-        "use Redis;\\n",
-        "use RedisCluster;\\n",
+        'use Illuminate\\',
+        'use Predis\\',
+        'use Symfony\\',
+        "use Redis;\n",
+        "use RedisCluster;\n",
     ];
 
     foreach ($layers as $layer) {
