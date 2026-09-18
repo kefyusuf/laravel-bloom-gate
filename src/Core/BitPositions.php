@@ -8,20 +8,28 @@ use InvalidArgumentException;
 
 final readonly class BitPositions
 {
-    /**
-     * @param list<int> $positions
-     */
-    private function __construct(
-        private BloomLayout $layout,
-        private array $positions,
-    ) {}
+    private BloomLayout $layout;
 
     /**
-     * @param list<int> $positions
+     * @var list<int>
+     */
+    private array $positions;
+
+    /**
+     * @param  list<int>  $positions
+     */
+    private function __construct(BloomLayout $layout, array $positions)
+    {
+        $this->layout = $layout;
+        $this->positions = $positions;
+    }
+
+    /**
+     * @param  list<int>  $positions
      */
     public static function forLayout(BloomLayout $layout, array $positions): self
     {
-        if (! array_is_list($positions)) {
+        if (array_is_list($positions) === false) {
             throw new InvalidArgumentException('Bloom bit positions must be provided as an ordered list.');
         }
 
@@ -30,7 +38,7 @@ final readonly class BitPositions
         }
 
         foreach ($positions as $position) {
-            if (! is_int($position)) {
+            if (is_int($position) === false) {
                 throw new InvalidArgumentException('Bloom bit positions must be integers.');
             }
 
