@@ -58,6 +58,25 @@ abstract class BloomDriverContractTestCase extends TestCase
         ));
     }
 
+    public function test_add_and_check_accept_positions_from_an_equivalent_layout_instance(): void
+    {
+        $driver = $this->makeDriver();
+        $provisionedLayout = $this->layout();
+        $equivalentLayout = BloomLayout::create(
+            $provisionedLayout->bitCount(),
+            $provisionedLayout->hashCount(),
+            $provisionedLayout->probeAlgorithm(),
+        );
+        $positions = $this->positions($equivalentLayout, [1, 4, 7]);
+
+        $driver->provision($this->filterName(), $this->version(), $provisionedLayout);
+        $driver->add($this->filterName(), $this->version(), $positions);
+
+        self::assertTrue(
+            $driver->mightContain($this->filterName(), $this->version(), $positions),
+        );
+    }
+
     public function test_add_is_monotonic_and_retry_safe(): void
     {
         $driver = $this->makeDriver();
@@ -231,6 +250,23 @@ abstract class BloomDriverContractTestCase extends TestCase
         self::assertTrue($driver->mightContain($nameA, $version1, $positions));
         self::assertFalse($driver->mightContain($nameA, $version2, $positions));
         self::assertFalse($driver->mightContain($nameB, $version1, $positions));
+    }
+
+    public function test_filter_name_identity_remains_case_sensitive(): void
+    {
+        $driver = $this->makeDriver();
+        $layout = $this->layout();
+        $lower = FilterName::fromString('users.email');
+        $mixed = FilterName::fromString('Users.Email');
+        $version = FilterVersion::fromInt(1);
+        $positions = $this->positions($layout, [1, 4, 7]);
+
+        $driver->provision($lower, $version, $layout);
+        $driver->provision($mixed, $version, $layout);
+        $driver->add($lower, $version, $positions);
+
+        self::assertTrue($driver->mightContain($lower, $version, $positions));
+        self::assertFalse($driver->mightContain($mixed, $version, $positions));
     }
 
     private function layout(): BloomLayout
