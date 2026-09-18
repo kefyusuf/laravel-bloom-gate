@@ -296,7 +296,9 @@ operation_failed
 
 `fromCode()` remains available so future adapters can report a stable reason without adding a Core enum case.
 
-An unknown filter/configuration typo is **not** a bypass reason. Configuration/programming errors should not silently become optimization bypasses.
+`operation_failed` is reserved for a **known, recoverable Bloom/backend operation failure that has been classified at the infrastructure/application boundary**. It must never mean “catch any `Throwable` and continue”.
+
+An unknown filter/configuration typo, invariant violation, type error, or unexpected programming exception is **not** a bypass reason. Configuration/programming errors should not silently become optimization bypasses.
 
 ### Self-review
 
