@@ -6,6 +6,4 @@ namespace Kefyusuf\BloomGate\Contracts\Exception;
 
 use RuntimeException;
 
-final class BloomLayoutConflict extends RuntimeException
-{
-}
+final class BloomLayoutConflict extends RuntimeException {}
