@@ -53,7 +53,7 @@ final class BloomProbeGenerator
 
     private function readPositive31BitBigEndian(string $bytes, int $offset): int
     {
-        return ((ord($bytes[$offset]) & 0x7f) << 24)
+        return ((ord($bytes[$offset]) & 0x7F) << 24)
             | (ord($bytes[$offset + 1]) << 16)
             | (ord($bytes[$offset + 2]) << 8)
             | ord($bytes[$offset + 3]);
