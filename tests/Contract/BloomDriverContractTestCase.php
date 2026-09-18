@@ -24,10 +24,10 @@ abstract class BloomDriverContractTestCase extends TestCase
         $driver = $this->makeDriver();
         $layout = $this->layout();
 
-        $driver->provision($this->name(), $this->version(), $layout);
+        $driver->provision($this->filterName(), $this->version(), $layout);
 
         self::assertFalse($driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         ));
@@ -37,22 +37,22 @@ abstract class BloomDriverContractTestCase extends TestCase
     {
         $driver = $this->makeDriver();
         $layout = $this->layout();
-        $driver->provision($this->name(), $this->version(), $layout);
+        $driver->provision($this->filterName(), $this->version(), $layout);
 
         $driver->add(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         );
 
         self::assertTrue($driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         ));
 
         self::assertFalse($driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 8]),
         ));
@@ -65,13 +65,13 @@ abstract class BloomDriverContractTestCase extends TestCase
         $first = $this->positions($layout, [1, 4, 7]);
         $second = $this->positions($layout, [2, 5, 8]);
 
-        $driver->provision($this->name(), $this->version(), $layout);
-        $driver->add($this->name(), $this->version(), $first);
-        $driver->add($this->name(), $this->version(), $first);
-        $driver->add($this->name(), $this->version(), $second);
+        $driver->provision($this->filterName(), $this->version(), $layout);
+        $driver->add($this->filterName(), $this->version(), $first);
+        $driver->add($this->filterName(), $this->version(), $first);
+        $driver->add($this->filterName(), $this->version(), $second);
 
-        self::assertTrue($driver->mightContain($this->name(), $this->version(), $first));
-        self::assertTrue($driver->mightContain($this->name(), $this->version(), $second));
+        self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $first));
+        self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $second));
     }
 
     public function test_same_layout_provision_is_retry_safe_and_does_not_clear_bits(): void
@@ -80,11 +80,11 @@ abstract class BloomDriverContractTestCase extends TestCase
         $layout = $this->layout();
         $positions = $this->positions($layout, [1, 4, 7]);
 
-        $driver->provision($this->name(), $this->version(), $layout);
-        $driver->add($this->name(), $this->version(), $positions);
-        $driver->provision($this->name(), $this->version(), $layout);
+        $driver->provision($this->filterName(), $this->version(), $layout);
+        $driver->add($this->filterName(), $this->version(), $positions);
+        $driver->provision($this->filterName(), $this->version(), $layout);
 
-        self::assertTrue($driver->mightContain($this->name(), $this->version(), $positions));
+        self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $positions));
     }
 
     public function test_conflicting_layout_provision_fails_without_mutating_existing_storage(): void
@@ -93,19 +93,19 @@ abstract class BloomDriverContractTestCase extends TestCase
         $layout = $this->layout();
         $positions = $this->positions($layout, [1, 4, 7]);
 
-        $driver->provision($this->name(), $this->version(), $layout);
-        $driver->add($this->name(), $this->version(), $positions);
+        $driver->provision($this->filterName(), $this->version(), $layout);
+        $driver->add($this->filterName(), $this->version(), $positions);
 
         try {
             $driver->provision(
-                $this->name(),
+                $this->filterName(),
                 $this->version(),
                 BloomLayout::create(64, 3, ProbeAlgorithm::Sha256DoubleHashV1),
             );
 
             self::fail('Expected a conflicting provision to throw.');
         } catch (BloomLayoutConflict) {
-            self::assertTrue($driver->mightContain($this->name(), $this->version(), $positions));
+            self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $positions));
         }
     }
 
@@ -113,12 +113,12 @@ abstract class BloomDriverContractTestCase extends TestCase
     {
         $driver = $this->makeDriver();
         $layout = $this->layout();
-        $driver->provision($this->name(), $this->version(), $layout);
+        $driver->provision($this->filterName(), $this->version(), $layout);
 
         $this->expectException(BloomLayoutMismatch::class);
 
         $driver->add(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(
                 BloomLayout::create(64, 3, ProbeAlgorithm::Sha256DoubleHashV1),
@@ -131,12 +131,12 @@ abstract class BloomDriverContractTestCase extends TestCase
     {
         $driver = $this->makeDriver();
         $layout = $this->layout();
-        $driver->provision($this->name(), $this->version(), $layout);
+        $driver->provision($this->filterName(), $this->version(), $layout);
 
         $this->expectException(BloomLayoutMismatch::class);
 
         $driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(
                 BloomLayout::create(64, 3, ProbeAlgorithm::Sha256DoubleHashV1),
@@ -152,7 +152,7 @@ abstract class BloomDriverContractTestCase extends TestCase
         $this->expectException(BloomFilterNotProvisioned::class);
 
         $this->makeDriver()->add(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         );
@@ -165,7 +165,7 @@ abstract class BloomDriverContractTestCase extends TestCase
         $this->expectException(BloomFilterNotProvisioned::class);
 
         $this->makeDriver()->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         );
@@ -176,14 +176,14 @@ abstract class BloomDriverContractTestCase extends TestCase
         $driver = $this->makeDriver();
         $layout = $this->layout();
 
-        $driver->provision($this->name(), $this->version(), $layout);
-        $driver->destroy($this->name(), $this->version());
-        $driver->destroy($this->name(), $this->version());
+        $driver->provision($this->filterName(), $this->version(), $layout);
+        $driver->destroy($this->filterName(), $this->version());
+        $driver->destroy($this->filterName(), $this->version());
 
         $this->expectException(BloomFilterNotProvisioned::class);
 
         $driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions($layout, [1, 4, 7]),
         );
@@ -195,10 +195,10 @@ abstract class BloomDriverContractTestCase extends TestCase
         $layout = BloomLayout::create(16, 4, ProbeAlgorithm::Sha256DoubleHashV1);
         $positions = $this->positions($layout, [3, 7, 3, 15]);
 
-        $driver->provision($this->name(), $this->version(), $layout);
-        $driver->add($this->name(), $this->version(), $positions);
+        $driver->provision($this->filterName(), $this->version(), $layout);
+        $driver->add($this->filterName(), $this->version(), $positions);
 
-        self::assertTrue($driver->mightContain($this->name(), $this->version(), $positions));
+        self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $positions));
     }
 
     public function test_filter_name_and_version_form_independent_storage_identity(): void
@@ -226,7 +226,7 @@ abstract class BloomDriverContractTestCase extends TestCase
         return BloomLayout::create(32, 3, ProbeAlgorithm::Sha256DoubleHashV1);
     }
 
-    private function name(): FilterName
+    private function filterName(): FilterName
     {
         return FilterName::fromString('users.email');
     }
