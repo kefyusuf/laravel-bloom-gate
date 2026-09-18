@@ -237,7 +237,7 @@ abstract class BloomDriverContractTestCase extends TestCase
     }
 
     /**
-     * @param list<int> $values
+     * @param  list<int>  $values
      */
     private function positions(BloomLayout $layout, array $values): BitPositions
     {
