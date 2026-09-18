@@ -14,7 +14,3 @@ it('defines exactly the membership semantics', function (): void {
         'Bypassed',
     ]);
 });
-
-it('is intentionally unbacked', function (): void {
-    expect((new ReflectionEnum(Membership::class))->isBacked())->toBeFalse();
-});

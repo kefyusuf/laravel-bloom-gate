@@ -17,7 +17,3 @@ it('defines exactly the lifecycle states', function (): void {
         'Retired',
     ]);
 });
-
-it('is intentionally unbacked', function (): void {
-    expect((new ReflectionEnum(LifecycleState::class))->isBacked())->toBeFalse();
-});

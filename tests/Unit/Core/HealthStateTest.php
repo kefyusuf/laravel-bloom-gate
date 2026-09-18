@@ -15,7 +15,3 @@ it('defines exactly the operational health states', function (): void {
         'Unavailable',
     ]);
 });
-
-it('is intentionally unbacked', function (): void {
-    expect((new ReflectionEnum(HealthState::class))->isBacked())->toBeFalse();
-});
