@@ -28,8 +28,9 @@ it('uses the defined single-bit special case', function (): void {
         ->values())->toBe([0]);
 });
 
-it('keeps every generated position inside a very large layout without overflowing', function (): void {
-    $layout = BloomLayout::create(PHP_INT_MAX, 64, ProbeAlgorithm::Sha256DoubleHashV1);
+it('keeps every generated position inside the maximum v1 layout without overflowing', function (): void {
+    $maximum = 2_147_483_647;
+    $layout = BloomLayout::create($maximum, 64, ProbeAlgorithm::Sha256DoubleHashV1);
     $positions = (new BloomProbeGenerator)
         ->generate(NormalizedValue::fromBytes('overflow-safety'), $layout)
         ->values();
@@ -38,6 +39,6 @@ it('keeps every generated position inside a very large layout without overflowin
 
     foreach ($positions as $position) {
         expect($position)->toBeGreaterThanOrEqual(0)
-            ->and($position)->toBeLessThan(PHP_INT_MAX);
+            ->and($position)->toBeLessThan($maximum);
     }
 });

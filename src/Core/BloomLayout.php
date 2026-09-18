@@ -10,6 +10,8 @@ final readonly class BloomLayout
 {
     private const MAX_HASH_COUNT = 64;
 
+    private const SHA256_DOUBLE_HASH_V1_MAX_BIT_COUNT = 2_147_483_647;
+
     private function __construct(
         private int $bitCount,
         private int $hashCount,
@@ -37,6 +39,10 @@ final readonly class BloomLayout
             throw new InvalidArgumentException('Bloom layout hash count cannot exceed 64.');
         }
 
+        if ($bitCount > self::maxBitCountFor($probeAlgorithm)) {
+            throw new InvalidArgumentException('Bloom layout bit count exceeds the selected probe algorithm limit.');
+        }
+
         return new self($bitCount, $hashCount, $probeAlgorithm);
     }
 
@@ -59,15 +65,13 @@ final readonly class BloomLayout
     {
         return $this->bitCount === $other->bitCount
             && $this->hashCount === $other->hashCount
-            && $this->sameProbeAlgorithmAs($other);
+            && $this->probeAlgorithm === $other->probeAlgorithm;
     }
 
-    private function sameProbeAlgorithmAs(self $other): bool
+    private static function maxBitCountFor(ProbeAlgorithm $probeAlgorithm): int
     {
-        return match ($this->probeAlgorithm) {
-            ProbeAlgorithm::Sha256DoubleHashV1 => match ($other->probeAlgorithm) {
-                ProbeAlgorithm::Sha256DoubleHashV1 => true,
-            },
+        return match ($probeAlgorithm) {
+            ProbeAlgorithm::Sha256DoubleHashV1 => self::SHA256_DOUBLE_HASH_V1_MAX_BIT_COUNT,
         };
     }
 }

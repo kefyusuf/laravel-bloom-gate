@@ -41,7 +41,10 @@ The implemented invariants are:
 - `bitCount >= 1`;
 - `hashCount >= 1`;
 - `hashCount <= bitCount`;
-- `hashCount <= 64`.
+- `hashCount <= 64`;
+- `sha256-double-hash-v1` requires `bitCount <= 2,147,483,647`.
+
+The v1 bit-count ceiling is a probe-protocol limit, not a Redis limit. It keeps the bit space within the range that the algorithm's positive 31-bit seeds can address uniformly. A future probe algorithm identifier may define a larger supported range.
 
 A layout is part of the filter generation contract. A layout or probe-algorithm change requires a new filter version and rebuild rather than mutating an existing generation in place.
 
@@ -62,6 +65,8 @@ For a `NormalizedValue`, Core hashes these exact bytes:
 using SHA-256 with raw binary output.
 
 The first two 32-bit big-endian words are read from digest bytes `0..3` and `4..7`. Their high bits are masked so both seeds are positive 31-bit integers.
+
+Probe generation dispatches explicitly by `ProbeAlgorithm`; adding a future algorithm identity requires an explicit generator implementation rather than silently reusing v1 behavior.
 
 For `m > 1`:
 

@@ -10,6 +10,15 @@ final class BloomProbeGenerator
 
     public function generate(NormalizedValue $value, BloomLayout $layout): BitPositions
     {
+        return match ($layout->probeAlgorithm()) {
+            ProbeAlgorithm::Sha256DoubleHashV1 => $this->generateSha256DoubleHashV1($value, $layout),
+        };
+    }
+
+    private function generateSha256DoubleHashV1(
+        NormalizedValue $value,
+        BloomLayout $layout,
+    ): BitPositions {
         if ($layout->bitCount() === 1) {
             return BitPositions::forLayout($layout, [0]);
         }

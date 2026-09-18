@@ -29,6 +29,24 @@ it('rejects invalid layout parameters', function (int $bitCount, int $hashCount)
     'more than 64 hashes' => [1024, 65],
 ])->throws(InvalidArgumentException::class);
 
+it('enforces the sha256 double-hash v1 bit-count range', function (): void {
+    $maximum = 2_147_483_647;
+
+    expect(BloomLayout::create(
+        $maximum,
+        1,
+        ProbeAlgorithm::Sha256DoubleHashV1,
+    )->bitCount())->toBe($maximum);
+
+    if (PHP_INT_MAX > $maximum) {
+        expect(fn (): BloomLayout => BloomLayout::create(
+            PHP_INT_MAX,
+            1,
+            ProbeAlgorithm::Sha256DoubleHashV1,
+        ))->toThrow(InvalidArgumentException::class);
+    }
+});
+
 it('compares bloom layouts by all protocol parameters', function (): void {
     $layout = BloomLayout::create(1024, 7, ProbeAlgorithm::Sha256DoubleHashV1);
 
