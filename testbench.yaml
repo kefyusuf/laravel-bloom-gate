@@ -6,4 +6,4 @@ workbench:
   install: false
   web: false
   api: false
-  commands: true
+  commands: false

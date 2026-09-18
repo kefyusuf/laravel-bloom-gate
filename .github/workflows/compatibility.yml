@@ -1,0 +1,64 @@
+name: Compatibility
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'config/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'phpunit.xml.dist'
+      - 'phpstan.neon.dist'
+      - 'testbench.yaml'
+      - '.github/workflows/compatibility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  anchors:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.5'
+            laravel: '^13.0'
+            testbench: '^11.0'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Pin compatibility target
+        run: >
+          composer require --dev
+          "laravel/framework:${{ matrix.laravel }}"
+          "orchestra/testbench:${{ matrix.testbench }}"
+          --no-update
+          --no-interaction
+
+      - name: Resolve dependencies
+        run: composer update --with-all-dependencies --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: composer test:fast
+
+      - name: Verify package discovery command
+        run: vendor/bin/testbench package:discover
