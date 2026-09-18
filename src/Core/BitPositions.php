@@ -25,7 +25,7 @@ final readonly class BitPositions
     }
 
     /**
-     * @param  list<int>  $positions
+     * @param  array<array-key, mixed>  $positions
      */
     public static function forLayout(BloomLayout $layout, array $positions): self
     {
@@ -37,6 +37,8 @@ final readonly class BitPositions
             throw new InvalidArgumentException('Bloom bit position count must equal the layout hash count.');
         }
 
+        $validatedPositions = [];
+
         foreach ($positions as $position) {
             if (is_int($position) === false) {
                 throw new InvalidArgumentException('Bloom bit positions must be integers.');
@@ -45,9 +47,11 @@ final readonly class BitPositions
             if ($position < 0 || $position >= $layout->bitCount()) {
                 throw new InvalidArgumentException('Bloom bit position is outside the layout bit range.');
             }
+
+            $validatedPositions[] = $position;
         }
 
-        return new self($layout, $positions);
+        return new self($layout, $validatedPositions);
     }
 
     public function layout(): BloomLayout
