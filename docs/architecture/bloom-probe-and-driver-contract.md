@@ -44,7 +44,7 @@ The implemented invariants are:
 - `hashCount <= 64`;
 - `sha256-double-hash-v1` requires `bitCount <= 2,147,483,647`.
 
-The v1 bit-count ceiling is a probe-protocol limit, not a Redis limit. It keeps the bit space within the range that the algorithm's positive 31-bit seeds can address uniformly. A future probe algorithm identifier may define a larger supported range.
+The v1 bit-count ceiling is a probe-protocol limit, not a Redis limit. It keeps layout arithmetic inside the signed 32-bit range while matching v1's positive 31-bit seed extraction, so the protocol remains portable across supported PHP integer widths. A future probe algorithm identifier may define a larger supported range.
 
 A layout is part of the filter generation contract. A layout or probe-algorithm change requires a new filter version and rebuild rather than mutating an existing generation in place.
 
