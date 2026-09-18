@@ -82,7 +82,14 @@ abstract class BloomDriverContractTestCase extends TestCase
 
         $driver->provision($this->filterName(), $this->version(), $layout);
         $driver->add($this->filterName(), $this->version(), $positions);
-        $driver->provision($this->filterName(), $this->version(), $layout);
+
+        $equivalentLayout = BloomLayout::create(
+            $layout->bitCount(),
+            $layout->hashCount(),
+            $layout->probeAlgorithm(),
+        );
+
+        $driver->provision($this->filterName(), $this->version(), $equivalentLayout);
 
         self::assertTrue($driver->mightContain($this->filterName(), $this->version(), $positions));
     }
@@ -171,22 +178,27 @@ abstract class BloomDriverContractTestCase extends TestCase
         );
     }
 
-    public function test_destroy_removes_storage_and_is_retry_safe(): void
+    public function test_destroy_removes_only_the_requested_generation_and_is_retry_safe(): void
     {
         $driver = $this->makeDriver();
         $layout = $this->layout();
+        $name = $this->filterName();
+        $version1 = FilterVersion::fromInt(1);
+        $version2 = FilterVersion::fromInt(2);
+        $positions = $this->positions($layout, [1, 4, 7]);
 
-        $driver->provision($this->filterName(), $this->version(), $layout);
-        $driver->destroy($this->filterName(), $this->version());
-        $driver->destroy($this->filterName(), $this->version());
+        $driver->provision($name, $version1, $layout);
+        $driver->provision($name, $version2, $layout);
+        $driver->add($name, $version2, $positions);
+
+        $driver->destroy($name, $version1);
+        $driver->destroy($name, $version1);
+
+        self::assertTrue($driver->mightContain($name, $version2, $positions));
 
         $this->expectException(BloomFilterNotProvisioned::class);
 
-        $driver->mightContain(
-            $this->filterName(),
-            $this->version(),
-            $this->positions($layout, [1, 4, 7]),
-        );
+        $driver->mightContain($name, $version1, $positions);
     }
 
     public function test_duplicate_positions_are_preserved_by_contract_semantics(): void
