@@ -14,8 +14,7 @@ final readonly class FilterName
 
     private function __construct(
         private string $value,
-    ) {
-    }
+    ) {}
 
     public static function fromString(string $value): self
     {
