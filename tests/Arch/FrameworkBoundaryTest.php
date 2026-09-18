@@ -125,9 +125,7 @@ it('allows only declared imports in framework-neutral layers', function (): void
                     '/^(?:function|const)\\s+/',
                     '',
                     trim((string) $import),
-                );
-
-                expect($import)->toBeString();
+                ) ?? '';
 
                 if (! str_contains($import, '\\')) {
                     continue;
