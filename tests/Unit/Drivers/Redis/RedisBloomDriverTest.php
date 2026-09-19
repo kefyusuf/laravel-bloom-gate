@@ -17,6 +17,7 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomScripts;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingRedisCommandExecutor;
+use RuntimeException;
 use UnexpectedValueException;
 
 function redisDriverLayout(): BloomLayout
@@ -207,14 +208,24 @@ it('wraps redis command failures as driver operational failures', function (stri
     $driver = makeRedisDriver($executor);
 
     try {
-        match ($operation) {
-            'provision' => $driver->provision(redisDriverName(), redisDriverVersion(), redisDriverLayout()),
-            'add' => $driver->add(redisDriverName(), redisDriverVersion(), redisDriverPositions()),
-            'check' => $driver->mightContain(redisDriverName(), redisDriverVersion(), redisDriverPositions()),
-            'destroy' => $driver->destroy(redisDriverName(), redisDriverVersion()),
-        };
+        switch ($operation) {
+            case 'provision':
+                $driver->provision(redisDriverName(), redisDriverVersion(), redisDriverLayout());
+                break;
+            case 'add':
+                $driver->add(redisDriverName(), redisDriverVersion(), redisDriverPositions());
+                break;
+            case 'check':
+                $driver->mightContain(redisDriverName(), redisDriverVersion(), redisDriverPositions());
+                break;
+            case 'destroy':
+                $driver->destroy(redisDriverName(), redisDriverVersion());
+                break;
+            default:
+                throw new RuntimeException('Unknown driver operation test fixture.');
+        }
 
-        test()->fail('Expected a BloomDriverOperationFailed exception.');
+        throw new RuntimeException('Expected a BloomDriverOperationFailed exception.');
     } catch (BloomDriverOperationFailed $failure) {
         expect($failure->getPrevious())->toBe($redisFailure);
     }
