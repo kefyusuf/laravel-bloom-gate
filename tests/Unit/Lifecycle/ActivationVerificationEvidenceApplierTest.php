@@ -35,7 +35,7 @@ function activationPassedEvidence(
 }
 
 /**
- * @param list<GenerationControlState> $generations
+ * @param  list<GenerationControlState>  $generations
  */
 function activationControlState(
     FilterName $name,
