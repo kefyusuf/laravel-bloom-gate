@@ -71,7 +71,9 @@ it('validates state before bitmap mutation in the add script', function (): void
     $validation = strpos($script, 'if metadataMatches == false then');
     $mutation = strpos($script, 'redis.call(\'SETBIT\'');
 
-    expect($validation)->not->toBeFalse()
-        ->and($mutation)->not->toBeFalse()
-        ->and($validation)->toBeLessThan($mutation);
+    if ($validation === false || $mutation === false) {
+        throw new RuntimeException('Expected validation and mutation markers in the add script.');
+    }
+
+    expect($validation)->toBeLessThan($mutation);
 });
