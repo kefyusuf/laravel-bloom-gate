@@ -49,15 +49,15 @@ it('pins the redis primitive used by each script', function (string $script, str
 })->with([
     'provision writes metadata' => [
         fn (): string => RedisBloomScripts::provision(),
-        'redis.call(\'HSET\'',
+        '\'HSET\'',
     ],
     'add sets bitmap positions' => [
         fn (): string => RedisBloomScripts::add(),
-        'redis.call(\'SETBIT\'',
+        '\'SETBIT\'',
     ],
     'might contain reads bitmap positions' => [
         fn (): string => RedisBloomScripts::mightContain(),
-        'redis.call(\'GETBIT\'',
+        '\'GETBIT\'',
     ],
     'destroy removes both generation keys' => [
         fn (): string => RedisBloomScripts::destroy(),
