@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
+use Kefyusuf\BloomGate\Contracts\Exception\BloomLayoutMismatch;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomStorageCorrupt;
 use Kefyusuf\BloomGate\Core\BitPositions;
 use Kefyusuf\BloomGate\Core\BloomLayout;
@@ -175,7 +176,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
             [$this->metaKey()],
         );
 
-        $this->expectException(\Kefyusuf\BloomGate\Contracts\Exception\BloomLayoutMismatch::class);
+        $this->expectException(BloomLayoutMismatch::class);
 
         $this->driver->mightContain(
             $this->name(),
