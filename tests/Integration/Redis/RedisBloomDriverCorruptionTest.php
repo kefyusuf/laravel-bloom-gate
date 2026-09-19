@@ -45,7 +45,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
     protected function tearDown(): void
     {
         try {
-            $this->driver->destroy($this->name(), $this->version());
+            $this->driver->destroy($this->filterName(), $this->version());
         } catch (Throwable) {
             // Cleanup must not mask the primary test failure.
         }
@@ -62,7 +62,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -77,7 +77,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->provision(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->layout(),
         );
@@ -86,7 +86,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
     public function test_wrong_bitmap_type_is_storage_corruption(): void
     {
         $this->driver->provision(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->layout(),
         );
@@ -98,7 +98,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -114,7 +114,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -130,7 +130,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -146,7 +146,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomStorageCorrupt::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -159,11 +159,11 @@ final class RedisBloomDriverCorruptionTest extends TestCase
             [$this->metaKey(), $this->bitmapKey()],
         );
 
-        $this->driver->destroy($this->name(), $this->version());
-        $this->driver->provision($this->name(), $this->version(), $this->layout());
+        $this->driver->destroy($this->filterName(), $this->version());
+        $this->driver->provision($this->filterName(), $this->version(), $this->layout());
 
         self::assertFalse($this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         ));
@@ -179,7 +179,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         $this->expectException(BloomLayoutMismatch::class);
 
         $this->driver->mightContain(
-            $this->name(),
+            $this->filterName(),
             $this->version(),
             $this->positions(),
         );
@@ -203,7 +203,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
         return BitPositions::forLayout($this->layout(), [1, 4, 7]);
     }
 
-    private function name(): FilterName
+    private function filterName(): FilterName
     {
         return FilterName::fromString('users.email');
     }
@@ -215,11 +215,11 @@ final class RedisBloomDriverCorruptionTest extends TestCase
 
     private function metaKey(): string
     {
-        return $this->keyspace->metaKey($this->name(), $this->version());
+        return $this->keyspace->metaKey($this->filterName(), $this->version());
     }
 
     private function bitmapKey(): string
     {
-        return $this->keyspace->bitmapKey($this->name(), $this->version());
+        return $this->keyspace->bitmapKey($this->filterName(), $this->version());
     }
 }
