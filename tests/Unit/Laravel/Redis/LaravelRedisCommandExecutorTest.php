@@ -11,9 +11,6 @@ use ReflectionClass;
 use Throwable;
 use UnexpectedValueException;
 
-/**
- * @return Throwable
- */
 function makeLaravelRedisClientFailure(string $class): Throwable
 {
     if (! class_exists($class, false)) {
