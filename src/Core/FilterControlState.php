@@ -34,9 +34,18 @@ final readonly class FilterControlState
 
         /** @var array<int, GenerationControlState> $byVersion */
         $byVersion = [];
+        $activeLifecycleCount = 0;
 
         foreach ($generations as $generation) {
             $version = $generation->version()->value();
+
+            if ($generation->lifecycle() === LifecycleState::Active) {
+                $activeLifecycleCount++;
+
+                if ($activeLifecycleCount > 1) {
+                    throw new InvalidArgumentException('Only one tracked generation may have an ACTIVE lifecycle.');
+                }
+            }
 
             if ($version > $this->lastAllocatedVersion->value()) {
                 throw new InvalidArgumentException('Tracked generation cannot exceed the last allocated version.');
