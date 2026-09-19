@@ -6,9 +6,6 @@ use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
 use Kefyusuf\BloomGate\Tests\Support\Redis\FakeRedisClientException;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingIlluminateRedisConnection;
-use LogicException;
-use Throwable;
-use UnexpectedValueException;
 
 function makeLaravelRedisClientFailure(string $class): Throwable
 {
