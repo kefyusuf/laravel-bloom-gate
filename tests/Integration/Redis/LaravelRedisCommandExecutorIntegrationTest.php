@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
-use Illuminate\Foundation\Application;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Redis\RedisManager;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
@@ -17,10 +16,6 @@ final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
     protected function getEnvironmentSetUp($app): void
     {
         parent::getEnvironmentSetUp($app);
-
-        if (! $app instanceof Application) {
-            self::fail('Expected a Laravel application instance.');
-        }
 
         $app['config']->set('database.redis', [
             'client' => 'phpredis',
