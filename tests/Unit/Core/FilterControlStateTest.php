@@ -130,6 +130,20 @@ it('rejects duplicate tracked generation versions', function (): void {
     );
 })->throws(InvalidArgumentException::class);
 
+it('rejects multiple tracked active lifecycle generations', function (): void {
+    new FilterControlState(
+        filterName: FilterName::fromString('products.sku'),
+        revision: FilterStateRevision::fromInt(1),
+        lastAllocatedVersion: FilterVersion::fromInt(2),
+        activeVersion: FilterVersion::fromInt(1),
+        candidateVersion: null,
+        generations: [
+            generation(1, LifecycleState::Active),
+            generation(2, LifecycleState::Active),
+        ],
+    );
+})->throws(InvalidArgumentException::class);
+
 it('rejects an active pointer to an untracked generation', function (): void {
     new FilterControlState(
         filterName: FilterName::fromString('products.sku'),
