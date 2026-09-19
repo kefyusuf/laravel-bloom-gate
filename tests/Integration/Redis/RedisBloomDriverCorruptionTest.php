@@ -186,7 +186,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
     }
 
     /**
-     * @param list<string> $keys
+     * @param  list<string>  $keys
      */
     private function seed(string $script, array $keys): void
     {
