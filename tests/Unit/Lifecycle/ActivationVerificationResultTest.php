@@ -40,12 +40,19 @@ it('binds evidence to filter name and version without exposing the failed raw va
         [NormalizedValue::fromBytes('secret-value-that-must-not-escape')],
     );
 
+    $reflection = new ReflectionClass($result);
+    $publicMethods = array_map(
+        static fn (ReflectionMethod $method): string => $method->getName(),
+        $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
+    );
+
     expect($result)->toBeInstanceOf(ActivationVerificationResult::class)
         ->and($result->status())->toBe(ActivationVerificationStatus::FalseNegativeDetected)
         ->and($result->filterName())->toBe($name)
         ->and($result->filterVersion())->toBe($version)
         ->and(get_object_vars($result))->toBe([])
-        ->and(method_exists($result, 'failedValue'))->toBeFalse()
-        ->and(method_exists($result, 'value'))->toBeFalse()
-        ->and(method_exists($result, 'bytes'))->toBeFalse();
+        ->and($reflection->getProperties(ReflectionProperty::IS_PUBLIC))->toBe([])
+        ->and($publicMethods)->not->toContain('failedValue')
+        ->and($publicMethods)->not->toContain('value')
+        ->and($publicMethods)->not->toContain('bytes');
 });
