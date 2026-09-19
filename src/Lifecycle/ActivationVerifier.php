@@ -13,13 +13,20 @@ use Kefyusuf\BloomGate\Core\NormalizedValue;
 
 final readonly class ActivationVerifier
 {
+    private BloomProbeGenerator $probeGenerator;
+
+    private BloomDriver $driver;
+
     public function __construct(
-        private BloomProbeGenerator $probeGenerator,
-        private BloomDriver $driver,
-    ) {}
+        BloomProbeGenerator $probeGenerator,
+        BloomDriver $driver,
+    ) {
+        $this->probeGenerator = $probeGenerator;
+        $this->driver = $driver;
+    }
 
     /**
-     * @param iterable<NormalizedValue> $authoritativePresent
+     * @param  iterable<NormalizedValue>  $authoritativePresent
      */
     public function verify(
         FilterName $name,
