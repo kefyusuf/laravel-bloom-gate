@@ -34,10 +34,10 @@ it('pins the common metadata argv protocol for stateful scripts', function (stri
         ->and($script)->toContain('ARGV[2]')
         ->and($script)->toContain('ARGV[3]')
         ->and($script)->toContain('ARGV[4]')
-        ->and($script)->toContain("'format'")
-        ->and($script)->toContain("'bit_count'")
-        ->and($script)->toContain("'hash_count'")
-        ->and($script)->toContain("'probe_algorithm'");
+        ->and($script)->toContain('\'format\'')
+        ->and($script)->toContain('\'bit_count\'')
+        ->and($script)->toContain('\'hash_count\'')
+        ->and($script)->toContain('\'probe_algorithm\'');
 })->with([
     'provision' => fn (): string => RedisBloomScripts::provision(),
     'add' => fn (): string => RedisBloomScripts::add(),
@@ -49,27 +49,27 @@ it('pins the redis primitive used by each script', function (string $script, str
 })->with([
     'provision writes metadata' => [
         fn (): string => RedisBloomScripts::provision(),
-        "redis.call('HSET'",
+        'redis.call(\'HSET\'',
     ],
     'add sets bitmap positions' => [
         fn (): string => RedisBloomScripts::add(),
-        "redis.call('SETBIT'",
+        'redis.call(\'SETBIT\'',
     ],
     'might contain reads bitmap positions' => [
         fn (): string => RedisBloomScripts::mightContain(),
-        "redis.call('GETBIT'",
+        'redis.call(\'GETBIT\'',
     ],
     'destroy removes both generation keys' => [
         fn (): string => RedisBloomScripts::destroy(),
-        "redis.call('DEL', KEYS[1], KEYS[2])",
+        'redis.call(\'DEL\', KEYS[1], KEYS[2])',
     ],
 ]);
 
 it('validates state before bitmap mutation in the add script', function (): void {
     $script = RedisBloomScripts::add();
 
-    $validation = strpos($script, "if metadataMatches == false then");
-    $mutation = strpos($script, "redis.call('SETBIT'");
+    $validation = strpos($script, 'if metadataMatches == false then');
+    $mutation = strpos($script, 'redis.call(\'SETBIT\'');
 
     expect($validation)->not->toBeFalse()
         ->and($mutation)->not->toBeFalse()
