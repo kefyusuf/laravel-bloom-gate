@@ -14,9 +14,13 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('redis')]
 final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
 {
-    protected function getEnvironmentSetUp(Application $app): void
+    protected function getEnvironmentSetUp($app): void
     {
         parent::getEnvironmentSetUp($app);
+
+        if (! $app instanceof Application) {
+            self::fail('Expected a Laravel application instance.');
+        }
 
         $app['config']->set('database.redis', [
             'client' => 'phpredis',
