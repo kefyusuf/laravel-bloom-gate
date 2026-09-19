@@ -1,6 +1,6 @@
 # M4 — Lifecycle & Verification Implementation Plan
 
-**Status:** PROPOSED — implementation must not start until this plan is explicitly approved  
+**Status:** APPROVED — plan review gate passed; implementation may start only on the next explicit execution step  
 **Design gate:** PASSED  
 **Base:** `main@a8cd04b08e81d08fdb97644667e8696039ecac2f`  
 **Planned implementation branch:** `feat/m4-lifecycle-verification`  
@@ -241,6 +241,7 @@ interface FilterControlStore
     public function read(FilterName $name): ?FilterControlState;
 
     public function compareAndSwap(
+        FilterName $name,
         FilterControlState $next,
         ?FilterStateRevision $expectedRevision,
     ): void;
@@ -270,7 +271,8 @@ The shared contract must prove:
 - update requires next revision = current + 1;
 - stale expected revision conflicts;
 - skipped revision is rejected;
-- state from another FilterName cannot replace the current key;
+- the explicit target FilterName must equal next.filterName;
+- a mismatched target FilterName is rejected before mutation;
 - failed CAS leaves previous state unchanged;
 - returned state is semantically equivalent to stored state.
 
@@ -322,7 +324,7 @@ Exact class naming may be adjusted only if the same responsibility remains expli
 
 ## RED first — exact matrix
 
-Allowed:
+The lifecycle graph contains these legal edges:
 
 ```text
 Configured -> Building
@@ -331,22 +333,35 @@ Configured -> Retired
 Building   -> Shadow
 Building   -> Retired
 
-Shadow     -> Verified
+Shadow     -> Verified   [verification workflow only]
 Shadow     -> Retired
 
-Verified   -> Active   [not through generic transition API]
+Verified   -> Active     [promotion workflow only]
 Verified   -> Retired
 
 Active     -> Retired
 ```
 
-Generic transition policy must reject:
+The generic transition API may expose only:
 
-- every unlisted transition;
+```text
+Configured -> Building
+Configured -> Retired
+Building   -> Shadow
+Building   -> Retired
+Shadow     -> Retired
+Verified   -> Retired
+Active     -> Retired
+```
+
+It must reject:
+
+- every unlisted graph edge;
 - all outgoing transitions from Retired;
-- direct generic transition to Active.
+- evidence-free `Shadow -> Verified`;
+- direct/generic `Verified -> Active`.
 
-`Shadow -> Verified` must not be exposed as an evidence-free generic state mutation. The implementation should reserve that transition for the verification workflow introduced in Task 4.
+`Shadow -> Verified` belongs exclusively to the evidence-application workflow in Task 4. `Verified -> Active` belongs exclusively to promotion in Task 5.
 
 ## Gate
 
@@ -492,8 +507,10 @@ Prove:
 - candidate starts Configured + Unavailable;
 - existing candidate blocks a second candidate;
 - retired/failed version is never reused;
+- allocation fails cleanly rather than wrapping when lastAllocatedVersion is PHP_INT_MAX;
 - allocation computes a new immutable snapshot with revision +1;
-- CAS conflict is surfaced by the store boundary and requires reload/retry by the caller; no hidden infinite retry loop.
+- CAS conflict is surfaced by the store boundary and requires reload/retry by the caller;
+- a lifecycle operation performs at most one CAS attempt per invocation; no hidden retry loop.
 
 ### Promotion
 
@@ -963,6 +980,8 @@ Reject:
 
 Confirm existing M2/M3 public contracts remain source-compatible unless an independently approved breaking change is required.
 
+The M4 `FilterControlStore` contract is new and therefore may be finalized during this milestone, but its target FilterName must remain explicit on both read and CAS writes so cross-filter writes cannot be inferred from the payload alone.
+
 ## Verification evidence
 
 No PR-ready status while any required gate is red.
@@ -1066,3 +1085,19 @@ Stop implementation and reopen design review if any of the following appears:
 - implementation reveals a required lifecycle transition not covered by the accepted matrix.
 
 Do not solve a stop condition by silently widening M4.
+
+
+---
+
+# Plan review approval record
+
+**Review result:** APPROVED
+
+The review gate found and resolved two contract ambiguities before implementation:
+
+1. CAS writes now carry an explicit target `FilterName` in addition to the immutable next snapshot, and the store contract must reject a target/snapshot identity mismatch before mutation.
+2. The lifecycle graph is distinguished from the generic transition API: `Shadow -> Verified` is verification-only and `Verified -> Active` is promotion-only.
+
+The review also requires clean version-allocation failure at `PHP_INT_MAX` and forbids hidden CAS retry loops inside one lifecycle operation.
+
+No production implementation was performed during this review gate.
