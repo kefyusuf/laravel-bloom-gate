@@ -58,8 +58,10 @@
         "format": "pint",
         "lint": "pint --test",
         "analyse": "phpstan analyse --memory-limit=1G",
-        "test": "pest",
-        "test:fast": "pest tests/Arch tests/Unit tests/Contract tests/Integration tests/Feature",
+        "test": "pest --exclude-group=redis",
+        "test:fast": "pest tests/Arch tests/Unit tests/Contract tests/Integration tests/Feature --exclude-group=redis",
+        "test:redis": "pest --group=redis",
+        "test:all": "pest",
         "check": [
             "@lint",
             "@analyse",
