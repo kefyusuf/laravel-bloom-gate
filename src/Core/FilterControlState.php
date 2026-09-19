@@ -76,7 +76,7 @@ final readonly class FilterControlState
             }
         }
 
-        $this->generations = array_values($generations);
+        $this->generations = $generations;
     }
 
     public function filterName(): FilterName
