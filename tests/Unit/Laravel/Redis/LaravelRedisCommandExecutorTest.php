@@ -7,7 +7,6 @@ use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
 use Kefyusuf\BloomGate\Tests\Support\Redis\FakeRedisClientException;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingIlluminateRedisConnection;
 use LogicException;
-use ReflectionClass;
 use Throwable;
 use UnexpectedValueException;
 
@@ -17,19 +16,12 @@ function makeLaravelRedisClientFailure(string $class): Throwable
         class_alias(FakeRedisClientException::class, $class);
     }
 
-    $reflection = new ReflectionClass($class);
-
-    if (! $reflection->isInstantiable()) {
-        throw new LogicException(sprintf('Redis client failure class [%s] is not instantiable.', $class));
-    }
-
-    $failure = $reflection->newInstance('Redis client failure.');
-
-    if (! $failure instanceof Throwable) {
+    if (! is_a($class, Throwable::class, true)) {
         throw new LogicException(sprintf('Redis client failure class [%s] is not throwable.', $class));
     }
 
-    return $failure;
+    /** @var class-string<Throwable> $class */
+    return new $class('Redis client failure.');
 }
 
 it('forwards eval through the resolved Illuminate Redis connection exactly', function (): void {

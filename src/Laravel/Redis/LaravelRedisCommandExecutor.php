@@ -14,7 +14,7 @@ use UnexpectedValueException;
 final readonly class LaravelRedisCommandExecutor implements RedisCommandExecutor
 {
     /**
-     * @var list<class-string>
+     * @var list<string>
      */
     private const array OPERATIONAL_FAILURE_TYPES = [
         'RedisException',

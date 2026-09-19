@@ -28,7 +28,7 @@ final class RecordingIlluminateRedisConnection extends Connection
         $this->evalCalls[] = [
             'script' => $script,
             'numberOfKeys' => $numberOfKeys,
-            'arguments' => $arguments,
+            'arguments' => array_values($arguments),
         ];
 
         if ($this->failure !== null) {
@@ -38,6 +38,9 @@ final class RecordingIlluminateRedisConnection extends Connection
         return $this->result;
     }
 
+    /**
+     * @param  array<array-key, mixed>|string  $channels
+     */
     public function createSubscription(
         $channels,
         Closure $callback,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
+use Illuminate\Foundation\Application;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Redis\RedisManager;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
@@ -13,10 +14,7 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('redis')]
 final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
 {
-    /**
-     * @param  mixed  $app
-     */
-    protected function getEnvironmentSetUp($app): void
+    protected function getEnvironmentSetUp(Application $app): void
     {
         parent::getEnvironmentSetUp($app);
 
@@ -33,7 +31,11 @@ final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
 
     public function test_executes_eval_through_a_real_testbench_redis_connection(): void
     {
-        $manager = $this->app->make('redis');
+        $app = $this->app;
+
+        self::assertNotNull($app);
+
+        $manager = $app->make('redis');
 
         self::assertInstanceOf(RedisManager::class, $manager);
 
