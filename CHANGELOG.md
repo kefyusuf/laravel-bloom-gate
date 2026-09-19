@@ -18,3 +18,11 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 - Backend-neutral `BloomDriver` contract with typed missing-storage and layout failures.
 - Reusable driver contract suite included in the fast quality gate.
 - Process-local sparse memory reference driver conforming to the shared driver contract.
+- M3 stock-Redis bitmap data plane with Cluster-aware generation keys and versioned metadata.
+- Atomic Redis Lua/EVAL protocol for provision, add, membership checks, and destroy.
+- Typed storage-corruption and Redis operational-failure boundaries.
+- `RedisBloomDriver` conforming to the shared driver contract against real Redis.
+- Live Redis corruption fixtures covering orphan/wrong-type/malformed generation state and explicit destroy recovery.
+- Framework-neutral `RedisCommandExecutor` contract plus Laravel-only `LaravelRedisCommandExecutor`.
+- Real Testbench + PhpRedis + Redis EVAL integration evidence.
+- Dedicated Redis test group and cost-aware Redis integration workflow.

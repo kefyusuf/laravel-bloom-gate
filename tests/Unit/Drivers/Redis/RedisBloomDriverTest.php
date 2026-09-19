@@ -17,8 +17,6 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomScripts;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingRedisCommandExecutor;
-use RuntimeException;
-use UnexpectedValueException;
 
 function redisDriverLayout(): BloomLayout
 {

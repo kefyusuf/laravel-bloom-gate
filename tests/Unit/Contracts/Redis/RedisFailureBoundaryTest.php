@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomStorageCorrupt;
 use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
-use RuntimeException;
 
 it('keeps redis command failures separate from bloom driver failures', function (): void {
     $redisFailure = new RedisCommandFailed('Redis EVAL failed.');
