@@ -14,7 +14,7 @@ final readonly class FilterControlState
     private array $generations;
 
     /**
-     * @param list<GenerationControlState> $generations
+     * @param  list<GenerationControlState>  $generations
      */
     public function __construct(
         private FilterName $filterName,
