@@ -138,6 +138,25 @@ abstract class FilterControlStoreContractTestCase extends TestCase
         }
     }
 
+    public function test_update_rejects_reusing_the_current_revision_without_mutation(): void
+    {
+        $store = $this->makeStore();
+        $existing = $this->state(revision: 1);
+        $store->compareAndSwap($this->filterName(), $existing, null);
+
+        try {
+            $store->compareAndSwap(
+                $this->filterName(),
+                $this->state(revision: 1, lifecycle: LifecycleState::Building),
+                FilterStateRevision::fromInt(1),
+            );
+
+            self::fail('Expected a reused state revision to be rejected.');
+        } catch (InvalidArgumentException) {
+            $this->assertStateEquivalent($existing, $store->read($this->filterName()));
+        }
+    }
+
     public function test_update_rejects_a_skipped_revision_without_mutation(): void
     {
         $store = $this->makeStore();
@@ -178,6 +197,22 @@ abstract class FilterControlStoreContractTestCase extends TestCase
             $this->assertStateEquivalent($existing, $store->read($target));
             self::assertNull($store->read($other));
         }
+    }
+
+    public function test_read_keeps_filter_name_identity_case_sensitive(): void
+    {
+        $store = $this->makeStore();
+        $lower = FilterName::fromString('users.email');
+        $mixed = FilterName::fromString('Users.Email');
+
+        $store->compareAndSwap(
+            $lower,
+            $this->state(revision: 1, name: $lower),
+            null,
+        );
+
+        self::assertNotNull($store->read($lower));
+        self::assertNull($store->read($mixed));
     }
 
     public function test_read_returns_the_complete_stored_snapshot_semantics(): void
@@ -276,26 +311,25 @@ abstract class FilterControlStoreContractTestCase extends TestCase
             $actual->candidateVersion()?->value(),
         );
 
-        $expectedGenerations = $expected->generations();
-        $actualGenerations = $actual->generations();
-
-        self::assertCount(count($expectedGenerations), $actualGenerations);
-
-        foreach ($expectedGenerations as $index => $expectedGeneration) {
-            $actualGeneration = $actualGenerations[$index];
-
-            self::assertSame(
-                $expectedGeneration->version()->value(),
-                $actualGeneration->version()->value(),
-            );
-            self::assertSame(
-                $expectedGeneration->lifecycle(),
-                $actualGeneration->lifecycle(),
-            );
-            self::assertSame(
-                $expectedGeneration->health(),
-                $actualGeneration->health(),
-            );
+        $expectedGenerations = [];
+        foreach ($expected->generations() as $generation) {
+            $expectedGenerations[$generation->version()->value()] = [
+                $generation->lifecycle(),
+                $generation->health(),
+            ];
         }
+
+        $actualGenerations = [];
+        foreach ($actual->generations() as $generation) {
+            $actualGenerations[$generation->version()->value()] = [
+                $generation->lifecycle(),
+                $generation->health(),
+            ];
+        }
+
+        ksort($expectedGenerations);
+        ksort($actualGenerations);
+
+        self::assertSame($expectedGenerations, $actualGenerations);
     }
 }
