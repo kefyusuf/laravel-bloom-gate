@@ -5,8 +5,11 @@ on:
     paths:
       - 'src/**'
       - 'config/**'
+      - 'tests/Contract/**'
       - 'tests/Integration/Redis/**'
+      - 'tests/Support/Redis/**'
       - 'composer.json'
+      - 'phpunit.xml.dist'
       - '.github/workflows/redis-integration.yml'
   workflow_dispatch:
 
@@ -50,5 +53,8 @@ jobs:
         run: |
           php -r '$s = fsockopen("127.0.0.1", 6379, $errno, $error, 2); if ($s === false) { fwrite(STDERR, "$error\n"); exit(1); } fwrite($s, "PING\r\n"); $reply = fgets($s); if (trim((string) $reply) !== "+PONG") { exit(1); } echo "Redis service reachable\n";'
 
-      - name: Run package fast tests
-        run: composer test:fast
+      - name: Run Redis integration tests
+        run: composer test:redis
+
+      - name: Run non-Redis regression gate
+        run: composer check
