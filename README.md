@@ -1,6 +1,6 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M3 Redis foundation is implemented on the current development branch and is undergoing final review.
+> **Status:** pre-release — M3 Redis foundation is complete on `main`. M4 lifecycle and verification is the next milestone.
 
 Laravel Bloom Gate is being built as a production-safe probabilistic query gate for Laravel applications. Its purpose is to let applications skip authoritative lookups only when a healthy, active Bloom filter can prove that a value is definitely absent.
 
@@ -76,7 +76,7 @@ Support claims are considered official only after automated compatibility eviden
 - **M0:** repository/package bootstrap — complete
 - **M1:** core semantic value objects — complete
 - **M2:** memory reference driver and contract suite — complete
-- **M3:** Redis foundation — implementation complete, final review in progress
+- **M3:** Redis foundation — complete
 - **M4:** lifecycle and verification
 - **M5:** Laravel/Eloquent integration
 - **M6:** production hardening
