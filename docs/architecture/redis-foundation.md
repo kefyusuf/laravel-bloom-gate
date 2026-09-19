@@ -1,7 +1,7 @@
 # Redis Foundation
 
 **Milestone:** M3  
-**Status:** implemented; final review in progress
+**Status:** implemented, reviewed, and merged
 
 M3 adds the production Redis data plane without moving probe generation or lifecycle policy into the backend.
 

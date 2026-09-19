@@ -1,8 +1,9 @@
 # M3 Redis Foundation Implementation Plan
 
-**Status:** implemented; final internal review in progress  
-**Branch:** `feat/m3-redis-foundation`  
-**PR:** #6
+**Status:** implemented, internally reviewed, externally reviewed, and merged  
+**Historical branch:** `feat/m3-redis-foundation`  
+**Merged via:** PR #6  
+**Main commit:** `80ae223502dacad3e3d4689166d5ab9fa8f97376`
 
 ## Goal
 
