@@ -116,19 +116,21 @@ it('maps redis transport failures to control store operational failures', functi
     }
 });
 
-it('rejects unexpected read statuses as protocol errors', function (array $response): void {
-    $normalizedResponse = array_map(
-        static fn (mixed $value): string => (string) $value,
-        array_values($response),
-    );
-    $executor = new RecordingRedisStructuredCommandExecutor([$normalizedResponse]);
+it('rejects unexpected read statuses as protocol errors', function (string $case): void {
+    $response = match ($case) {
+        'empty' => [],
+        'conflict' => ['200'],
+        'unknown' => ['999'],
+        default => throw new RuntimeException('Unknown read reply fixture.'),
+    };
+    $executor = new RecordingRedisStructuredCommandExecutor([$response]);
 
     expect(fn () => makeRedisControlStore($executor)->read(redisControlStoreName()))
         ->toThrow(UnexpectedValueException::class);
 })->with([
-    'empty response' => [[]],
-    'conflict is invalid for read' => [['200']],
-    'unknown status' => [['999']],
+    'empty response' => ['empty'],
+    'conflict is invalid for read' => ['conflict'],
+    'unknown status' => ['unknown'],
 ]);
 
 it('creates control state with null expected revision and exact encoded payload', function (): void {
@@ -222,12 +224,14 @@ it('maps redis cas transport failures to control store operational failures', fu
     }
 });
 
-it('rejects unexpected cas reply shapes as protocol errors', function (array $response): void {
-    $normalizedResponse = array_map(
-        static fn (mixed $value): string => (string) $value,
-        array_values($response),
-    );
-    $executor = new RecordingRedisStructuredCommandExecutor([$normalizedResponse]);
+it('rejects unexpected cas reply shapes as protocol errors', function (string $case): void {
+    $response = match ($case) {
+        'empty' => [],
+        'success-payload' => ['100', 'unexpected'],
+        'unknown' => ['999'],
+        default => throw new RuntimeException('Unknown CAS reply fixture.'),
+    };
+    $executor = new RecordingRedisStructuredCommandExecutor([$response]);
 
     expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
         redisControlStoreName(),
@@ -235,9 +239,9 @@ it('rejects unexpected cas reply shapes as protocol errors', function (array $re
         FilterStateRevision::fromInt(1),
     ))->toThrow(UnexpectedValueException::class);
 })->with([
-    'empty response' => [[]],
-    'success with payload' => [['100', 'unexpected']],
-    'unknown status' => [['999']],
+    'empty response' => ['empty'],
+    'success with payload' => ['success-payload'],
+    'unknown status' => ['unknown'],
 ]);
 
 it('rejects target snapshot identity mismatch before redis mutation', function (): void {
