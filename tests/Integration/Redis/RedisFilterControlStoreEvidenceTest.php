@@ -71,13 +71,13 @@ final class RedisFilterControlStoreEvidenceTest extends TestCase
             lifecycle: LifecycleState::Configured,
             health: HealthState::Unavailable,
         );
-        $this->store->compareAndSwap($this->name(), $revisionOne, null);
+        $this->store->compareAndSwap($this->filterName(), $revisionOne, null);
 
         $writerOne = $this->makeStore();
         $writerTwo = $this->makeStore();
 
-        self::assertSame(1, $writerOne->read($this->name())?->revision()->value());
-        self::assertSame(1, $writerTwo->read($this->name())?->revision()->value());
+        self::assertSame(1, $writerOne->read($this->filterName())?->revision()->value());
+        self::assertSame(1, $writerTwo->read($this->filterName())?->revision()->value());
 
         $winner = $this->state(
             revision: 2,
@@ -91,21 +91,21 @@ final class RedisFilterControlStoreEvidenceTest extends TestCase
         );
 
         $writerOne->compareAndSwap(
-            $this->name(),
+            $this->filterName(),
             $winner,
             FilterStateRevision::fromInt(1),
         );
 
         try {
             $writerTwo->compareAndSwap(
-                $this->name(),
+                $this->filterName(),
                 $loser,
                 FilterStateRevision::fromInt(1),
             );
 
             self::fail('Expected the stale writer to lose the Redis CAS race.');
         } catch (FilterControlWriteConflict) {
-            $actual = $this->store->read($this->name());
+            $actual = $this->store->read($this->filterName());
 
             self::assertNotNull($actual);
             self::assertSame(2, $actual->revision()->value());
@@ -124,7 +124,7 @@ final class RedisFilterControlStoreEvidenceTest extends TestCase
 
         $this->expectException(FilterControlStateCorrupt::class);
 
-        $this->store->read($this->name());
+        $this->store->read($this->filterName());
     }
 
     public function test_malformed_control_v1_is_control_state_corruption(): void
@@ -144,7 +144,7 @@ LUA);
 
         $this->expectException(FilterControlStateCorrupt::class);
 
-        $this->store->read($this->name());
+        $this->store->read($this->filterName());
     }
 
     public function test_unknown_control_field_is_control_state_corruption(): void
@@ -166,7 +166,7 @@ LUA);
 
         $this->expectException(FilterControlStateCorrupt::class);
 
-        $this->store->read($this->name());
+        $this->store->read($this->filterName());
     }
 
     public function test_unknown_control_format_is_control_state_corruption(): void
@@ -187,13 +187,13 @@ LUA);
 
         $this->expectException(FilterControlStateCorrupt::class);
 
-        $this->store->read($this->name());
+        $this->store->read($this->filterName());
     }
 
     public function test_control_state_has_no_ttl_after_create_or_update(): void
     {
         $this->store->compareAndSwap(
-            $this->name(),
+            $this->filterName(),
             $this->state(1, LifecycleState::Configured, HealthState::Unavailable),
             null,
         );
@@ -201,7 +201,7 @@ LUA);
         self::assertSame(-1, $this->ttl());
 
         $this->store->compareAndSwap(
-            $this->name(),
+            $this->filterName(),
             $this->state(2, LifecycleState::Building, HealthState::Healthy),
             FilterStateRevision::fromInt(1),
         );
@@ -215,15 +215,15 @@ LUA);
 
         self::assertStringContainsString(
             '{products.sku}',
-            $this->keyspace->stateKey($this->name()),
+            $this->keyspace->stateKey($this->filterName()),
         );
         self::assertStringContainsString(
             '{products.sku}',
-            $this->keyspace->metaKey($this->name(), $version),
+            $this->keyspace->metaKey($this->filterName(), $version),
         );
         self::assertStringContainsString(
             '{products.sku}',
-            $this->keyspace->bitmapKey($this->name(), $version),
+            $this->keyspace->bitmapKey($this->filterName(), $version),
         );
     }
 
@@ -247,7 +247,7 @@ LUA);
         $version = FilterVersion::fromInt(1);
 
         return new FilterControlState(
-            filterName: $this->name(),
+            filterName: $this->filterName(),
             revision: FilterStateRevision::fromInt($revision),
             lastAllocatedVersion: $version,
             activeVersion: null,
@@ -280,13 +280,13 @@ LUA);
         );
     }
 
-    private function name(): FilterName
+    private function filterName(): FilterName
     {
         return FilterName::fromString('products.sku');
     }
 
     private function stateKey(): string
     {
-        return $this->keyspace->stateKey($this->name());
+        return $this->keyspace->stateKey($this->filterName());
     }
 }
