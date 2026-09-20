@@ -314,9 +314,9 @@ it('rejects target snapshot identity mismatch before redis mutation', function (
     expect($executor->structuredCalls())->toBe([]);
 });
 
-it('rejects invalid create revision before redis mutation', function (): void {
+it('rejects invalid create revision after redis confirms create context', function (): void {
     $executor = new RecordingRedisStructuredCommandExecutor([
-        ['100'],
+        ['202'],
     ]);
 
     expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
@@ -325,12 +325,12 @@ it('rejects invalid create revision before redis mutation', function (): void {
         null,
     ))->toThrow(InvalidArgumentException::class);
 
-    expect($executor->structuredCalls())->toBe([]);
+    expect($executor->structuredCalls())->toHaveCount(1);
 });
 
-it('rejects invalid update revision before redis mutation', function (): void {
+it('rejects invalid update revision after redis confirms expected revision', function (): void {
     $executor = new RecordingRedisStructuredCommandExecutor([
-        ['100'],
+        ['202'],
     ]);
 
     expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
@@ -339,5 +339,5 @@ it('rejects invalid update revision before redis mutation', function (): void {
         FilterStateRevision::fromInt(1),
     ))->toThrow(InvalidArgumentException::class);
 
-    expect($executor->structuredCalls())->toBe([]);
+    expect($executor->structuredCalls())->toHaveCount(1);
 });
