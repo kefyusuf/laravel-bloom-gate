@@ -52,7 +52,8 @@ it('pins the private structured status tokens inside the scripts', function (): 
     expect(RedisControlScripts::compareAndSwap())
         ->toContain("return {'100'}")
         ->toContain("return {'200'}")
-        ->toContain("return {'201'}");
+        ->toContain("return {'201'}")
+        ->toContain("return {'202'}");
 });
 
 it('validates read key type and strict hash shape before returning fields', function (): void {
@@ -100,6 +101,26 @@ it('orders cas validation before every mutation', function (): void {
     expect($revisionCheck)->toBeLessThan($nextValidation);
     expect($nextValidation)->toBeLessThan($delete);
     expect($delete)->toBeLessThan($write);
+});
+
+it('checks storage conflict before proposed revision progression', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+
+    $revisionConflict = redisControlScriptMarker(
+        $script,
+        'if currentRevision ~= expectedRevision then',
+    );
+    $nextValidation = redisControlScriptMarker(
+        $script,
+        'local nextValid, nextRevision = validateControlFields(nextFields)',
+    );
+    $nextRevisionCheck = redisControlScriptMarker(
+        $script,
+        'if nextRevision ~= incrementCanonicalPositiveInteger(expectedRevision) then',
+    );
+
+    expect($revisionConflict)->toBeLessThan($nextValidation);
+    expect($nextValidation)->toBeLessThan($nextRevisionCheck);
 });
 
 it('places every cas failure return before the first mutation', function (): void {
