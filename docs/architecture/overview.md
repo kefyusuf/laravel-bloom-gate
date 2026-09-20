@@ -2,23 +2,26 @@
 
 Laravel Bloom Gate is a Laravel-first Composer package with a framework-independent internal core.
 
-```text
-Laravel adapters
-      |
-Application
-      |
-Contracts / Lifecycle
-      |
-Core
+The current internal dependency direction is:
 
-Drivers -> Contracts
+```text
+Core        -> PHP/SPL only
+Contracts   -> Core
+Lifecycle   -> Core + Contracts
+Drivers     -> Core + Contracts
+Application -> Core + Contracts + Lifecycle
+Laravel     -> internal package layers + Illuminate
 ```
 
 Only the `Laravel` namespace may depend on Illuminate.
 
-Core owns deterministic probe generation. Drivers never receive raw application values and do not perform normalization or hashing; they receive a `BloomLayout` at provision time and layout-bound `BitPositions` for add/check operations.
+## Data plane
 
-The current storage implementations are:
+Core owns deterministic probe generation.
+
+Drivers never receive raw application values and do not perform normalization or hashing. They receive a `BloomLayout` at provision time and layout-bound `BitPositions` for add/check operations.
+
+The Bloom data-plane implementations are:
 
 ```text
                     BloomDriver
@@ -36,10 +39,102 @@ The current storage implementations are:
                            Illuminate Redis Connection
 ```
 
-The memory driver is deterministic process-local reference storage. The Redis driver is the production data-plane implementation and uses stock Redis bitmap primitives through atomic Lua/EVAL scripts.
+The memory driver is deterministic process-local reference storage.
 
-The Redis driver remains framework-neutral. Laravel integration supplies an already-resolved Illuminate Redis connection through `LaravelRedisCommandExecutor`; connection credentials and selection remain under application control.
+The Redis driver uses stock Redis bitmap primitives and atomic Lua/EVAL scripts. It remains framework-neutral.
 
-Bloom generation storage is a data plane. Active version, candidate generation, lifecycle state, health, verification status, rebuild coordination, and fail-open orchestration form a separate control plane and are not implemented by M3.
+The raw M3 driver primitive:
 
-A negative may short-circuit the authoritative lookup only when later application/lifecycle orchestration establishes that the filter is ACTIVE, HEALTHY, available, and resolved to the current active version.
+```text
+destroy -> provision
+```
+
+remains available for low-level storage recovery and direct driver use.
+
+For M4-managed generations, a managed version is not destructively rebuilt or reused in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
+
+## Control plane
+
+M4 adds a separate logical-filter control plane.
+
+```text
+                         FilterControlStore
+                         /                \
+                        /                  \
+       MemoryFilterControlStore      RedisFilterControlStore
+                                             |
+                                             v
+                              RedisStructuredCommandExecutor
+                                      ^              ^
+                                      |              |
+                            test RESP executor   Laravel adapter
+```
+
+The control plane tracks:
+
+- current state revision;
+- `lastAllocatedVersion`;
+- optional active generation;
+- optional candidate generation;
+- generation lifecycle;
+- generation health.
+
+The current snapshot is correctness state, not an audit log.
+
+Control-plane writes use compare-and-swap semantics. Memory and Redis implementations conform to the same `FilterControlStore` contract.
+
+Redis replacement CAS materializes the next strict snapshot in a same-slot staging HASH and only then swaps it into the durable `:state` key with `RENAME`. This keeps the previous correctness snapshot intact if replacement materialization fails.
+
+## Lifecycle and verification
+
+M4 lifecycle and health are independent axes.
+
+The generic lifecycle policy intentionally excludes:
+
+```text
+SHADOW   -> VERIFIED
+VERIFIED -> ACTIVE
+```
+
+Those transitions belong exclusively to:
+
+- version-bound activation verification evidence;
+- explicit candidate promotion.
+
+Verification accepts `iterable<NormalizedValue>`, detects the first operational false negative, and never normalizes raw values.
+
+Promotion requires the current candidate to be `VERIFIED + HEALTHY` and changes only the control plane. It does not move or rewrite Bloom data.
+
+## Probe eligibility versus query-skip authorization
+
+The M4 `ActiveGenerationPolicy` returns a version only when the current active pointer resolves to:
+
+```text
+ACTIVE + HEALTHY
+```
+
+That result means **control-plane probe eligibility only**.
+
+M4 does not implement package-facing authoritative-query orchestration or final authorization to skip an authoritative lookup.
+
+The package may safely expose negative-result query skipping only after later orchestration also establishes every required runtime invariant.
+
+Runtime normalization identity/fingerprint compatibility remains a mandatory M5 design blocker.
+
+## Redis boundary
+
+The Redis generation data plane uses the original integer `RedisCommandExecutor`.
+
+M4 adds the additive `RedisStructuredCommandExecutor` child contract for structured Lua replies required by control-plane persistence. The original integer executor contract remains source-compatible.
+
+Laravel supplies an already-resolved Illuminate Redis connection through `LaravelRedisCommandExecutor`. Connection credentials and selection remain application-owned.
+
+## Architecture enforcement
+
+Executable tests enforce:
+
+- Core has no framework/infrastructure knowledge;
+- Drivers do not depend on Lifecycle;
+- Lifecycle does not depend on Drivers;
+- non-Laravel layers do not import Illuminate;
+- Core lifecycle/control-state objects do not contain Redis or persistence tokens.

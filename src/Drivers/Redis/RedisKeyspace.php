@@ -23,6 +23,24 @@ final readonly class RedisKeyspace
         return new self($prefix);
     }
 
+    public function stateKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:state',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
+    public function stateStagingKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:state:staging',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
     public function metaKey(
         FilterName $name,
         FilterVersion $version,

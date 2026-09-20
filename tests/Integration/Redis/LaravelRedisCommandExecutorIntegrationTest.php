@@ -28,6 +28,32 @@ final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
         ]);
     }
 
+    public function test_executes_structured_eval_through_a_real_testbench_redis_connection(): void
+    {
+        $app = $this->app;
+
+        self::assertNotNull($app);
+
+        $manager = $app->make('redis');
+
+        self::assertInstanceOf(RedisManager::class, $manager);
+
+        $connection = $manager->connection('default');
+
+        self::assertInstanceOf(Connection::class, $connection);
+
+        $executor = new LaravelRedisCommandExecutor($connection);
+
+        self::assertSame(
+            ['control-v1', '7', '3'],
+            $executor->evaluateStructured(
+                "return {'control-v1', '7', '3'}",
+                ['lbg:{adapter-evidence}:state'],
+                [],
+            ),
+        );
+    }
+
     public function test_executes_eval_through_a_real_testbench_redis_connection(): void
     {
         $app = $this->app;
