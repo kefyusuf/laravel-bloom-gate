@@ -148,7 +148,10 @@ it('creates control state with null expected revision and exact encoded payload'
 
     expect($executor->structuredCalls())->toBe([[
         'script' => RedisControlScripts::compareAndSwap(),
-        'keys' => ['lbg:{products.sku}:state'],
+        'keys' => [
+            'lbg:{products.sku}:state',
+            'lbg:{products.sku}:state:staging',
+        ],
         'arguments' => [
             '',
             ...$codec->encode($next),
