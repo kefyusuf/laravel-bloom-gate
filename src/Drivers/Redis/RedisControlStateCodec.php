@@ -57,8 +57,7 @@ final class RedisControlStateCodec
 
         usort(
             $generations,
-            static fn (GenerationControlState $left, GenerationControlState $right): int =>
-                $left->version()->value() <=> $right->version()->value(),
+            static fn (GenerationControlState $left, GenerationControlState $right): int => $left->version()->value() <=> $right->version()->value(),
         );
 
         foreach ($generations as $generation) {
