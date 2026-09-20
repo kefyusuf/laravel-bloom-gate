@@ -83,6 +83,8 @@ The current snapshot is correctness state, not an audit log.
 
 Control-plane writes use compare-and-swap semantics. Memory and Redis implementations conform to the same `FilterControlStore` contract.
 
+Redis replacement CAS materializes the next strict snapshot in a same-slot staging HASH and only then swaps it into the durable `:state` key with `RENAME`. This keeps the previous correctness snapshot intact if replacement materialization fails.
+
 ## Lifecycle and verification
 
 M4 lifecycle and health are independent axes.
