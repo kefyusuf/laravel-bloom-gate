@@ -94,7 +94,6 @@ it('returns no eligible generation when control state is unavailable', function 
     expect((new ActiveGenerationPolicy)->eligibleVersion(null))->toBeNull();
 });
 
-
 it('does not select an unpointed active healthy generation', function (): void {
     $name = FilterName::fromString('products.sku');
     $version = FilterVersion::fromInt(1);
