@@ -78,7 +78,7 @@ The raw M3 recovery primitive remains:
 destroy -> provision
 ```
 
-That low-level primitive does not authorize destructive in-place rebuild of an M4-managed generation. Managed rebuilds allocate a new generation version.
+That low-level primitive does not authorize destructive in-place rebuild of an M4-managed generation. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
 
 ## M4 control-plane key
 
