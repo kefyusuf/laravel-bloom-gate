@@ -114,23 +114,30 @@ it('checks storage conflict before proposed revision progression', function (): 
         $script,
         'local nextValid, nextRevision = validateControlFields(nextFields)',
     );
+    $nextRevisionIncrement = redisControlScriptMarker(
+        $script,
+        'requiredNextRevision = incrementCanonicalPositiveInteger(expectedRevision)',
+    );
     $nextRevisionCheck = redisControlScriptMarker(
         $script,
-        'if nextRevision ~= incrementCanonicalPositiveInteger(expectedRevision) then',
+        'if requiredNextRevision == nil or nextRevision ~= requiredNextRevision then',
     );
 
     expect($revisionConflict)->toBeLessThan($nextValidation);
-    expect($nextValidation)->toBeLessThan($nextRevisionCheck);
+    expect($nextValidation)->toBeLessThan($nextRevisionIncrement);
+    expect($nextRevisionIncrement)->toBeLessThan($nextRevisionCheck);
 });
 
 it('places every cas failure return before the first mutation', function (): void {
     $script = RedisControlScripts::compareAndSwap();
     $lastConflict = redisControlScriptLastMarker($script, "return {'200'}");
     $lastCorruption = redisControlScriptLastMarker($script, "return {'201'}");
+    $lastInvalidRevision = redisControlScriptLastMarker($script, "return {'202'}");
     $delete = redisControlScriptMarker($script, "redis.call('DEL', KEYS[1])");
 
     expect($lastConflict)->toBeLessThan($delete);
     expect($lastCorruption)->toBeLessThan($delete);
+    expect($lastInvalidRevision)->toBeLessThan($delete);
 });
 
 it('keeps lifecycle transition policy out of redis control scripts', function (string $script): void {
