@@ -175,6 +175,46 @@ it('updates control state with the exact expected revision token', function (): 
     ]);
 });
 
+it('lets redis resolve missing state before client-side revision progression', function (): void {
+    $executor = new RecordingRedisStructuredCommandExecutor([
+        ['200'],
+    ]);
+
+    expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
+        redisControlStoreName(),
+        redisControlStoreState(1),
+        FilterStateRevision::fromInt(1),
+    ))->toThrow(FilterControlWriteConflict::class);
+
+    expect($executor->structuredCalls())->toHaveCount(1);
+});
+
+it('lets redis resolve a stale expected revision before validating the proposed revision', function (): void {
+    $executor = new RecordingRedisStructuredCommandExecutor([
+        ['200'],
+    ]);
+
+    expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
+        redisControlStoreName(),
+        redisControlStoreState(3),
+        FilterStateRevision::fromInt(1),
+    ))->toThrow(FilterControlWriteConflict::class);
+
+    expect($executor->structuredCalls())->toHaveCount(1);
+});
+
+it('maps redis cas invalid revision progression to invalid argument', function (): void {
+    $executor = new RecordingRedisStructuredCommandExecutor([
+        ['202'],
+    ]);
+
+    expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
+        redisControlStoreName(),
+        redisControlStoreState(2),
+        FilterStateRevision::fromInt(1),
+    ))->toThrow(InvalidArgumentException::class);
+});
+
 it('maps redis cas revision conflict without retrying', function (): void {
     $executor = new RecordingRedisStructuredCommandExecutor([
         ['200'],
