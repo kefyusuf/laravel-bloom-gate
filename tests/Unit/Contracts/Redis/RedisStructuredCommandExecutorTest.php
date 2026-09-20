@@ -25,12 +25,19 @@ it('defines the structured redis executor as an additive child contract', functi
         [$parameters[2]->getType(), 'array'],
         [$method->getReturnType(), 'array'],
     ] as [$type, $expected]) {
-        expect($type)->toBeInstanceOf(ReflectionNamedType::class)
-            ->and($type->getName())->toBe($expected);
+        if (! $type instanceof ReflectionNamedType) {
+            throw new RuntimeException('Expected structured Redis executor types to be named.');
+        }
+
+        expect($type->getName())->toBe($expected);
     }
 
     $legacy = $contract->getMethod('evaluate');
+    $legacyReturnType = $legacy->getReturnType();
 
-    expect($legacy->getReturnType())->toBeInstanceOf(ReflectionNamedType::class)
-        ->and($legacy->getReturnType()?->getName())->toBe('int');
+    if (! $legacyReturnType instanceof ReflectionNamedType) {
+        throw new RuntimeException('Expected legacy Redis executor return type to be named.');
+    }
+
+    expect($legacyReturnType->getName())->toBe('int');
 });
