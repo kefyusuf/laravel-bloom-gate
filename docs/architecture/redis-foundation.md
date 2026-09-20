@@ -80,7 +80,7 @@ Each Bloom driver operation executes as one Redis Lua script:
 
 The raw `destroy -> provision` capability remains part of the M3 driver surface.
 
-M4-managed generations must not use that primitive to destructively rebuild/reuse a managed version in place. Managed rebuilds allocate a new version.
+M4-managed generations must not use that primitive to destructively rebuild/reuse a managed version in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
 
 ## M3 private script protocol
 
