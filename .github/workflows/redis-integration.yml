@@ -57,5 +57,15 @@ jobs:
       - name: Run Redis integration tests
         run: composer test:redis
 
+      - name: Run final M4 merge verification matrix
+        run: |
+          composer validate --strict
+          composer lint
+          composer analyse
+          composer test:fast
+          composer check
+          composer test:redis
+          composer test:all
+
       - name: Run non-Redis regression gate
         run: composer check
