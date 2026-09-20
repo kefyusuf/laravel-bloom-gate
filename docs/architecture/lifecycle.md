@@ -169,7 +169,7 @@ destroy -> provision
 
 Those primitives remain valid for low-level storage recovery and driver use.
 
-M4-managed generations, however, are versioned lifecycle entities. They must not be destructively rebuilt or reused in place. A managed rebuild allocates a new generation version and eventually retires the old generation through explicit lifecycle operations.
+M4-managed generations, however, are versioned lifecycle entities. They must not be destructively rebuilt or reused in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement under this model must use a newly allocated generation version rather than reusing the old one.
 
 ## M5 blocker
 
