@@ -184,6 +184,10 @@ it('performs only one cas attempt and surfaces a write conflict to the caller', 
         {
             $this->reads++;
 
+            if ($name->equals($this->current->filterName()) === false) {
+                return null;
+            }
+
             return $this->current;
         }
 
