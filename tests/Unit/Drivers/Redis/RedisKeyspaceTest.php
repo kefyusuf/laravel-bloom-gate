@@ -60,7 +60,6 @@ it('rejects unsafe redis key prefixes', function (string $prefix): void {
     'too long' => str_repeat('a', 65),
 ])->throws(InvalidArgumentException::class);
 
-
 it('builds the canonical control state key with the same logical filter hash tag', function (): void {
     $keyspace = RedisKeyspace::fromPrefix('lbg');
     $name = FilterName::fromString('products.sku');
