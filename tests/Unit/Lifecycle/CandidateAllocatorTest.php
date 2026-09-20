@@ -14,6 +14,9 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Lifecycle\CandidateAllocator;
 
+/**
+ * @param  list<GenerationControlState>  $generations
+ */
 function task5AllocationState(
     FilterName $name,
     int $revision,
@@ -30,6 +33,30 @@ function task5AllocationState(
         candidateVersion: $candidate === null ? null : FilterVersion::fromInt($candidate),
         generations: $generations,
     );
+}
+
+function task5SeedAllocationStore(
+    MemoryFilterControlStore $store,
+    FilterControlState $target,
+): void {
+    $targetRevision = $target->revision()->value();
+
+    for ($revision = 1; $revision <= $targetRevision; $revision++) {
+        $snapshot = new FilterControlState(
+            filterName: $target->filterName(),
+            revision: FilterStateRevision::fromInt($revision),
+            lastAllocatedVersion: $target->lastAllocatedVersion(),
+            activeVersion: $target->activeVersion(),
+            candidateVersion: $target->candidateVersion(),
+            generations: $target->generations(),
+        );
+
+        $store->compareAndSwap(
+            $target->filterName(),
+            $snapshot,
+            $revision === 1 ? null : FilterStateRevision::fromInt($revision - 1),
+        );
+    }
 }
 
 it('allocates version one into an empty control store', function (): void {
@@ -71,7 +98,7 @@ it('allocates strictly after the last allocated version and never reuses retired
             ),
         ],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedAllocationStore($store, $existing);
 
     $next = (new CandidateAllocator($store))->allocate($name);
 
@@ -102,7 +129,7 @@ it('rejects allocating a second candidate without writing', function (): void {
             ),
         ],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedAllocationStore($store, $existing);
 
     expect(fn () => (new CandidateAllocator($store))->allocate($name))
         ->toThrow(InvalidArgumentException::class);
@@ -123,7 +150,7 @@ it('fails cleanly instead of wrapping the generation version at php int max', fu
         candidateVersion: null,
         generations: [],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedAllocationStore($store, $existing);
 
     expect(fn () => (new CandidateAllocator($store))->allocate($name))
         ->toThrow(OverflowException::class);
