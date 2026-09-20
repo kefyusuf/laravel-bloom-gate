@@ -95,8 +95,9 @@ it('omits nullable pointer fields instead of encoding sentinel values', function
         'format', 'control-v1',
         'revision', '4',
         'last_allocated_version', '3',
-    ])->not->toContain('active_version')
-        ->not->toContain('candidate_version');
+    ]);
+    expect($encoded)->not->toContain('active_version');
+    expect($encoded)->not->toContain('candidate_version');
 });
 
 it('decodes a valid payload regardless of redis hash field order', function (): void {
@@ -348,7 +349,7 @@ it('maps core invariant violations to control state corruption', function (): vo
 it('does not encode ttl or expiration metadata', function (): void {
     $encoded = (new RedisControlStateCodec)->encode(redisControlCodecState());
 
-    expect($encoded)->not->toContain('ttl')
-        ->not->toContain('expires_at')
-        ->not->toContain('expiration');
+    expect($encoded)->not->toContain('ttl');
+    expect($encoded)->not->toContain('expires_at');
+    expect($encoded)->not->toContain('expiration');
 });
