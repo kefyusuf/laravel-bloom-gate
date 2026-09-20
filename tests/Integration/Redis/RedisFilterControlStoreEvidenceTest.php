@@ -53,8 +53,8 @@ final class RedisFilterControlStoreEvidenceTest extends TestCase
     {
         try {
             $this->executor->evaluate(
-                "return redis.call('DEL', KEYS[1])",
-                [$this->stateKey()],
+                "return redis.call('DEL', KEYS[1], KEYS[2])",
+                [$this->stateKey(), $this->stateKey().':staging'],
                 [],
             );
         } catch (Throwable) {
@@ -207,6 +207,61 @@ LUA);
         );
 
         self::assertSame(-1, $this->ttl());
+    }
+
+    public function test_large_control_snapshot_replacement_is_complete_and_does_not_hit_unbounded_unpack(): void
+    {
+        $lastAllocated = FilterVersion::fromInt(5000);
+        $initial = new FilterControlState(
+            filterName: $this->filterName(),
+            revision: FilterStateRevision::fromInt(1),
+            lastAllocatedVersion: $lastAllocated,
+            activeVersion: null,
+            candidateVersion: null,
+            generations: [],
+        );
+
+        $this->store->compareAndSwap(
+            $this->filterName(),
+            $initial,
+            null,
+        );
+
+        $generations = [];
+
+        for ($version = 1; $version <= 5000; $version++) {
+            $generations[] = new GenerationControlState(
+                version: FilterVersion::fromInt($version),
+                lifecycle: LifecycleState::Retired,
+                health: HealthState::Unavailable,
+            );
+        }
+
+        $large = new FilterControlState(
+            filterName: $this->filterName(),
+            revision: FilterStateRevision::fromInt(2),
+            lastAllocatedVersion: $lastAllocated,
+            activeVersion: null,
+            candidateVersion: null,
+            generations: $generations,
+        );
+
+        $this->store->compareAndSwap(
+            $this->filterName(),
+            $large,
+            FilterStateRevision::fromInt(1),
+        );
+
+        $after = $this->store->read($this->filterName());
+
+        self::assertNotNull($after);
+        self::assertSame(2, $after->revision()->value());
+        self::assertCount(5000, $after->generations());
+        self::assertSame(0, $this->executor->evaluate(
+            "return redis.call('EXISTS', KEYS[1])",
+            [$this->stateKey().':staging'],
+            [],
+        ));
     }
 
     public function test_control_and_generation_keys_share_the_same_filter_hash_tag_by_construction(): void
