@@ -32,6 +32,15 @@ final readonly class RedisKeyspace
         );
     }
 
+    public function stateStagingKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:state:staging',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
     public function metaKey(
         FilterName $name,
         FilterVersion $version,
