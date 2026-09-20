@@ -1,10 +1,28 @@
 # Redis Keyspace
 
-Redis generation keys are deterministic and Cluster-aware from v1.
+Redis keys are deterministic and Cluster-aware by construction from v1.
 
-## M3 data-plane keys
+Redis Cluster runtime support is **not** an official package claim until dedicated Cluster integration evidence exists.
 
-Each `FilterName + FilterVersion` generation owns two keys:
+## Logical-filter hash tag
+
+All keys for one logical filter use the exact case-sensitive `FilterName` inside the same Redis hash tag:
+
+```text
+{<filter-name>}
+```
+
+Example:
+
+```text
+{products.sku}
+```
+
+Filter names exclude braces, so application-controlled filter identity cannot alter hash-tag boundaries.
+
+## M3 generation data-plane keys
+
+Each `FilterName + FilterVersion` generation owns:
 
 ```text
 <prefix>:{<filter-name>}:v:<version>:meta
@@ -18,21 +36,11 @@ lbg:{products.sku}:v:1:meta
 lbg:{products.sku}:v:1:bf
 ```
 
-The version is canonical unpadded base-10. `v:1` is valid; `v:000001` is not the canonical M3 encoding.
+The version is canonical unpadded base-10. `v:1` is valid; `v:000001` is not canonical.
 
-Both keys use the exact case-sensitive `FilterName` inside the same Redis Cluster hash tag, so one generation's metadata and bitmap are colocated when Redis Cluster is introduced.
+### Generation metadata
 
-The key prefix accepted by `RedisKeyspace` is 1–64 ASCII bytes with this grammar:
-
-```text
-[A-Za-z0-9][A-Za-z0-9._-]{0,63}
-```
-
-Braces, colons, whitespace, Unicode, and leading punctuation are rejected. Filter names already exclude braces, so application-controlled filter identity cannot alter slot selection.
-
-## Metadata
-
-The `:meta` HASH is the canonical provision marker for a generation:
+The `:meta` HASH is the canonical provision marker:
 
 ```text
 format           redis-bitmap-v1
@@ -41,41 +49,134 @@ hash_count       <canonical positive decimal>
 probe_algorithm  <non-empty algorithm identifier>
 ```
 
-A provisioned empty generation may have a metadata key while the `:bf` bitmap key does not yet exist. Missing bitmap bytes therefore read as zero only when valid generation metadata exists.
+A valid metadata key with no `:bf` key is a provisioned empty generation.
 
-Unknown additive HASH fields are ignored. An unknown storage `format` is corruption. A structurally valid but different probe algorithm is a layout incompatibility, not corruption.
+Unknown additive generation-metadata HASH fields are ignored. An unknown generation storage `format` is corruption. A structurally valid but different probe algorithm is a layout incompatibility, not corruption.
 
-## Bitmap
+### Generation bitmap
 
 The `:bf` key is a Redis STRING used with `SETBIT` / `GETBIT`.
 
-Provision does not eagerly extend the bitmap to `bit_count`; allocation grows only as bits are written. No TTL is assigned to generation keys.
+Provision does not eagerly allocate the complete bitmap. No TTL is assigned to generation keys.
 
-## Corruption boundary
+### Generation corruption boundary
 
-Examples classified as storage corruption:
+Examples classified as Bloom storage corruption:
 
 - bitmap exists while metadata is missing;
 - metadata key has a non-HASH type;
 - bitmap key has a non-STRING type;
 - required metadata fields are missing;
-- numeric metadata is non-canonical or outside the protocol limits;
-- storage format is unknown.
+- numeric metadata is non-canonical or outside protocol limits;
+- generation storage format is unknown.
 
-Corruption is never interpreted as membership absence and is never repaired silently. Explicit `destroy → provision` is the current recovery primitive.
+Corruption is never interpreted as membership absence and is never repaired silently.
 
-## Future control plane
+The raw M3 recovery primitive remains:
 
-Later milestones may add keys such as:
+```text
+destroy -> provision
+```
+
+That low-level primitive does not authorize destructive in-place rebuild of an M4-managed generation. Managed rebuilds allocate a new generation version.
+
+## M4 control-plane key
+
+Each logical filter owns one current control-state key:
+
+```text
+<prefix>:{<filter-name>}:state
+```
+
+Example:
 
 ```text
 lbg:{products.sku}:state
-lbg:{products.sku}:active
-lbg:{products.sku}:candidate
 ```
 
-Those are control-plane concerns and are not part of M3.
+The control key shares the same logical-filter hash tag as the generation keys:
 
-The hash-tag strategy is fixed from v1 so later control-plane keys can share the same logical-filter slot.
+```text
+lbg:{products.sku}:state
+lbg:{products.sku}:v:1:meta
+lbg:{products.sku}:v:1:bf
+```
 
-Cluster-aware key design does not become an official Redis Cluster runtime-support claim until dedicated Cluster integration tests exist.
+No separate `:active` or `:candidate` Redis key exists in M4. Those pointers are fields inside the single revisioned control HASH.
+
+## control-v1
+
+The `:state` HASH uses strict `control-v1` persistence.
+
+Required top-level fields:
+
+```text
+format                  control-v1
+revision                <canonical positive decimal>
+last_allocated_version  <canonical positive decimal>
+```
+
+Optional pointers are absent when null:
+
+```text
+active_version
+candidate_version
+```
+
+Tracked generation fields use:
+
+```text
+g:<version>:lifecycle
+g:<version>:health
+```
+
+Lifecycle tokens:
+
+```text
+configured
+building
+shadow
+verified
+active
+retired
+```
+
+Health tokens:
+
+```text
+healthy
+degraded
+stale
+unavailable
+```
+
+Unlike M3 generation metadata, `control-v1` is strict: unknown control fields are corruption rather than ignored forward-compatible metadata.
+
+The codec also rejects:
+
+- duplicate fields;
+- malformed generation field names;
+- incomplete lifecycle/health pairs;
+- non-canonical or out-of-range integers;
+- unknown lifecycle/health tokens;
+- decoded snapshots that violate Core control-state invariants.
+
+The control state has no TTL.
+
+## Prefix grammar
+
+The key prefix accepted by `RedisKeyspace` is 1–64 ASCII bytes:
+
+```text
+[A-Za-z0-9][A-Za-z0-9._-]{0,63}
+```
+
+Braces, colons, whitespace, Unicode, and leading punctuation are rejected.
+
+## Control state is not history
+
+The `:state` HASH represents current correctness state.
+
+It is not an audit log and does not retain every historical snapshot.
+
+M4 keeps retired generation records in the current snapshot. Future pruning may remove retired records, but `last_allocated_version` must remain monotonic so version numbers are never reused.
