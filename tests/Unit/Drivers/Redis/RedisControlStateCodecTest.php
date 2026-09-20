@@ -137,6 +137,40 @@ it('decodes a valid payload regardless of redis hash field order', function (): 
         ]);
 });
 
+it('encodes every lifecycle token exactly', function (LifecycleState $lifecycle, string $token): void {
+    $version = FilterVersion::fromInt(1);
+    $state = new FilterControlState(
+        filterName: FilterName::fromString('products.sku'),
+        revision: FilterStateRevision::fromInt(1),
+        lastAllocatedVersion: $version,
+        activeVersion: null,
+        candidateVersion: null,
+        generations: [
+            new GenerationControlState(
+                version: $version,
+                lifecycle: $lifecycle,
+                health: HealthState::Healthy,
+            ),
+        ],
+    );
+
+    $encoded = (new RedisControlStateCodec)->encode($state);
+    $fieldIndex = array_search('g:1:lifecycle', $encoded, true);
+
+    if ($fieldIndex === false) {
+        throw new RuntimeException('Expected encoded lifecycle field.');
+    }
+
+    expect($encoded[$fieldIndex + 1])->toBe($token);
+})->with([
+    'configured' => [LifecycleState::Configured, 'configured'],
+    'building' => [LifecycleState::Building, 'building'],
+    'shadow' => [LifecycleState::Shadow, 'shadow'],
+    'verified' => [LifecycleState::Verified, 'verified'],
+    'active' => [LifecycleState::Active, 'active'],
+    'retired' => [LifecycleState::Retired, 'retired'],
+]);
+
 it('round trips every lifecycle token exactly', function (LifecycleState $lifecycle, string $token): void {
     $payload = [
         'format', 'control-v1',
@@ -159,6 +193,38 @@ it('round trips every lifecycle token exactly', function (LifecycleState $lifecy
     'verified' => [LifecycleState::Verified, 'verified'],
     'active' => [LifecycleState::Active, 'active'],
     'retired' => [LifecycleState::Retired, 'retired'],
+]);
+
+it('encodes every health token exactly', function (HealthState $health, string $token): void {
+    $version = FilterVersion::fromInt(1);
+    $state = new FilterControlState(
+        filterName: FilterName::fromString('products.sku'),
+        revision: FilterStateRevision::fromInt(1),
+        lastAllocatedVersion: $version,
+        activeVersion: null,
+        candidateVersion: null,
+        generations: [
+            new GenerationControlState(
+                version: $version,
+                lifecycle: LifecycleState::Retired,
+                health: $health,
+            ),
+        ],
+    );
+
+    $encoded = (new RedisControlStateCodec)->encode($state);
+    $fieldIndex = array_search('g:1:health', $encoded, true);
+
+    if ($fieldIndex === false) {
+        throw new RuntimeException('Expected encoded health field.');
+    }
+
+    expect($encoded[$fieldIndex + 1])->toBe($token);
+})->with([
+    'healthy' => [HealthState::Healthy, 'healthy'],
+    'degraded' => [HealthState::Degraded, 'degraded'],
+    'stale' => [HealthState::Stale, 'stale'],
+    'unavailable' => [HealthState::Unavailable, 'unavailable'],
 ]);
 
 it('round trips every health token exactly', function (HealthState $health, string $token): void {
@@ -301,6 +367,22 @@ it('rejects non canonical positive decimal values', function (string $field, str
     'last allocated leading zero' => ['last_allocated_version', '01'],
     'candidate leading zero' => ['candidate_version', '01'],
 ]);
+
+it('rejects canonical looking decimals outside the platform integer range', function (): void {
+    $payload = redisControlCodecMinimalPayload();
+    $revisionIndex = array_search('revision', $payload, true);
+
+    if ($revisionIndex === false) {
+        throw new RuntimeException('Expected revision field.');
+    }
+
+    $payload[$revisionIndex + 1] = ((string) PHP_INT_MAX).'0';
+
+    expect(fn () => (new RedisControlStateCodec)->decode(
+        FilterName::fromString('products.sku'),
+        $payload,
+    ))->toThrow(FilterControlStateCorrupt::class);
+});
 
 it('rejects non canonical generation versions before semantic duplication is possible', function (): void {
     $payload = [
