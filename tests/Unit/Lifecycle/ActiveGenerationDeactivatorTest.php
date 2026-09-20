@@ -12,6 +12,30 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Lifecycle\ActiveGenerationDeactivator;
 
+function task5SeedDeactivationStore(
+    MemoryFilterControlStore $store,
+    FilterControlState $target,
+): void {
+    $targetRevision = $target->revision()->value();
+
+    for ($revision = 1; $revision <= $targetRevision; $revision++) {
+        $snapshot = new FilterControlState(
+            filterName: $target->filterName(),
+            revision: FilterStateRevision::fromInt($revision),
+            lastAllocatedVersion: $target->lastAllocatedVersion(),
+            activeVersion: $target->activeVersion(),
+            candidateVersion: $target->candidateVersion(),
+            generations: $target->generations(),
+        );
+
+        $store->compareAndSwap(
+            $target->filterName(),
+            $snapshot,
+            $revision === 1 ? null : FilterStateRevision::fromInt($revision - 1),
+        );
+    }
+}
+
 it('explicitly retires the current active generation without promoting the candidate', function (): void {
     $store = new MemoryFilterControlStore;
     $name = FilterName::fromString('products.sku');
@@ -36,7 +60,7 @@ it('explicitly retires the current active generation without promoting the candi
             ),
         ],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedDeactivationStore($store, $existing);
 
     $next = (new ActiveGenerationDeactivator($store))->deactivate($name);
 
@@ -61,7 +85,7 @@ it('rejects deactivation when there is no current active generation', function (
         candidateVersion: null,
         generations: [],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedDeactivationStore($store, $existing);
 
     expect(fn () => (new ActiveGenerationDeactivator($store))->deactivate($name))
         ->toThrow(InvalidArgumentException::class);
