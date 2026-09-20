@@ -93,3 +93,25 @@ it('returns no eligible generation when the active pointer is missing', function
 it('returns no eligible generation when control state is unavailable', function (): void {
     expect((new ActiveGenerationPolicy)->eligibleVersion(null))->toBeNull();
 });
+
+
+it('does not select an unpointed active healthy generation', function (): void {
+    $name = FilterName::fromString('products.sku');
+    $version = FilterVersion::fromInt(1);
+    $state = new FilterControlState(
+        filterName: $name,
+        revision: FilterStateRevision::fromInt(1),
+        lastAllocatedVersion: $version,
+        activeVersion: null,
+        candidateVersion: null,
+        generations: [
+            new GenerationControlState(
+                $version,
+                LifecycleState::Active,
+                HealthState::Healthy,
+            ),
+        ],
+    );
+
+    expect((new ActiveGenerationPolicy)->eligibleVersion($state))->toBeNull();
+});
