@@ -81,6 +81,18 @@ if not nextValid then
     return {'201'}
 end
 
+local requiredNextRevision = nil
+
+if expectedRevision == '' then
+    requiredNextRevision = '1'
+else
+    requiredNextRevision = incrementCanonicalPositiveInteger(expectedRevision)
+end
+
+if requiredNextRevision == nil or nextRevision ~= requiredNextRevision then
+    return {'202'}
+end
+
 redis.call('DEL', KEYS[1])
 redis.call('HSET', KEYS[1], unpack(nextFields))
 
@@ -116,6 +128,45 @@ local function isCanonicalPositiveInteger(value)
     end
 
     return true
+end
+
+local function incrementCanonicalPositiveInteger(value)
+    if not isCanonicalPositiveInteger(value) then
+        return nil
+    end
+
+    local maximum = '__PHP_INT_MAX__'
+
+    if value == maximum then
+        return nil
+    end
+
+    local digits = {}
+    local carry = 1
+
+    for index = string.len(value), 1, -1 do
+        local digit = string.byte(value, index) - 48 + carry
+
+        if digit >= 10 then
+            digits[index] = '0'
+            carry = 1
+        else
+            digits[index] = string.char(48 + digit)
+            carry = 0
+        end
+    end
+
+    local result = table.concat(digits)
+
+    if carry == 1 then
+        result = '1' .. result
+    end
+
+    if not isCanonicalPositiveInteger(result) then
+        return nil
+    end
+
+    return result
 end
 
 local function positiveIntegerLessThanOrEqual(left, right)
