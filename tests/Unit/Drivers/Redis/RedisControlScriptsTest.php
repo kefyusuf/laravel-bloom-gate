@@ -18,6 +18,20 @@ function redisControlScriptMarker(string $script, string $needle): int
     return $position;
 }
 
+function redisControlScriptLastMarker(string $script, string $needle): int
+{
+    $position = strrpos($script, $needle);
+
+    if ($position === false) {
+        throw new RuntimeException(sprintf(
+            'Expected Redis control script marker [%s].',
+            $needle,
+        ));
+    }
+
+    return $position;
+}
+
 it('uses one control key and no ttl primitives in read and cas scripts', function (string $script): void {
     expect($script)->toContain('KEYS[1]');
     expect($script)->not->toContain('KEYS[2]');
@@ -86,6 +100,16 @@ it('orders cas validation before every mutation', function (): void {
     expect($revisionCheck)->toBeLessThan($nextValidation);
     expect($nextValidation)->toBeLessThan($delete);
     expect($delete)->toBeLessThan($write);
+});
+
+it('places every cas failure return before the first mutation', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+    $lastConflict = redisControlScriptLastMarker($script, "return {'200'}");
+    $lastCorruption = redisControlScriptLastMarker($script, "return {'201'}");
+    $delete = redisControlScriptMarker($script, "redis.call('DEL', KEYS[1])");
+
+    expect($lastConflict)->toBeLessThan($delete);
+    expect($lastCorruption)->toBeLessThan($delete);
 });
 
 it('keeps lifecycle transition policy out of redis control scripts', function (string $script): void {
