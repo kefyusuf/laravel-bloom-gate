@@ -24,6 +24,8 @@ final readonly class RedisFilterControlStore implements FilterControlStore
 
     private const string STATUS_STORAGE_CORRUPT = '201';
 
+    private const string STATUS_INVALID_REVISION = '202';
+
     public function __construct(
         private RedisStructuredCommandExecutor $executor,
         private RedisKeyspace $keyspace,
@@ -78,18 +80,6 @@ final readonly class RedisFilterControlStore implements FilterControlStore
             );
         }
 
-        if ($expectedRevision === null) {
-            if ($next->revision()->value() !== 1) {
-                throw new InvalidArgumentException(
-                    'Initial control state revision must be 1.',
-                );
-            }
-        } elseif ($next->revision()->equals($expectedRevision->next()) === false) {
-            throw new InvalidArgumentException(
-                'Updated control state revision must advance exactly once.',
-            );
-        }
-
         $response = $this->evaluateStructured(
             RedisControlScripts::compareAndSwap(),
             [$this->keyspace->stateKey($name)],
@@ -112,6 +102,9 @@ final readonly class RedisFilterControlStore implements FilterControlStore
             ),
             self::STATUS_STORAGE_CORRUPT => throw new FilterControlStateCorrupt(
                 'Redis lifecycle control state storage is corrupt.',
+            ),
+            self::STATUS_INVALID_REVISION => throw new InvalidArgumentException(
+                'Redis lifecycle control state revision must advance exactly once.',
             ),
             default => throw $this->unexpectedReply('compareAndSwap', $response),
         };
