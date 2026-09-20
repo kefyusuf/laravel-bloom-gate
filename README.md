@@ -1,6 +1,6 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M4 lifecycle and verification is implemented and under review.
+> **Status:** pre-release — M4 lifecycle and verification is complete.
 
 Laravel Bloom Gate is being built as a production-safe probabilistic query gate for Laravel applications. Its eventual purpose is to let applications skip authoritative lookups only when every required runtime invariant establishes that a Bloom negative is safe to use.
 
@@ -104,7 +104,7 @@ Support claims are considered official only after automated compatibility eviden
 - **M1:** core semantic value objects — complete
 - **M2:** memory reference driver and contract suite — complete
 - **M3:** Redis foundation — complete
-- **M4:** lifecycle and verification — implementation complete, review pending
+- **M4:** lifecycle and verification — complete
 - **M5:** Laravel/Eloquent integration — requires a separate scope/design gate
 - **M6:** production hardening
 
