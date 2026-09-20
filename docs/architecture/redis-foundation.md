@@ -130,10 +130,16 @@ The original integer executor contract is unchanged.
 
 `RedisFilterControlStore` implements the same `FilterControlStore` contract as the Memory reference store.
 
-It stores one strict `control-v1` HASH per logical filter:
+It stores one strict durable `control-v1` HASH per logical filter:
 
 ```text
 <prefix>:{<filter-name>}:state
+```
+
+CAS replacement additionally uses a transient same-slot staging HASH:
+
+```text
+<prefix>:{<filter-name>}:state:staging
 ```
 
 ### Atomic control CAS
@@ -147,9 +153,13 @@ CAS validates, in order:
 3. expected revision/conflict;
 4. proposed strict `control-v1` state;
 5. proposed revision progression;
-6. HASH replacement.
+6. clears only the transient staging key;
+7. materializes the complete replacement into staging using bounded HSET chunks;
+8. atomically replaces the durable state with `RENAME staging -> state`.
 
-All failure returns occur before mutation.
+Semantic conflict/corruption/revision failures occur before staging mutation.
+
+The current durable `:state` key is never deleted before a complete replacement exists. Staging HSET/RENAME errors are handled through Redis `pcall`; staging is cleaned and the previous durable correctness snapshot remains intact.
 
 Private control-script statuses:
 
@@ -164,9 +174,9 @@ These codes are also private implementation protocol.
 
 The control scripts know storage shape and CAS semantics only. They do not encode lifecycle transition legality.
 
-They touch only the `:state` key and never mutate generation `:meta` / `:bf` keys.
+They touch only the control-plane `:state` and `:state:staging` keys and never mutate generation `:meta` / `:bf` keys.
 
-No TTL is assigned to the control HASH.
+No TTL is assigned to the durable control HASH. The staging key is transient and is consumed on success or explicitly cleaned on handled write/rename failure.
 
 ## Failure taxonomy
 
@@ -210,6 +220,7 @@ Executable evidence includes:
 - real Redis `FilterControlStoreContractTestCase`;
 - real two-writer CAS conflict proving the loser cannot overwrite the winner;
 - live wrong-type/malformed/unknown-field/unknown-format control corruption;
+- live 5,000-generation replacement proving bounded staged writes avoid the prior unbounded-unpack failure mode;
 - no-TTL checks after control create/update;
 - real Testbench + PhpRedis structured/integer EVAL execution;
 - Laravel 12 / PHP 8.3 and Laravel 13 / PHP 8.5 compatibility anchors;
