@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Kefyusuf\BloomGate\Contracts\Exception\FilterControlWriteConflict;
+use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
@@ -89,4 +91,57 @@ it('rejects deactivation when there is no current active generation', function (
 
     expect(fn () => (new ActiveGenerationDeactivator($store))->deactivate($name))
         ->toThrow(InvalidArgumentException::class);
+});
+
+
+it('performs only one cas attempt and surfaces a deactivation conflict', function (): void {
+    $name = FilterName::fromString('products.sku');
+    $active = FilterVersion::fromInt(1);
+    $current = new FilterControlState(
+        filterName: $name,
+        revision: FilterStateRevision::fromInt(3),
+        lastAllocatedVersion: $active,
+        activeVersion: $active,
+        candidateVersion: null,
+        generations: [
+            new GenerationControlState(
+                $active,
+                LifecycleState::Active,
+                HealthState::Healthy,
+            ),
+        ],
+    );
+
+    $store = new class($current) implements FilterControlStore
+    {
+        public int $writes = 0;
+
+        public function __construct(
+            private FilterControlState $current,
+        ) {}
+
+        public function read(FilterName $name): ?FilterControlState
+        {
+            if ($name->equals($this->current->filterName()) === false) {
+                return null;
+            }
+
+            return $this->current;
+        }
+
+        public function compareAndSwap(
+            FilterName $name,
+            FilterControlState $next,
+            ?FilterStateRevision $expectedRevision,
+        ): void {
+            $this->writes++;
+
+            throw new FilterControlWriteConflict('deactivation lost race');
+        }
+    };
+
+    expect(fn () => (new ActiveGenerationDeactivator($store))->deactivate($name))
+        ->toThrow(FilterControlWriteConflict::class, 'deactivation lost race');
+
+    expect($store->writes)->toBe(1);
 });
