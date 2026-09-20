@@ -11,11 +11,11 @@ use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingIlluminateRedisConnection;
 
 function makeLaravelRedisClientFailure(string $class): Throwable
 {
-    if (! class_exists($class, false)) {
+    if (class_exists($class, false) === false) {
         class_alias(FakeRedisClientException::class, $class);
     }
 
-    if (! is_a($class, Throwable::class, true)) {
+    if (is_a($class, Throwable::class, true) === false) {
         throw new LogicException(sprintf('Redis client failure class [%s] is not throwable.', $class));
     }
 
@@ -85,7 +85,6 @@ it('does not mask non-Redis programming or configuration failures', function ():
         expect($actual)->toBe($failure);
     }
 });
-
 
 it('implements both legacy and structured redis executor contracts', function (): void {
     $executor = new LaravelRedisCommandExecutor(
