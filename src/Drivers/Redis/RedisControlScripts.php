@@ -40,6 +40,31 @@ LUA;
     public static function compareAndSwap(): string
     {
         return self::validator()."\n".<<<'LUA'
+local WRITE_CHUNK_SIZE = 128
+
+local function writeHashFields(key, fields)
+    local chunk = {}
+    local chunkCount = 0
+
+    for index = 1, #fields do
+        chunkCount = chunkCount + 1
+        chunk[chunkCount] = fields[index]
+
+        if chunkCount == WRITE_CHUNK_SIZE or index == #fields then
+            local result = redis.pcall('HSET', key, unpack(chunk, 1, chunkCount))
+
+            if type(result) == 'table' and result.err ~= nil then
+                return false, result
+            end
+
+            chunk = {}
+            chunkCount = 0
+        end
+    end
+
+    return true, nil
+end
+
 local currentType = redis.call('TYPE', KEYS[1]).ok
 local expectedRevision = ARGV[1]
 local currentRevision = nil
@@ -93,8 +118,23 @@ if requiredNextRevision == nil or nextRevision ~= requiredNextRevision then
     return {'202'}
 end
 
-redis.call('DEL', KEYS[1])
-redis.call('HSET', KEYS[1], unpack(nextFields))
+redis.call('DEL', KEYS[2])
+
+local writeOk, writeFailure = writeHashFields(KEYS[2], nextFields)
+
+if not writeOk then
+    redis.call('DEL', KEYS[2])
+
+    return writeFailure
+end
+
+local renameResult = redis.pcall('RENAME', KEYS[2], KEYS[1])
+
+if type(renameResult) == 'table' and renameResult.err ~= nil then
+    redis.call('DEL', KEYS[2])
+
+    return renameResult
+end
 
 return {'100'}
 LUA;
