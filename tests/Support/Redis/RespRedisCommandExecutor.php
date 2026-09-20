@@ -226,7 +226,10 @@ final readonly class RespRedisCommandExecutor implements RedisStructuredCommandE
         $result = '';
 
         while (strlen($result) < $length) {
-            $chunk = fread($socket, $length - strlen($result));
+            $chunk = fread(
+                $socket,
+                max(1, $length - strlen($result)),
+            );
 
             if ($chunk === false || $chunk === '') {
                 throw new RedisCommandFailed('Redis closed the connection during a reply payload.');
