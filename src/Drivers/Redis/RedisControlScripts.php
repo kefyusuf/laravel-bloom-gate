@@ -67,7 +67,6 @@ end
 
 local currentType = redis.call('TYPE', KEYS[1]).ok
 local expectedRevision = ARGV[1]
-local currentRevision = nil
 
 if currentType ~= 'none' and currentType ~= 'hash' then
     return {'201'}
