@@ -32,17 +32,28 @@ function redisControlScriptLastMarker(string $script, string $needle): int
     return $position;
 }
 
-it('uses one control key and no ttl primitives in read and cas scripts', function (string $script): void {
+it('keeps control reads on the canonical state key without ttl primitives', function (): void {
+    $script = RedisControlScripts::read();
+
     expect($script)->toContain('KEYS[1]');
     expect($script)->not->toContain('KEYS[2]');
     expect($script)->not->toContain('EXPIRE');
     expect($script)->not->toContain('PEXPIRE');
     expect($script)->not->toContain('SETEX');
     expect($script)->not->toContain('PSETEX');
-})->with([
-    'read' => fn (): string => RedisControlScripts::read(),
-    'compare and swap' => fn (): string => RedisControlScripts::compareAndSwap(),
-]);
+});
+
+it('uses canonical state and same-slot staging keys for cas without ttl primitives', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+
+    expect($script)->toContain('KEYS[1]');
+    expect($script)->toContain('KEYS[2]');
+    expect($script)->not->toContain('KEYS[3]');
+    expect($script)->not->toContain('EXPIRE');
+    expect($script)->not->toContain('PEXPIRE');
+    expect($script)->not->toContain('SETEX');
+    expect($script)->not->toContain('PSETEX');
+});
 
 it('pins the private structured status tokens inside the scripts', function (): void {
     expect(RedisControlScripts::read())
@@ -72,7 +83,7 @@ it('validates read key type and strict hash shape before returning fields', func
     expect($validation)->toBeLessThan($success);
 });
 
-it('orders cas validation before every mutation', function (): void {
+it('materializes a complete staging hash before replacing current correctness state', function (): void {
     $script = RedisControlScripts::compareAndSwap();
 
     $typeCheck = redisControlScriptMarker($script, "redis.call('TYPE', KEYS[1]).ok");
@@ -89,18 +100,37 @@ it('orders cas validation before every mutation', function (): void {
         $script,
         'local nextValid, nextRevision = validateControlFields(nextFields)',
     );
-    $delete = redisControlScriptMarker($script, "redis.call('DEL', KEYS[1])");
-    $write = redisControlScriptMarker(
+    $stagingDelete = redisControlScriptMarker(
         $script,
-        "redis.call('HSET', KEYS[1], unpack(nextFields))",
+        "redis.call('DEL', KEYS[2])",
+    );
+    $stagingWrite = redisControlScriptMarker(
+        $script,
+        'local writeOk, writeFailure = writeHashFields(KEYS[2], nextFields)',
+    );
+    $rename = redisControlScriptMarker(
+        $script,
+        "redis.pcall('RENAME', KEYS[2], KEYS[1])",
     );
 
     expect($typeCheck)->toBeLessThan($existingRead);
     expect($existingRead)->toBeLessThan($existingValidation);
     expect($existingValidation)->toBeLessThan($revisionCheck);
     expect($revisionCheck)->toBeLessThan($nextValidation);
-    expect($nextValidation)->toBeLessThan($delete);
-    expect($delete)->toBeLessThan($write);
+    expect($nextValidation)->toBeLessThan($stagingDelete);
+    expect($stagingDelete)->toBeLessThan($stagingWrite);
+    expect($stagingWrite)->toBeLessThan($rename);
+
+    expect($script)->not->toContain("redis.call('DEL', KEYS[1])");
+    expect($script)->not->toContain('unpack(nextFields)');
+});
+
+it('bounds hset unpack calls while materializing the staging hash', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+
+    expect($script)->toContain('local WRITE_CHUNK_SIZE = 128');
+    expect($script)->toContain("redis.pcall('HSET', key, unpack(chunk, 1, chunkCount))");
+    expect($script)->not->toContain('unpack(nextFields)');
 });
 
 it('checks storage conflict before proposed revision progression', function (): void {
@@ -128,16 +158,25 @@ it('checks storage conflict before proposed revision progression', function (): 
     expect($nextRevisionIncrement)->toBeLessThan($nextRevisionCheck);
 });
 
-it('places every cas failure return before the first mutation', function (): void {
+it('places semantic cas failures before the first staging mutation', function (): void {
     $script = RedisControlScripts::compareAndSwap();
     $lastConflict = redisControlScriptLastMarker($script, "return {'200'}");
     $lastCorruption = redisControlScriptLastMarker($script, "return {'201'}");
     $lastInvalidRevision = redisControlScriptLastMarker($script, "return {'202'}");
-    $delete = redisControlScriptMarker($script, "redis.call('DEL', KEYS[1])");
+    $stagingDelete = redisControlScriptMarker($script, "redis.call('DEL', KEYS[2])");
 
-    expect($lastConflict)->toBeLessThan($delete);
-    expect($lastCorruption)->toBeLessThan($delete);
-    expect($lastInvalidRevision)->toBeLessThan($delete);
+    expect($lastConflict)->toBeLessThan($stagingDelete);
+    expect($lastCorruption)->toBeLessThan($stagingDelete);
+    expect($lastInvalidRevision)->toBeLessThan($stagingDelete);
+});
+
+it('cleans staging on staged write or rename failure before returning the redis error', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+
+    expect($script)->toContain('if not writeOk then');
+    expect($script)->toContain('return writeFailure');
+    expect($script)->toContain('if type(renameResult) == \'table\' and renameResult.err ~= nil then');
+    expect($script)->toContain('return renameResult');
 });
 
 it('keeps lifecycle transition policy out of redis control scripts', function (string $script): void {
