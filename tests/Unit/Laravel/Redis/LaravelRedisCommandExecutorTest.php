@@ -136,10 +136,10 @@ it('rejects unexpected structured eval reply shapes', function (mixed $reply): v
 })->with([
     'scalar integer' => 1,
     'scalar string' => 'control-v1',
-    'associative array' => ['format' => 'control-v1'],
-    'integer member' => ['control-v1', 1],
-    'nested member' => ['control-v1', ['revision']],
-    'null member' => ['control-v1', null],
+    'associative array' => [['format' => 'control-v1']],
+    'integer member' => [['control-v1', 1]],
+    'nested member' => [['control-v1', ['revision']]],
+    'null member' => [['control-v1', null]],
 ]);
 
 it('normalizes supported redis client failures for structured eval', function (string $class): void {
