@@ -42,3 +42,4 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 ### Fixed
 
 - Redis control-store CAS precedence now resolves missing/stale expected-revision conflicts before proposed revision-progression validation, matching the Memory reference contract.
+- Redis control-state replacement now stages bounded HASH writes and swaps them into place only after full materialization, preventing large-snapshot Lua `unpack` failures from deleting the previous correctness snapshot.
