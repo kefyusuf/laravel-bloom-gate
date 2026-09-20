@@ -43,12 +43,36 @@ function task5PromotionState(
     );
 }
 
+function task5SeedPromotionStore(
+    MemoryFilterControlStore $store,
+    FilterControlState $target,
+): void {
+    $targetRevision = $target->revision()->value();
+
+    for ($revision = 1; $revision <= $targetRevision; $revision++) {
+        $snapshot = new FilterControlState(
+            filterName: $target->filterName(),
+            revision: FilterStateRevision::fromInt($revision),
+            lastAllocatedVersion: $target->lastAllocatedVersion(),
+            activeVersion: $target->activeVersion(),
+            candidateVersion: $target->candidateVersion(),
+            generations: $target->generations(),
+        );
+
+        $store->compareAndSwap(
+            $target->filterName(),
+            $snapshot,
+            $revision === 1 ? null : FilterStateRevision::fromInt($revision - 1),
+        );
+    }
+}
+
 it('promotes the exact verified healthy candidate and retires the prior active generation', function (): void {
     $store = new MemoryFilterControlStore;
     $name = FilterName::fromString('products.sku');
     $candidate = FilterVersion::fromInt(2);
     $existing = task5PromotionState($name, $candidate);
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     $next = (new CandidatePromoter($store))->promote($name, $candidate);
 
@@ -82,7 +106,7 @@ it('promotes a verified healthy candidate when there is no prior active generati
             ),
         ],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     $next = (new CandidatePromoter($store))->promote($name, $candidate);
 
@@ -103,7 +127,7 @@ it('rejects promotion when there is no candidate', function (): void {
         candidateVersion: null,
         generations: [],
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     expect(fn () => (new CandidatePromoter($store))->promote($name, $version))
         ->toThrow(InvalidArgumentException::class);
@@ -114,7 +138,7 @@ it('rejects promotion when the requested candidate version differs', function ()
     $name = FilterName::fromString('products.sku');
     $candidate = FilterVersion::fromInt(2);
     $existing = task5PromotionState($name, $candidate);
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     expect(fn () => (new CandidatePromoter($store))->promote(
         $name,
@@ -132,7 +156,7 @@ it('rejects promotion unless the candidate is verified', function (LifecycleStat
         $lifecycle,
         HealthState::Healthy,
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     expect(fn () => (new CandidatePromoter($store))->promote($name, $candidate))
         ->toThrow(InvalidArgumentException::class);
@@ -152,7 +176,7 @@ it('rejects promotion unless the verified candidate is healthy', function (Healt
         LifecycleState::Verified,
         $health,
     );
-    $store->compareAndSwap($name, $existing, null);
+    task5SeedPromotionStore($store, $existing);
 
     expect(fn () => (new CandidatePromoter($store))->promote($name, $candidate))
         ->toThrow(InvalidArgumentException::class);
