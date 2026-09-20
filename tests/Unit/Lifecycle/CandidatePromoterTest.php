@@ -201,6 +201,10 @@ it('performs only one cas attempt and does not hide a promotion conflict', funct
 
         public function read(FilterName $name): ?FilterControlState
         {
+            if ($name->equals($this->current->filterName()) === false) {
+                return null;
+            }
+
             return $this->current;
         }
 
