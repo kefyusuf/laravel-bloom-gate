@@ -80,9 +80,9 @@ destroy -> provision
 
 That low-level primitive does not authorize destructive in-place rebuild of an M4-managed generation. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
 
-## M4 control-plane key
+## M4 control-plane keys
 
-Each logical filter owns one current control-state key:
+Each logical filter owns one **durable current correctness-state** key:
 
 ```text
 <prefix>:{<filter-name>}:state
@@ -94,15 +94,24 @@ Example:
 lbg:{products.sku}:state
 ```
 
-The control key shares the same logical-filter hash tag as the generation keys:
+Redis CAS also uses one implementation-only staging key while materializing a replacement snapshot:
+
+```text
+<prefix>:{<filter-name>}:state:staging
+```
+
+The staging key is not a second source of truth. It exists only during a CAS replacement, is written completely before the durable state is replaced, and is consumed by `RENAME` on success.
+
+Both control keys share the same logical-filter hash tag as the generation keys:
 
 ```text
 lbg:{products.sku}:state
+lbg:{products.sku}:state:staging
 lbg:{products.sku}:v:1:meta
 lbg:{products.sku}:v:1:bf
 ```
 
-No separate `:active` or `:candidate` Redis key exists in M4. Those pointers are fields inside the single revisioned control HASH.
+No separate `:active` or `:candidate` Redis key exists in M4. Those pointers remain fields inside the single durable revisioned control HASH.
 
 ## control-v1
 
@@ -161,7 +170,7 @@ The codec also rejects:
 - unknown lifecycle/health tokens;
 - decoded snapshots that violate Core control-state invariants.
 
-The control state has no TTL.
+The durable control state has no TTL. The package also assigns no TTL to the transient staging key; successful CAS consumes it with `RENAME`, while handled staging-write/rename failures explicitly delete it.
 
 ## Prefix grammar
 
