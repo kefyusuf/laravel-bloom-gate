@@ -82,7 +82,10 @@ final readonly class RedisFilterControlStore implements FilterControlStore
 
         $response = $this->evaluateStructured(
             RedisControlScripts::compareAndSwap(),
-            [$this->keyspace->stateKey($name)],
+            [
+                $this->keyspace->stateKey($name),
+                $this->keyspace->stateStagingKey($name),
+            ],
             [
                 $expectedRevision === null
                     ? ''
