@@ -67,7 +67,11 @@ it('builds the canonical control state key with the same logical filter hash tag
 
     expect($keyspace->stateKey($name))
         ->toBe('lbg:{products.sku}:state')
+        ->and($keyspace->stateStagingKey($name))
+        ->toBe('lbg:{products.sku}:state:staging')
         ->and($keyspace->stateKey($name))
+        ->toContain('{products.sku}')
+        ->and($keyspace->stateStagingKey($name))
         ->toContain('{products.sku}')
         ->and($keyspace->metaKey($name, $version))
         ->toContain('{products.sku}')
