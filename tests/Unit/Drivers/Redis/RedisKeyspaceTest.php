@@ -59,3 +59,30 @@ it('rejects unsafe redis key prefixes', function (string $prefix): void {
     'unicode' => 'ürün',
     'too long' => str_repeat('a', 65),
 ])->throws(InvalidArgumentException::class);
+
+
+it('builds the canonical control state key with the same logical filter hash tag', function (): void {
+    $keyspace = RedisKeyspace::fromPrefix('lbg');
+    $name = FilterName::fromString('products.sku');
+    $version = FilterVersion::fromInt(9);
+
+    expect($keyspace->stateKey($name))
+        ->toBe('lbg:{products.sku}:state')
+        ->and($keyspace->stateKey($name))
+        ->toContain('{products.sku}')
+        ->and($keyspace->metaKey($name, $version))
+        ->toContain('{products.sku}')
+        ->and($keyspace->bitmapKey($name, $version))
+        ->toContain('{products.sku}');
+});
+
+it('keeps existing generation key bytes unchanged when control state keys are introduced', function (): void {
+    $keyspace = RedisKeyspace::fromPrefix('lbg');
+    $name = FilterName::fromString('products.sku');
+    $version = FilterVersion::fromInt(42);
+
+    expect($keyspace->metaKey($name, $version))
+        ->toBe('lbg:{products.sku}:v:42:meta')
+        ->and($keyspace->bitmapKey($name, $version))
+        ->toBe('lbg:{products.sku}:v:42:bf');
+});
