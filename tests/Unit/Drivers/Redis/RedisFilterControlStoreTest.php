@@ -117,7 +117,11 @@ it('maps redis transport failures to control store operational failures', functi
 });
 
 it('rejects unexpected read statuses as protocol errors', function (array $response): void {
-    $executor = new RecordingRedisStructuredCommandExecutor([$response]);
+    $normalizedResponse = array_map(
+        static fn (mixed $value): string => (string) $value,
+        array_values($response),
+    );
+    $executor = new RecordingRedisStructuredCommandExecutor([$normalizedResponse]);
 
     expect(fn () => makeRedisControlStore($executor)->read(redisControlStoreName()))
         ->toThrow(UnexpectedValueException::class);
@@ -219,7 +223,11 @@ it('maps redis cas transport failures to control store operational failures', fu
 });
 
 it('rejects unexpected cas reply shapes as protocol errors', function (array $response): void {
-    $executor = new RecordingRedisStructuredCommandExecutor([$response]);
+    $normalizedResponse = array_map(
+        static fn (mixed $value): string => (string) $value,
+        array_values($response),
+    );
+    $executor = new RecordingRedisStructuredCommandExecutor([$normalizedResponse]);
 
     expect(fn () => makeRedisControlStore($executor)->compareAndSwap(
         redisControlStoreName(),
