@@ -155,6 +155,22 @@ it('propagates bloom storage corruption without converting it to a result', func
     ))->toThrow(BloomStorageCorrupt::class, 'corrupt bitmap metadata');
 });
 
+it('does not implicitly normalize raw application values', function (): void {
+    $name = FilterName::fromString('products.sku');
+    $version = FilterVersion::fromInt(1);
+    $layout = activationVerificationLayout();
+
+    expect(fn () => (new ActivationVerifier(
+        new BloomProbeGenerator,
+        new MemoryBloomDriver,
+    ))->verify(
+        $name,
+        $version,
+        $layout,
+        ['raw-value'],
+    ))->toThrow(TypeError::class);
+});
+
 it('accepts normalized values only and exposes no sampling control', function (): void {
     $method = new ReflectionMethod(ActivationVerifier::class, 'verify');
 
