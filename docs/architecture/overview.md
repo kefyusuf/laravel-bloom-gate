@@ -51,7 +51,7 @@ destroy -> provision
 
 remains available for low-level storage recovery and direct driver use.
 
-For M4-managed generations, however, rebuilds are versioned. A managed generation is not destructively rebuilt or reused in place.
+For M4-managed generations, a managed version is not destructively rebuilt or reused in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
 
 ## Control plane
 
