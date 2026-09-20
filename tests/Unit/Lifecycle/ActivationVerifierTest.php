@@ -156,17 +156,17 @@ it('propagates bloom storage corruption without converting it to a result', func
 });
 
 it('does not implicitly normalize raw application values', function (): void {
-    $name = FilterName::fromString('products.sku');
-    $version = FilterVersion::fromInt(1);
-    $layout = activationVerificationLayout();
-
-    expect(fn () => (new ActivationVerifier(
+    $verifier = new ActivationVerifier(
         new BloomProbeGenerator,
         new MemoryBloomDriver,
-    ))->verify(
-        $name,
-        $version,
-        $layout,
+    );
+    $method = new ReflectionMethod($verifier, 'verify');
+
+    expect(fn () => $method->invoke(
+        $verifier,
+        FilterName::fromString('products.sku'),
+        FilterVersion::fromInt(1),
+        activationVerificationLayout(),
         ['raw-value'],
     ))->toThrow(TypeError::class);
 });
