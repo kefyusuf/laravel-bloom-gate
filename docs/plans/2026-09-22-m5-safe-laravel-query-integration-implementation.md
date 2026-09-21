@@ -1501,8 +1501,10 @@ The resolver composes:
 
 ```text
 ActiveGenerationSnapshotReader
-BloomGenerationInspector / GenerationContractStore
+GenerationContractStore
 ```
+
+`BloomGenerationInspector` is a supporting capability used by managed-generation store implementations (not a second query-time metadata read). `GenerationContractStore::read()` returns the exact provisioned layout plus semantic binding in one managed descriptor.
 
 A descriptor contains at minimum:
 
