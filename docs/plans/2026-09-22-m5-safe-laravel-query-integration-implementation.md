@@ -1532,23 +1532,31 @@ Provide the M5 write-side primitive without taking ownership of DB transactions.
 
 For a registered filter:
 
-- if no active generation exists, add may be a documented no-op/not-required path because no trusted-negative active generation can be served;
-- if an active managed generation exists, M5 must require current definition fingerprints to match generation fingerprints before mutating Bloom state;
-- for active managed `preadd-v1`, add/addMany must succeed before caller commits authoritative membership entry;
+- query optimization enablement and active-generation synchronization are separate concerns;
+- `bloom-gate.enabled=false` or a per-filter query-optimization disable must **not** silently stop synchronization of an already-active managed generation;
+- if no active generation exists, `add/addMany` are explicit no-op/not-required operations because no trusted-negative active generation can be served; the void API remains unambiguous because success means "no synchronization failure requiring caller rollback";
+- if an active managed generation exists, M5 resolves that generation's managed descriptor/layout and requires current definition fingerprints to match before mutation;
+- the current active generation may still be synchronized while query optimization is bypassed for health/enablement reasons; synchronization itself must never mark it healthy or query-safe;
+- for active managed `preadd-v1`, `add/addMany` must succeed before caller commits authoritative membership entry;
+- semantic mismatch is a hard synchronization/configuration error for write-side `preadd-v1`; it must not silently no-op because a later config rollback could otherwise resurrect an unsafe old generation;
 - operational write failure must propagate so caller can abort its DB transaction;
 - no silent deferred synchronization;
-- no Eloquent observer requirement.
+- no Eloquent observer requirement;
+- M5 never dual-writes a candidate generation.
 
-Exact no-active return semantics must be pinned by tests before implementation; do not introduce an ambiguous boolean.
+Semantic-definition changes for a mutable pre-add filter therefore require an explicit deployment/rebuild/quiescent cutover rather than opportunistic rolling write behavior.
 
 ## RED first
 
 Prove:
 
 - same normalizer as query/build;
-- active generation only;
-- semantic mismatch prevents write;
-- layout generation deterministic;
+- no active generation -> successful no-op with no Bloom mutation;
+- global query optimization disabled + active generation -> synchronization still occurs;
+- per-filter query optimization disabled + active generation -> synchronization still occurs;
+- active generation descriptor supplies the exact layout;
+- semantic mismatch prevents write and propagates before caller DB commit;
+- non-healthy active generation synchronization does not implicitly change health;
 - add success is retry-safe;
 - addMany uses bounded bulk capability;
 - active Bloom operation failure propagates;
@@ -2047,7 +2055,7 @@ Promotion cannot rely solely on old verification evidence for mutable pre-add fi
 
 ### INV-M5-010 — Pre-add ordering is explicit
 
-For `preadd-v1`, Bloom synchronization precedes authoritative membership commit.
+For `preadd-v1`, Bloom synchronization precedes authoritative membership commit. Query-optimization disablement does not silently suspend synchronization of an already-active managed generation.
 
 ### INV-M5-011 — Package does not own application DB transactions
 
