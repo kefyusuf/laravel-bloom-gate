@@ -1495,6 +1495,8 @@ Confirm:
 
 Provide the M5 production decision point without dynamic/undeclared Redis key access.
 
+The Redis authorized-probe implementation is constructed with the validated operator `trusted_negative_profile`. If that declaration is absent or not the recognized M5 profile, the Redis path returns a stable bypass result before attempting a trusted-negative EVAL.
+
 Redis scripts must receive every key they access through `KEYS[]`. The active version is stored inside `control-v1`, so M5 must **not** construct/access a generation key dynamically inside Lua after discovering the version. That would undermine the Cluster-aware key discipline reserved since ADR-0021.
 
 Therefore the production flow is:
@@ -1588,6 +1590,9 @@ Do not access Redis keys that were not supplied through `KEYS[]`.
 
 Unit/script tests must prove:
 
+- missing trusted-negative profile declaration -> bypass without trusted-negative EVAL;
+- unsupported profile declaration cannot authorize a negative;
+- recognized `standalone-primary-durable-v1` permits the Redis authorization path;
 - all accessed keys are explicit script keys;
 - pinned revision mismatch -> bypass;
 - pinned active-version mismatch -> bypass;
@@ -1608,7 +1613,11 @@ Unit/script tests must prove:
 - absent only after all authorization checks pass;
 - script mutates no key.
 
-Real Redis tests must verify the final authorization+membership decision is one EVAL invocation after descriptor preparation.
+Real Redis tests must verify:
+
+- active-generation snapshot preparation is bounded and does not `HGETALL` the complete retained-generation state;
+- the final authorization+membership decision is one EVAL invocation after descriptor preparation;
+- query authorization remains bounded with a large retained-generation control snapshot.
 
 ## Commit
 
@@ -1621,7 +1630,7 @@ feat(redis): add revision-pinned authorized bloom probe
 Confirm:
 
 - no dynamic/undeclared generation key access;
-- no INFO/ROLE/admin calls on the hot path;
+- profile assertion is configuration-only on the hot path; no INFO/ROLE/CONFIG/admin calls occur there;
 - same-slot construction preserved;
 - no Redis Cluster runtime-support claim introduced;
 - any future descriptor cache can only affect performance, never final EVAL validation.
@@ -1667,6 +1676,7 @@ Prove:
 - current filter sizing config is never substituted for an already-active generation layout;
 - global disabled -> bypass + authoritative lookup;
 - filter disabled -> bypass + authoritative lookup;
+- Redis trusted-negative profile unasserted -> bypass + authoritative lookup without running Redis trusted-negative EVAL;
 - safe negative -> authoritative lookup not called;
 - maybe -> authoritative lookup called exactly once;
 - bypass -> authoritative lookup called exactly once;
