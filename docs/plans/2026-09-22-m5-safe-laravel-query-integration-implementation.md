@@ -357,13 +357,16 @@ Arbitrary custom consistency protocols are deferred.
 
 ## 9. Generation semantic compatibility
 
-Each managed `FilterName + FilterVersion` generation binds immutable fingerprints for:
+Each managed `FilterName + FilterVersion` generation has a query/build descriptor composed from the already-provisioned `BloomLayout` plus immutable fingerprints for:
 
 ```text
+BloomLayout
 normalization semantics
 authoritative-set semantics
 consistency-contract semantics
 ```
+
+The layout remains owned by the existing M3 generation metadata; M5 must not persist a second divergent copy. M5 descriptor reads reconstruct the layout from the canonical M3 metadata and combine it with the bound semantic fingerprints.
 
 Recommended metadata field names:
 
@@ -792,17 +795,20 @@ GenerationContractStore
 Required behavior:
 
 ```text
-read(name, version)
-bind(name, version, contract)
+read(name, version) -> managed generation descriptor or unbound
+bind(name, version, expected layout, semantic contract)
 ```
 
-The contract contains:
+The returned managed generation descriptor contains:
 
 ```text
+BloomLayout reconstructed/validated from canonical generation storage
 normalization fingerprint
 authoritative-set fingerprint
 consistency fingerprint
 ```
+
+The bind operation receives the expected layout only to prove it matches the already-provisioned M3 generation metadata; it must not persist a second layout representation.
 
 ## Memory reference implementation
 
@@ -813,7 +819,9 @@ Create a deterministic Memory implementation and shared contract suite.
 Prove:
 
 - missing binding returns explicit absence;
-- first bind succeeds only for an existing/provisioned managed generation according to the chosen boundary;
+- first bind succeeds only for an existing/provisioned managed generation;
+- bind rejects an expected layout that differs from the provisioned M3 layout;
+- read reconstructs the exact provisioned layout together with semantic fingerprints;
 - repeated equal bind is idempotent;
 - different rebind conflicts;
 - sibling versions remain independent;
@@ -950,19 +958,41 @@ Confirm:
 
 ---
 
-# Task 7 — explicit generation health updater
+# Task 7 — persisted lifecycle transitioner + explicit generation health updater
 
 ## Goal
 
-Provide the missing framework-neutral M4-compatible primitive needed by managed build/verification.
+Provide the missing framework-neutral M4-compatible state-mutation primitives needed by managed build/verification.
 
-## Expected responsibility
+M4 already owns `LifecycleTransitionPolicy`, but it intentionally does not persist a legal generic transition. M5 must not duplicate snapshot reconstruction/CAS logic inside every Application workflow.
 
-Create a Lifecycle service such as:
+## Expected responsibilities
+
+Create focused Lifecycle services such as:
 
 ```text
+GenerationLifecycleTransitioner
 GenerationHealthUpdater
 ```
+
+### GenerationLifecycleTransitioner
+
+Behavior:
+
+- read current control state;
+- find exact tracked generation;
+- delegate legality to the existing `LifecycleTransitionPolicy`;
+- replace only that generation lifecycle;
+- preserve health;
+- preserve active/candidate pointers unless the requested generic M4 transition itself is incompatible with current control invariants;
+- revision +1;
+- one CAS attempt;
+- surface CAS conflict;
+- no hidden retry loop.
+
+It must **not** expose `SHADOW -> VERIFIED` or `VERIFIED -> ACTIVE`; those remain evidence/promotion-only workflows.
+
+### GenerationHealthUpdater
 
 Behavior:
 
@@ -970,6 +1000,7 @@ Behavior:
 - find exact tracked generation;
 - replace health only;
 - preserve lifecycle;
+- preserve active/candidate pointers;
 - revision +1;
 - one CAS attempt;
 - surface CAS conflict;
@@ -977,26 +1008,29 @@ Behavior:
 
 ## RED first
 
-Prove:
+Prove for both services:
 
 - exact generation required;
+- legal generic lifecycle transitions use the existing policy;
+- illegal/evidence-only/promotion-only lifecycle transitions are rejected;
+- lifecycle-only update preserves health;
 - health-only update preserves lifecycle;
-- update preserves active/candidate pointers;
-- update preserves sibling generations;
+- sibling generations preserved;
+- pointers preserved;
 - revision increments exactly once;
 - stale CAS conflicts;
 - no driver method is called;
-- no lifecycle transition occurs implicitly.
+- neither service silently retries.
 
 ## Commit
 
 ```text
-feat(lifecycle): add explicit generation health updates
+feat(lifecycle): add persisted lifecycle and health updates
 ```
 
 ## Self-review
 
-Confirm ADR-0018 orthogonality remains intact.
+Confirm ADR-0018 orthogonality and M4 evidence/promotion exclusivity remain intact.
 
 ---
 
@@ -1083,14 +1117,14 @@ ManagedFilterBuilder
 resolve registered definition
 validate sizing
 allocate candidate
-CONFIGURED -> BUILDING
+CONFIGURED -> BUILDING through persisted Lifecycle transitioner
 provision layout
 bind semantic contract
 stream authoritative values
 normalize
 bounded bulk add
-health -> HEALTHY
-BUILDING -> SHADOW
+health -> HEALTHY through explicit health updater
+BUILDING -> SHADOW through persisted Lifecycle transitioner
 ```
 
 Important correction:
@@ -1200,13 +1234,46 @@ Confirm:
 
 ---
 
-# Task 11 — authorized probe contract and Memory reference behavior
+# Task 11 — query safety descriptor resolution + authorized probe contract
 
 ## Goal
 
-Separate package-facing query authorization from raw `BloomDriver::mightContain`.
+Separate package-facing query authorization from raw `BloomDriver::mightContain` while preserving Core ownership of probe generation.
 
-## Contract
+A query cannot generate `BitPositions` until it knows the exact active generation `BloomLayout`. That layout is generation-scoped and must not be inferred from current config because config may have changed before a rebuild.
+
+## Framework-neutral query preparation
+
+Create a focused resolver/value such as:
+
+```text
+QuerySafetyDescriptorResolver
+QuerySafetyDescriptor
+```
+
+The resolver composes existing ports:
+
+```text
+FilterControlStore
+GenerationContractStore
+ActiveGenerationPolicy
+```
+
+A descriptor contains at minimum:
+
+```text
+FilterName
+pinned FilterStateRevision
+expected active FilterVersion
+BloomLayout
+normalization fingerprint
+authoritative-set fingerprint
+consistency fingerprint
+```
+
+Descriptor resolution must fail open when active/control/generation metadata is missing or unsafe.
+
+## Authorized probe contract
 
 Create a framework-neutral port/result such as:
 
@@ -1214,6 +1281,16 @@ Create a framework-neutral port/result such as:
 AuthorizedProbe
 AuthorizedProbeResult
 ```
+
+The probe request receives:
+
+- pinned control revision;
+- expected active version;
+- exact managed generation descriptor/layout;
+- layout-bound `BitPositions`;
+- expected semantic fingerprints.
+
+It must not receive raw application values.
 
 Semantic outcomes:
 
@@ -1223,19 +1300,11 @@ MaybePresent
 Bypassed + BypassReason
 ```
 
-The port receives:
-
-- FilterName;
-- normalized probe positions/layout;
-- expected semantic fingerprints.
-
-It must not receive raw application values.
-
 ## Memory/reference implementation
 
-Implement a deterministic reference path using current control store, generation-contract store, and Memory Bloom driver.
+Implement deterministic reference behavior using current control store, generation-contract store, and Memory Bloom driver.
 
-Reference implementation may use optimistic read/probe/revalidation semantics; it exists to pin behavior, not production latency.
+The reference path may use optimistic read/probe/revalidation semantics; it exists to pin correctness behavior, not Redis command count.
 
 ## RED first
 
@@ -1243,11 +1312,12 @@ Prove:
 
 - missing control state -> bypass;
 - no active version -> bypass;
-- non-ACTIVE active pointer cannot authorize;
-- non-HEALTHY active generation -> bypass;
+- non-ACTIVE/non-HEALTHY generation -> bypass;
 - missing semantic binding -> bypass;
+- descriptor layout comes from the managed generation, never current sizing config;
 - fingerprint mismatch -> bypass;
-- missing/corrupt Bloom storage -> bypass only when mapped from known operational safety failures;
+- control revision/active version change between preparation and final probe -> bypass;
+- missing/corrupt Bloom storage -> never becomes absent;
 - MaybePresent remains MaybePresent;
 - safe negative becomes DefinitelyAbsent;
 - configuration/programming failures are not swallowed.
@@ -1255,7 +1325,7 @@ Prove:
 ## Commit
 
 ```text
-feat(application): add authorized bloom probe contract
+feat(application): add query safety descriptors and authorized probe contract
 ```
 
 ## Self-review
@@ -1263,29 +1333,53 @@ feat(application): add authorized bloom probe contract
 Confirm:
 
 - Membership alone still does not authorize lookup skipping outside this gate;
-- raw BloomDriver remains low-level and unchanged.
+- raw `BloomDriver` remains low-level and unchanged;
+- query position generation continues to use Core `BloomProbeGenerator`.
 
 ---
 
-# Task 12 — atomic Redis authorized probe
+# Task 12 — revision-pinned atomic Redis authorized probe
 
 ## Goal
 
-Provide the M5 production hot path in one Redis EVAL serialization point.
+Provide the M5 production decision point without dynamic/undeclared Redis key access.
 
-## Required Redis inputs
+Redis scripts must receive every key they access through `KEYS[]`. The active version is stored inside `control-v1`, so M5 must **not** construct/access a generation key dynamically inside Lua after discovering the version. That would undermine the Cluster-aware key discipline reserved since ADR-0021.
 
-The script must use same-filter same-slot keys:
+Therefore the production flow is:
 
 ```text
-control :state
-generation :meta
-generation :bf
+resolve QuerySafetyDescriptor
+    -> pinned revision R, active version V, layout L
+generate BitPositions in PHP/Core
+    ->
+one atomic Redis authorization+probe EVAL using:
+    state key
+    meta(V) key
+    bitmap(V) key
 ```
 
-The query operation must receive expected runtime:
+The EVAL is the final trusted-negative serialization point. No post-probe revalidation is required because it revalidates the pinned state and probes membership atomically.
+
+This is **not** a promise that the entire cold query path is one Redis round-trip. Correctness takes priority over dynamic undeclared keys. Future measured descriptor caching may reduce steady-state metadata reads only if the final EVAL continues to revalidate every cached revision/version/descriptor assumption.
+
+## Required Redis keys
+
+All keys are known before EVAL and share the logical-filter hash tag:
 
 ```text
+<prefix>:{<filter-name>}:state
+<prefix>:{<filter-name>}:v:<expected-version>:meta
+<prefix>:{<filter-name>}:v:<expected-version>:bf
+```
+
+## Required arguments
+
+The operation receives expected:
+
+```text
+FilterStateRevision
+active FilterVersion
 normalization fingerprint
 authoritative-set fingerprint
 consistency fingerprint
@@ -1297,17 +1391,18 @@ bit positions
 
 Within one Lua operation:
 
-1. read and strictly validate current `control-v1`;
-2. resolve current active version;
-3. require tracked lifecycle ACTIVE;
-4. require tracked health HEALTHY;
-5. read generation metadata for the exact active version;
-6. validate M3 storage format/layout;
-7. require all three M5 semantic fingerprints;
-8. compare expected fingerprints exactly;
-9. validate bitmap type/presence semantics;
-10. read all requested bits;
-11. return one structured semantic result.
+1. strictly validate current `control-v1`;
+2. require current revision == expected pinned revision;
+3. require current active version == expected version;
+4. require tracked expected version lifecycle ACTIVE;
+5. require tracked expected version health HEALTHY;
+6. validate the supplied generation metadata key is the expected version's canonical M3 storage;
+7. validate M3 storage format/layout;
+8. require all three M5 semantic fingerprints;
+9. compare expected fingerprints exactly;
+10. validate bitmap type/presence semantics;
+11. read all requested bits;
+12. return one structured semantic result.
 
 Result protocol:
 
@@ -1321,13 +1416,17 @@ Use the existing structured Redis executor where appropriate.
 
 Do not create a second lax `control-v1` parser. Extract/reuse strict validation fragments if necessary so control semantics cannot drift between CAS and query scripts.
 
+Do not access Redis keys that were not supplied through `KEYS[]`.
+
 ## RED first
 
 Unit/script tests must prove:
 
+- all accessed keys are explicit script keys;
+- pinned revision mismatch -> bypass;
+- pinned active-version mismatch -> bypass;
 - validation-before-membership decision;
 - ACTIVE + HEALTHY only;
-- exact active version resolution;
 - old unbound generation -> bypass;
 - each fingerprint mismatch -> distinct stable bypass reason;
 - corrupt control state -> never absent;
@@ -1338,24 +1437,25 @@ Unit/script tests must prove:
 - valid empty provisioned bitmap semantics remain correct;
 - maybe result only when all bits set;
 - absent only after all authorization checks pass;
-- script touches no DB and mutates no key.
+- script mutates no key.
 
-Real Redis tests must verify one EVAL invocation for one query-side authorized probe.
+Real Redis tests must verify the final authorization+membership decision is one EVAL invocation after descriptor preparation.
 
 ## Commit
 
 ```text
-feat(redis): add atomic authorized bloom probe
+feat(redis): add revision-pinned authorized bloom probe
 ```
 
 ## Self-review
 
 Confirm:
 
-- one Redis round-trip target;
+- no dynamic/undeclared generation key access;
 - no INFO/ROLE/admin calls on the hot path;
 - same-slot construction preserved;
-- no Redis Cluster runtime-support claim introduced.
+- no Redis Cluster runtime-support claim introduced;
+- any future descriptor cache can only affect performance, never final EVAL validation.
 
 ---
 
@@ -1394,6 +1494,8 @@ Bypassed         -> authoritative lookup executed, bypassReason!=null
 Prove:
 
 - raw `string|int` normalized exactly once;
+- QuerySafetyDescriptor supplies the generation layout used for Core probe generation;
+- current filter sizing config is never substituted for an already-active generation layout;
 - global disabled -> bypass + authoritative lookup;
 - filter disabled -> bypass + authoritative lookup;
 - safe negative -> authoritative lookup not called;
@@ -1703,7 +1805,7 @@ Prove:
 - Drivers do not depend on Application or Lifecycle;
 - Laravel validation/facade/console may depend inward;
 - Core identity/sizing values contain no Redis/Laravel persistence tokens;
-- QueryGate depends on ports, not concrete Redis classes;
+- QueryGate depends on query-safety/authorized-probe ports, not concrete Redis classes;
 - FilterDefinition contracts are framework-neutral.
 
 ## Commit
@@ -1841,12 +1943,12 @@ feat(application): add managed bloom sizing policy
 feat(contracts): add generation semantic contract store
 feat(redis): bind generation semantic compatibility metadata
 feat(driver): add bounded bulk bloom writes
-feat(lifecycle): add explicit generation health updates
+feat(lifecycle): add persisted lifecycle and health updates
 feat(laravel): add explicit m5 filter registry
 feat(application): add managed candidate build workflow
 feat(application): add managed verify activate and discard workflows
-feat(application): add authorized bloom probe contract
-feat(redis): add atomic authorized bloom probe
+feat(application): add query safety descriptors and authorized probe contract
+feat(redis): add revision-pinned authorized bloom probe
 feat(application): add safe query gate
 feat(application): add explicit membership synchronization writes
 feat(laravel): expose bloom gate facade and services
@@ -1951,27 +2053,31 @@ For `preadd-v1`, Bloom synchronization precedes authoritative membership commit.
 
 M5 provides membership synchronization primitives, not transaction wrappers.
 
-### INV-M5-012 — Redis production query path is atomically authorized
+### INV-M5-012 — Redis final trusted-negative decision is atomically authorized
 
-The Redis trusted-negative decision validates control state, semantic metadata, storage/layout, and bit membership in one atomic EVAL operation.
+After resolving a pinned active generation descriptor and generating positions in Core, the Redis final decision validates the pinned control revision/version, semantic metadata, storage/layout, and bit membership in one atomic EVAL operation. Redis scripts never discover an active version and then access undeclared dynamically constructed generation keys.
 
-### INV-M5-013 — No replica trusted negatives
+### INV-M5-013 — Active layout comes from generation storage
+
+Query probes use the exact active generation layout reconstructed from managed generation metadata, never newly calculated current config sizing.
+
+### INV-M5-014 — No replica trusted negatives
 
 M5 production support is primary-only.
 
-### INV-M5-014 — No eviction-based silent bitmap loss
+### INV-M5-015 — No eviction-based silent bitmap loss
 
 The supported Redis profile requires `noeviction`.
 
-### INV-M5-015 — Public `exists()` is authoritative-correct
+### INV-M5-016 — Public `exists()` is authoritative-correct
 
 Callers never need to interpret Bloom probability to get the correct boolean.
 
-### INV-M5-016 — Laravel adapters remain thin
+### INV-M5-017 — Laravel adapters remain thin
 
 Facade, validation rules, and commands delegate to Application services rather than duplicating correctness logic.
 
-### INV-M5-017 — M6 concerns stay out
+### INV-M5-018 — M6 concerns stay out
 
 No writer barriers, online dual-write rebuild, Sentinel/Cluster runtime claim, CDC/outbox, or backend epoch machinery appears in M5.
 
