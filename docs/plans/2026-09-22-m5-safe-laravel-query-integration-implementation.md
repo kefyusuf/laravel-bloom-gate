@@ -585,16 +585,21 @@ For `preadd-v1`:
 ```text
 operator establishes quiescent membership-entry window
     ->
-fresh verify
+full authoritative reconciliation pass
+    -> normalize + bounded bulk add into candidate
+    ->
+fresh complete verification pass
     ->
 promote in same command invocation
     ->
 release quiescent window
 ```
 
-M5 does not implement the quiescence mechanism. It requires an explicit operator acknowledgment such as `--quiescent`.
+The reconciliation pass is required because M5 deliberately does not dual-write concurrent application mutations into a candidate during normal build. It lets a candidate built while the application was live catch up safely once membership-entering writes are quiesced.
 
-A previously VERIFIED candidate does not replace fresh activation verification for `preadd-v1`.
+M5 does not implement the quiescence mechanism. It requires an explicit operator acknowledgment such as `--quiescent`, and that quiescent window must remain true for the entire reconciliation + verification + promotion sequence. M5 does not promise that this window is short; eliminating that offline cutover cost is an M6 online-rebuild concern.
+
+A previously VERIFIED candidate does not replace fresh activation-time reconciliation/verification for `preadd-v1`.
 
 ### Discard
 
@@ -1339,17 +1344,21 @@ For `immutable-v1`:
 For `preadd-v1`:
 
 - explicit quiescent acknowledgment required;
-- missing acknowledgment rejects activation before verification/promotion;
-- fresh verification and promotion occur in one command/service invocation;
+- missing acknowledgment rejects activation before candidate mutation/verification/promotion;
+- while quiescent, stream a fresh complete `AuthoritativeSet::values()` and perform a bounded bulk-add reconciliation pass into the candidate;
+- run a second fresh complete verification pass after reconciliation;
+- reconciliation + verification + promotion occur in one command/service invocation;
+- quiescence must cover the full sequence;
 - no package-owned lock or write pause mechanism is implied.
 
 Tests must prove:
 
 - a SHADOW candidate that passes activation-time verification applies evidence to become VERIFIED before promotion;
-- an already VERIFIED candidate still runs a fresh complete `ActivationVerifier` pass;
+- an already VERIFIED `preadd-v1` candidate still runs the activation-time reconciliation pass followed by a fresh complete `ActivationVerifier` pass;
 - an already VERIFIED candidate does **not** attempt to re-apply SHADOW-only evidence after that fresh pass;
 - an already VERIFIED candidate proceeds to promotion only when the fresh pass succeeds and current state remains promotable;
-- a fresh false negative against an already VERIFIED candidate marks it STALE and blocks promotion;
+- reconciliation failure propagates and blocks promotion;
+- a fresh false negative after reconciliation against an already VERIFIED candidate marks it STALE and blocks promotion;
 - a previously VERIFIED candidate is never accepted as fresh evidence for `preadd-v1` without the activation-time verification pass.
 
 ## Candidate discard
@@ -1925,6 +1934,8 @@ Feature tests must prove:
 - performs fresh verification;
 - `immutable-v1` activates without quiescent flag;
 - `preadd-v1` requires explicit quiescent acknowledgment;
+- `preadd-v1` activation performs full reconciliation before fresh verification;
+- quiescence covers reconciliation + verification + promotion;
 - promotion occurs only after fresh pass;
 - failure leaves existing active generation unchanged.
 
@@ -2272,9 +2283,9 @@ No active managed generation is destructively rebuilt in place.
 
 Build ends at SHADOW + HEALTHY.
 
-### INV-M5-009 — Activation uses fresh complete verification
+### INV-M5-009 — Pre-add activation reconciles then verifies under quiescence
 
-Promotion cannot rely solely on old verification evidence for mutable pre-add filters.
+Promotion cannot rely solely on old verification evidence for mutable pre-add filters. `preadd-v1` activation performs a complete reconciliation bulk-add pass and then a fresh complete verification while membership-entering writes remain quiesced.
 
 ### INV-M5-010 — Consistency-specific write behavior is explicit
 
