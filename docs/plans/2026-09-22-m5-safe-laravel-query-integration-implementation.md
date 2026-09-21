@@ -1078,6 +1078,8 @@ managed_bitmap_written = 1
 
 inside the **same Lua operation** as the managed `SETBIT` mutations.
 
+All storage/layout/batch validation must complete first. For a non-empty validated batch, write `managed_bitmap_written=1` **before the first `SETBIT`**. Redis Lua does not roll back earlier writes when a later command raises a runtime error; marker-first ordering therefore ensures no failure can leave managed membership bits written without the loss-detection marker.
+
 The marker is monotonic and distinguishes:
 
 ```text
@@ -1093,7 +1095,8 @@ managed generation that previously wrote membership bits but whose bitmap key is
 Requirements:
 
 - empty batch does not set the marker;
-- non-empty managed batch sets the marker atomically with bitmap writes;
+- marker is either absent or exactly canonical value `1`; any other stored value is managed-metadata corruption;
+- non-empty managed batch sets the marker after validation and before its first `SETBIT`;
 - repeated batches keep it at `1`;
 - existing M3 code continues to ignore this additive field;
 - authorized query probing must never treat a missing bitmap as a valid empty filter when `managed_bitmap_written=1`.
@@ -1683,7 +1686,7 @@ Within one Lua operation:
 8. validate the supplied generation metadata key as canonical M3 storage for the expected layout;
 9. require all three M5 semantic fingerprints;
 10. compare expected fingerprints exactly;
-11. inspect `managed_bitmap_written`;
+11. inspect `managed_bitmap_written` and require it to be absent or exactly `1`; any other value is bypass/corruption;
 12. validate bitmap type/presence semantics:
     - bitmap missing + marker absent => valid empty managed generation;
     - bitmap missing + `managed_bitmap_written=1` => bypass/corruption, never ABSENT;
@@ -1731,6 +1734,7 @@ Unit/script tests must prove:
 - wrong types -> never absent;
 - layout mismatch -> never absent;
 - valid empty managed generation with no write marker remains absent-safe;
+- malformed `managed_bitmap_written` never returns absent;
 - `managed_bitmap_written=1` + missing bitmap never returns absent;
 - maybe result only when all bits set;
 - absent only after all authorization checks pass;
