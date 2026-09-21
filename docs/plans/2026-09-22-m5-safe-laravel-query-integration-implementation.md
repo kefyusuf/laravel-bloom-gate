@@ -978,6 +978,21 @@ hash_count
 probe_algorithm
 ```
 
+## Atomic binding requirement
+
+Redis semantic binding must be one atomic operation that validates existing M3 metadata/layout and writes the three semantic fingerprints as one write-once unit.
+
+Allowed states:
+
+```text
+all three semantic fields absent -> bind all three atomically
+all three present and equal       -> idempotent success
+all three present but different   -> typed semantic-contract conflict
+only some fields present          -> storage/managed-metadata corruption
+```
+
+A check-then-HSET sequence across separate Redis commands is not acceptable because concurrent builders could otherwise split or overwrite the generation contract.
+
 ## RED first
 
 Tests must prove:
@@ -988,13 +1003,16 @@ Tests must prove:
 - bind requires valid generation metadata;
 - same-value bind is idempotent;
 - different-value bind produces typed semantic-contract conflict;
+- partially populated semantic fingerprint fields are corruption, not unbound;
+- two concurrent first binders with different contracts cannot both succeed and cannot produce mixed fields;
+- the losing binder cannot overwrite the winner;
 - wrong Redis type/corrupt M3 metadata remains corruption;
 - unknown additive M3 fields remain ignored by the M3 driver;
 - no TTL is introduced;
 - sibling versions isolated;
 - binding never clears bitmap bits.
 
-Add real Redis evidence.
+Add real Redis evidence, including a two-writer conflicting-bind race and winner-preservation assertion.
 
 ## Commit
 
@@ -1204,20 +1222,44 @@ At minimum:
 ],
 ```
 
+## Framework-neutral registry boundary
+
+Before implementing Laravel config resolution, add/lock an inward-facing port under `Contracts` (or an equivalently inward layer) such as:
+
+```text
+FilterRegistry
+RegisteredFilter
+```
+
+Application services must resolve named filters only through this port. `Application` must never import Laravel config/container classes.
+
+A registered-filter value carries the operational inputs Application actually needs, for example:
+
+```text
+FilterName
+FilterDefinition
+queryOptimizationEnabled
+capacity
+falsePositiveRate
+```
+
+Global query optimization may be exposed through the same registry boundary or a separate minimal framework-neutral settings port; choose the smaller RED-proven surface. Driver-specific Redis safety-profile declaration remains infrastructure configuration and is enforced by the Redis authorized-probe implementation, not embedded into `FilterDefinition` semantics.
+
 ## Expected Laravel responsibilities
 
 Create under `src/Laravel/**`:
 
 ```text
-ConfigFilterRegistry
+ConfigFilterRegistry implements FilterRegistry
 FilterDefinitionResolver
-validated filter configuration DTO/value
+validated Laravel config mapping
 ```
 
 ## RED first
 
 Feature/unit tests:
 
+- Application-facing registry contract contains no Illuminate types;
 - exact case-sensitive FilterName registry key;
 - missing filter throws typed unknown-filter/config exception;
 - invalid class throws;
@@ -1244,6 +1286,7 @@ feat(laravel): add explicit m5 filter registry
 
 Confirm:
 
+- Application services depend on the framework-neutral registry port, never `Config`/container APIs;
 - ADR-0005 and ADR-0006 preserved;
 - invalid config is not converted to bypass;
 - semantic identity remains in definition objects, not duplicated in config.
@@ -1546,6 +1589,11 @@ Confirm:
 
 ## Goal
 
+Implement both Redis query-side pieces required by Task 11:
+
+1. a bounded `RedisActiveGenerationSnapshotReader` (exact name may vary) over the control `:state` HASH;
+2. the final revision-pinned authorized Bloom probe.
+
 Provide the M5 production decision point without dynamic/undeclared Redis key access.
 
 The Redis authorized-probe implementation is constructed with the validated operator `trusted_negative_profile`. If that declaration is absent or not the recognized M5 profile, the Redis path returns a stable bypass result before attempting a trusted-negative EVAL.
@@ -1569,9 +1617,30 @@ The EVAL is the final trusted-negative serialization point. No post-probe revali
 
 This is **not** a promise that the entire cold query path is one Redis round-trip. Correctness takes priority over dynamic undeclared keys. Future measured descriptor caching may reduce steady-state metadata reads only if the final EVAL continues to revalidate every cached revision/version/descriptor assumption.
 
-## Required Redis keys
+## Bounded Redis active snapshot
 
-All keys are known before EVAL and share the logical-filter hash tag:
+The snapshot reader touches only the control `:state` key. It must not `HGETALL` the full retained-generation state.
+
+Within one bounded command/Lua operation it reads:
+
+```text
+format
+revision
+active_version
+```
+
+then, when an active version exists, reads fields from the **same HASH**:
+
+```text
+g:<active-version>:lifecycle
+g:<active-version>:health
+```
+
+It validates only this safety-critical view and returns the pinned active snapshot. Unknown/malformed safety-critical fields are unsafe; unrelated retained generation fields are not scanned on the query path.
+
+## Required Redis keys for final authorized probe
+
+All final-probe keys are known before EVAL and share the logical-filter hash tag:
 
 ```text
 <prefix>:{<filter-name>}:state
