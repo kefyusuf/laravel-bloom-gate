@@ -1177,6 +1177,9 @@ Feature/unit tests:
 - invalid capacity/FPR throws;
 - per-filter enabled flag resolved;
 - global enabled flag resolved separately;
+- Redis trusted-negative profile is null by default;
+- only `standalone-primary-durable-v1` is accepted for M5 trusted-negative Redis authorization;
+- invalid/unknown profile configuration fails loudly during explicit resolution;
 - definition is lazily resolved through Laravel container;
 - package boot does not instantiate definitions;
 - package boot does not contact DB or Redis;
@@ -1306,7 +1309,14 @@ For `preadd-v1`:
 - fresh verification and promotion occur in one command/service invocation;
 - no package-owned lock or write pause mechanism is implied.
 
-Tests must prove a previously VERIFIED candidate is not accepted as fresh evidence for `preadd-v1` without the activation-time verification pass.
+Tests must prove:
+
+- a SHADOW candidate that passes activation-time verification applies evidence to become VERIFIED before promotion;
+- an already VERIFIED candidate still runs a fresh complete `ActivationVerifier` pass;
+- an already VERIFIED candidate does **not** attempt to re-apply SHADOW-only evidence after that fresh pass;
+- an already VERIFIED candidate proceeds to promotion only when the fresh pass succeeds and current state remains promotable;
+- a fresh false negative against an already VERIFIED candidate marks it STALE and blocks promotion;
+- a previously VERIFIED candidate is never accepted as fresh evidence for `preadd-v1` without the activation-time verification pass.
 
 ## Candidate discard
 
