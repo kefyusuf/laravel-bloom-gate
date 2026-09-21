@@ -2191,7 +2191,9 @@ Build ends at SHADOW + HEALTHY.
 
 Promotion cannot rely solely on old verification evidence for mutable pre-add filters.
 
-### INV-M5-010 — Pre-add ordering is explicit
+### INV-M5-010 — Consistency-specific write behavior is explicit
+
+For `immutable-v1`, active-generation `add/addMany` is forbidden.
 
 For `preadd-v1`, Bloom synchronization precedes authoritative membership commit. Query-optimization disablement does not silently suspend synchronization of an already-active managed generation.
 
@@ -2199,31 +2201,35 @@ For `preadd-v1`, Bloom synchronization precedes authoritative membership commit.
 
 M5 provides membership synchronization primitives, not transaction wrappers.
 
-### INV-M5-012 — Redis final trusted-negative decision is atomically authorized
+### INV-M5-012 — Redis final trusted-negative decision is atomically authorized and bounded
 
-After resolving a pinned active generation descriptor and generating positions in Core, the Redis final decision validates the pinned control revision/version, semantic metadata, storage/layout, and bit membership in one atomic EVAL operation. Redis scripts never discover an active version and then access undeclared dynamically constructed generation keys.
+After a full strict descriptor read, the Redis final decision validates only the pinned revision/active safety fields, semantic metadata, storage/layout, managed-bitmap marker, and bit membership in one atomic EVAL operation. The hot-path control check is O(1) with respect to retained generation count. Redis scripts never discover an active version and then access undeclared dynamically constructed generation keys.
 
 ### INV-M5-013 — Active layout comes from generation storage
 
 Query probes use the exact active generation layout reconstructed from managed generation metadata, never newly calculated current config sizing.
 
-### INV-M5-014 — No replica trusted negatives
+### INV-M5-014 — Redis trusted negatives require explicit supported-profile opt-in
+
+Without the recognized M5 Redis profile declaration, Redis authorized probing cannot return a trusted negative. The declaration does not replace doctor/preflight or the operator's obligation to keep the supported profile true.
+
+### INV-M5-015 — No replica trusted negatives
 
 M5 production support is primary-only.
 
-### INV-M5-015 — No eviction-based silent bitmap loss
+### INV-M5-016 — Managed bitmap loss cannot masquerade as empty
 
-The supported Redis profile requires `noeviction`.
+The supported Redis profile requires `noeviction`. In addition, once an M5-managed generation has performed a non-empty managed write, `managed_bitmap_written=1` prevents a later missing bitmap from being interpreted as a valid empty generation.
 
-### INV-M5-016 — Public `exists()` is authoritative-correct
+### INV-M5-017 — Public `exists()` is authoritative-correct
 
 Callers never need to interpret Bloom probability to get the correct boolean.
 
-### INV-M5-017 — Laravel adapters remain thin
+### INV-M5-018 — Laravel adapters remain thin
 
 Facade, validation rules, and commands delegate to Application services rather than duplicating correctness logic.
 
-### INV-M5-018 — M6 concerns stay out
+### INV-M5-019 — M6 concerns stay out
 
 No writer barriers, online dual-write rebuild, Sentinel/Cluster runtime claim, CDC/outbox, or backend epoch machinery appears in M5.
 
