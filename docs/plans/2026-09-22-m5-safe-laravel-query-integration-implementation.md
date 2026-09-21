@@ -1,7 +1,8 @@
 # M5 — Safe Laravel Query Integration Implementation Plan
 
-**Status:** DRAFT — scope/design gate passed; implementation must not start until this plan is separately reviewed and approved  
+**Status:** APPROVED — implementation-plan review gate passed; implementation may start only on the next explicit execution step  
 **Design gate:** PASSED  
+**Implementation-plan review gate:** PASSED  
 **Base:** `main@f1fd47e8e8318b5b9e40c3e5b9d38b4353aa398a`  
 **Planned implementation branch:** `feat/m5-safe-laravel-query-integration`  
 **Plan branch:** `docs/m5-safe-laravel-query-integration-plan`
@@ -2420,17 +2421,41 @@ No writer barriers, online dual-write rebuild, Sentinel/Cluster runtime claim, C
 
 ---
 
-## 16. Plan approval gate
+## 16. Plan approval gate — PASSED
 
-This document is the only artifact created by the current step.
+The M5 implementation plan has completed its dedicated adversarial review.
 
-Before M5 implementation starts:
+Review explicitly challenged and resolved:
 
-1. review this plan as a whole;
-2. validate task dependency ordering;
-3. challenge public API and Redis Lua scope;
-4. confirm M5/M6 boundary;
-5. confirm no required safety invariant is missing;
-6. mark the plan APPROVED only after review.
+- dynamic Redis generation-key discovery inside Lua;
+- missing persisted lifecycle transition orchestration;
+- query-disable versus active-generation synchronization;
+- active generation layout source-of-truth;
+- unbounded `control-v1` hot-path reads;
+- managed bitmap-loss detection;
+- immutable versus pre-add write semantics;
+- Redis trusted-negative profile opt-in;
+- deterministic sizing/rounding;
+- already-VERIFIED activation freshness;
+- pre-add candidate reconciliation before activation;
+- stable bypass-reason vocabulary;
+- single-value write path bypassing managed bulk semantics;
+- atomic semantic fingerprint binding races;
+- missing framework-neutral filter registry boundary;
+- Redis active-snapshot implementation ownership;
+- Redis Lua marker ordering under non-rollback runtime errors.
 
-**Do not create `feat/m5-safe-laravel-query-integration` or any M5 production source/test file before that approval.**
+Branch review state at approval:
+
+```text
+base: main@f1fd47e8e8318b5b9e40c3e5b9d38b4353aa398a
+branch: docs/m5-safe-laravel-query-integration-plan
+production/test source changes: none
+M5 implementation branch: not created
+```
+
+This approval authorizes only the **next explicit execution step** to begin Task 0.
+
+Task 0 must still re-fetch current `main`, re-run the baseline verification matrix, and reopen design review if the base changed in a way that invalidates this plan.
+
+**Do not create or modify M5 production source/test files from the plan branch.**
