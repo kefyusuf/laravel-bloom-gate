@@ -814,13 +814,41 @@ Confirm:
 
 ---
 
-# Task 4 — generation semantic contract store
+# Task 4 — managed generation inspection + semantic contract store
 
 ## Goal
 
-Bind M5 semantic compatibility immutably to `FilterName + FilterVersion` without breaking `BloomDriver`.
+Give M5 a framework-neutral way to read the exact provisioned generation layout and bind semantic compatibility without breaking the original `BloomDriver` contract.
 
-## Contract
+The current `BloomDriver` intentionally has no metadata/read-layout method. M5 cannot safely infer an active generation's layout from current config because sizing may have changed after that generation was built.
+
+## Additive inspection capability
+
+Create an additive framework-neutral port such as:
+
+```php
+interface BloomGenerationInspector
+{
+    public function layout(
+        FilterName $name,
+        FilterVersion $version,
+    ): ?BloomLayout;
+}
+```
+
+Semantics:
+
+- missing/unprovisioned generation -> explicit absence;
+- valid generation -> exact provisioned `BloomLayout`;
+- corrupt storage -> typed corruption;
+- operational failure -> typed infrastructure failure;
+- no mutation.
+
+The existing `BloomDriver` interface remains unchanged.
+
+The Memory reference driver may implement this inspection capability additively by exposing its already-stored layout; doing so must not change existing `BloomDriver` behavior.
+
+## Managed semantic contract store
 
 Create an additive framework-neutral port such as:
 
@@ -838,36 +866,42 @@ bind(name, version, expected layout, semantic contract)
 The returned managed generation descriptor contains:
 
 ```text
-BloomLayout reconstructed/validated from canonical generation storage
+BloomLayout obtained from canonical generation inspection/storage
 normalization fingerprint
 authoritative-set fingerprint
 consistency fingerprint
 ```
 
-The bind operation receives the expected layout only to prove it matches the already-provisioned M3 generation metadata; it must not persist a second layout representation.
+The bind operation receives the expected layout only to prove it matches already-provisioned Bloom storage; it must not persist a second divergent layout representation.
 
 ## Memory reference implementation
 
-Create a deterministic Memory implementation and shared contract suite.
+Create a deterministic Memory contract-store implementation backed by the additive `BloomGenerationInspector` plus an in-process semantic-binding map.
+
+This lets Memory enforce the same rule as Redis: semantic binding cannot exist for an unprovisioned generation and the returned descriptor always uses the actual provisioned layout.
 
 ## RED first
 
 Prove:
 
-- missing binding returns explicit absence;
-- first bind succeeds only for an existing/provisioned managed generation;
-- bind rejects an expected layout that differs from the provisioned M3 layout;
+- original `BloomDriver` surface is unchanged;
+- Memory generation inspection reports the exact provisioned layout;
+- missing generation is distinguishable from a valid generation;
+- missing semantic binding is distinguishable from missing generation;
+- first bind succeeds only for an existing/provisioned generation;
+- bind rejects an expected layout that differs from actual provisioned layout;
 - read reconstructs the exact provisioned layout together with semantic fingerprints;
 - repeated equal bind is idempotent;
 - different rebind conflicts;
 - sibling versions remain independent;
+- destroyed/missing storage cannot continue to present a valid managed descriptor;
 - no bind mutates lifecycle/control state;
 - no raw identity strings need be persisted after fingerprint derivation.
 
 ## Commit
 
 ```text
-feat(contracts): add generation semantic contract store
+feat(contracts): add managed generation inspection and semantic bindings
 ```
 
 ## Self-review
@@ -876,6 +910,8 @@ Confirm:
 
 - `BloomDriver` source contract unchanged;
 - semantic contract is generation-scoped;
+- active layout comes from provisioned generation storage;
+- Memory and Redis can share one semantic contract suite;
 - no `control-v1` schema change.
 
 ---
@@ -884,7 +920,7 @@ Confirm:
 
 ## Goal
 
-Persist generation semantic fingerprints as additive M3 generation metadata.
+Implement the Redis managed-generation inspection/contract-store semantics from Task 4 by reading canonical M3 generation metadata and persisting semantic fingerprints as additive fields in the same `:meta` HASH.
 
 ## Required metadata fields
 
@@ -907,6 +943,7 @@ probe_algorithm
 
 Tests must prove:
 
+- Redis generation inspection returns the exact canonical provisioned `BloomLayout`;
 - existing M3 metadata without new fields remains valid low-level storage;
 - M5 contract read reports unbound rather than corrupt for old generations;
 - bind requires valid generation metadata;
@@ -1984,7 +2021,7 @@ Expected logical sequence:
 feat(core): add m5 semantic compatibility identities
 feat(contracts): add explicit filter definition contracts
 feat(application): add managed bloom sizing policy
-feat(contracts): add generation semantic contract store
+feat(contracts): add managed generation inspection and semantic bindings
 feat(redis): bind generation semantic compatibility metadata
 feat(driver): add bounded bulk bloom writes
 feat(lifecycle): add persisted lifecycle and health updates
