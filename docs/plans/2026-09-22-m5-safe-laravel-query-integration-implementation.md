@@ -1013,7 +1013,35 @@ Shared capability tests:
 
 Redis script tests must prove validation-before-mutation and bounded argument handling.
 
-Real Redis evidence must cover a representative configured chunk size.
+For M5-managed Redis writes, every non-empty successful bulk mutation must also set the additive generation metadata marker:
+
+```text
+managed_bitmap_written = 1
+```
+
+inside the **same Lua operation** as the managed `SETBIT` mutations.
+
+The marker is monotonic and distinguishes:
+
+```text
+valid managed generation that has never written membership bits
+```
+
+from:
+
+```text
+managed generation that previously wrote membership bits but whose bitmap key is now unexpectedly missing
+```
+
+Requirements:
+
+- empty batch does not set the marker;
+- non-empty managed batch sets the marker atomically with bitmap writes;
+- repeated batches keep it at `1`;
+- existing M3 code continues to ignore this additive field;
+- authorized query probing must never treat a missing bitmap as a valid empty filter when `managed_bitmap_written=1`.
+
+Real Redis evidence must cover a representative configured chunk size and marker/bitmap atomicity.
 
 ## Commit
 
