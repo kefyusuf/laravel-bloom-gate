@@ -211,6 +211,24 @@ package-owned keyspace
 
 This is a **support-claim boundary**, not a Redis configuration manager.
 
+Trusted-negative Redis authorization also requires an explicit operator declaration of the supported profile. The planned Laravel driver configuration is:
+
+```php
+'trusted_negative_profile' => env(
+    'BLOOM_GATE_REDIS_TRUSTED_NEGATIVE_PROFILE'
+),
+```
+
+M5 recognizes only:
+
+```text
+standalone-primary-durable-v1
+```
+
+for the initial Redis production path. The default is `null`, which means Redis must not authorize a trusted negative.
+
+The declaration is an operational assertion, not proof that the server actually satisfies the profile. `bloom:doctor` verifies observable prerequisites. M5's production safety claim is conditional on those prerequisites remaining true while trusted negatives are enabled.
+
 M5 must provide diagnostics/preflight evidence for this profile, but it must not:
 
 - rewrite Redis configuration;
@@ -288,7 +306,7 @@ interface FilterDefinition
 }
 ```
 
-Exact method names may receive naming-only refinement during Task 1, but responsibilities must not merge or expand.
+Exact method names may receive naming-only refinement while Task 2 is RED, but responsibilities must not merge or expand.
 
 ### ValueNormalizer
 
@@ -737,22 +755,40 @@ Suggested responsibility:
 OptimalBloomSizingV1
 ```
 
+## Deterministic numerical rule
+
+M5 must not leave PHP's default rounding mode implicit.
+
+For `k*`:
+
+```text
+kRounded = round-half-up(k*)
+k = max(1, kRounded)
+```
+
+The lower bound of 1 is part of the sizing formula because a Bloom layout cannot use zero hashes. If the resulting required hash count is greater than 64, M5 rejects the request rather than silently clamping it.
+
+For integer `m`, use numerically stable logarithmic operations such as `log1p` where appropriate, then verify the resulting layout's estimated FPR does not exceed the requested target. If floating-point boundary error makes the first ceiled `m` miss the target, increase `m` deterministically until the postcondition holds.
+
 ## RED first
 
 Test:
 
 - positive capacity required;
 - finite `0 < p < 1` required;
+- explicit round-half-up behavior for `k`;
+- target values whose ideal `k*` rounds below 1 still produce `k=1` and recalculate `m`;
 - known deterministic vectors;
-- `capacity=1_000_000, p=0.001` produces approximately the locked v1 layout result and exact executable value chosen by the implementation;
+- `capacity=1_000_000, p=0.001` produces exactly `bitCount=14_377_640, hashCount=10`;
+- calculated estimated FPR is <= requested target;
 - target FPR is not weakened by integer hash-count rounding;
 - result always passes `BloomLayout::create`;
 - requests requiring `hashCount > 64` fail explicitly;
 - requests requiring `bitCount > 2,147,483,647` fail explicitly;
-- no silent clamp;
+- no upper-bound silent clamp;
 - only `Sha256DoubleHashV1` is selected in M5.
 
-Add cross-PHP compatibility evidence for PHP 8.3 through supported latest anchor so floating-point rounding does not drift across the current support matrix.
+Add compatibility/golden evidence across the supported PHP matrix and CI operating-system anchors so floating-point boundary behavior cannot silently drift.
 
 ## Gate
 
