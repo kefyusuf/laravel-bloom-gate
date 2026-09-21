@@ -1345,15 +1345,51 @@ Confirm:
 
 ---
 
-# Task 11 — query safety descriptor resolution + authorized probe contract
+# Task 11 — bounded active-generation snapshot + query safety descriptor
 
 ## Goal
 
-Separate package-facing query authorization from raw `BloomDriver::mightContain` while preserving Core ownership of probe generation.
+Separate package-facing query authorization from raw `BloomDriver::mightContain` while preserving Core ownership of probe generation **and keeping query preparation O(1) with respect to retained generation count**.
 
-A query cannot generate `BitPositions` until it knows the exact active generation `BloomLayout`. That layout is generation-scoped and must not be inferred from current config because config may have changed before a rebuild.
+A query cannot generate `BitPositions` until it knows the exact active generation `BloomLayout`. That layout is generation-scoped and must not be inferred from current config because sizing may have changed before a rebuild.
 
-## Framework-neutral query preparation
+## Active-generation safety snapshot port
+
+Do **not** use full `FilterControlStore::read()` on every application query. The Redis control store intentionally performs strict whole-snapshot validation with `HGETALL`, and M4 may retain many retired generations. That management/read model must not become an unbounded query hot path.
+
+Create a framework-neutral read-only port/value such as:
+
+```text
+ActiveGenerationSnapshotReader
+ActiveGenerationSnapshot
+```
+
+The snapshot contains only query-safety data:
+
+```text
+FilterName
+FilterStateRevision
+active FilterVersion
+active lifecycle
+active health
+```
+
+Semantics:
+
+- missing control state -> no eligible active generation;
+- missing active pointer -> no eligible active generation;
+- malformed safety-critical fields -> typed corruption/unsafe result;
+- only ACTIVE + HEALTHY can produce an eligible snapshot;
+- no mutation;
+- work is bounded independently of retired generation count.
+
+This specialized port is **not** a replacement for `FilterControlStore`. Management, lifecycle mutation, status, doctor, and full state inspection continue to use the strict M4 store.
+
+For Redis, the specialized reader may inspect only the state key and dynamically select lifecycle/health **fields within that same HASH** after reading `active_version`; dynamic field names are allowed because no undeclared Redis key is accessed.
+
+Under the M5 package-owned-keyspace contract, every legitimate M4 control mutation advances revision. Out-of-band edits that mutate control fields without revision advancement violate the explicit operational integrity contract.
+
+## Query safety descriptor
 
 Create a focused resolver/value such as:
 
@@ -1362,15 +1398,12 @@ QuerySafetyDescriptorResolver
 QuerySafetyDescriptor
 ```
 
-The resolver composes existing ports:
+The resolver composes:
 
 ```text
-FilterControlStore
+ActiveGenerationSnapshotReader
 BloomGenerationInspector / GenerationContractStore
-ActiveGenerationPolicy
 ```
-
-`FilterControlStore::read()` remains the **full strict `control-v1` validation boundary** during descriptor preparation. This may inspect the complete snapshot because it is not the final per-probe Lua hot-path guard.
 
 A descriptor contains at minimum:
 
@@ -1384,7 +1417,7 @@ authoritative-set fingerprint
 consistency fingerprint
 ```
 
-Descriptor resolution must fail open when active/control/generation metadata is missing or unsafe.
+Descriptor resolution fails open when active safety state, generation storage, or semantic binding is missing/unsafe.
 
 ## Authorized probe contract
 
@@ -1415,17 +1448,19 @@ Bypassed + BypassReason
 
 ## Memory/reference implementation
 
-Implement deterministic reference behavior using current control store, generation-contract store, and Memory Bloom driver.
+Implement deterministic reference behavior using the Memory control/generation stores and Memory Bloom driver.
 
-The reference path may use optimistic read/probe/revalidation semantics; it exists to pin correctness behavior, not Redis command count.
+The Memory reference path may use optimistic read/probe/revalidation semantics; it exists to pin correctness behavior, not Redis command count.
 
 ## RED first
 
 Prove:
 
+- query preparation does not require enumerating retired generations;
 - missing control state -> bypass;
 - no active version -> bypass;
-- non-ACTIVE/non-HEALTHY generation -> bypass;
+- non-ACTIVE/non-HEALTHY active generation -> bypass;
+- malformed safety-critical active fields -> never trusted negative;
 - missing semantic binding -> bypass;
 - descriptor layout comes from the managed generation, never current sizing config;
 - fingerprint mismatch -> bypass;
@@ -1435,10 +1470,12 @@ Prove:
 - safe negative becomes DefinitelyAbsent;
 - configuration/programming failures are not swallowed.
 
+For Redis-focused tests added in Task 12, include a large retained-generation control state (for example the existing 5,000-generation scale) and prove query snapshot preparation uses bounded field reads rather than `HGETALL`.
+
 ## Commit
 
 ```text
-feat(application): add query safety descriptors and authorized probe contract
+feat(application): add bounded query safety descriptors
 ```
 
 ## Self-review
@@ -1447,7 +1484,8 @@ Confirm:
 
 - Membership alone still does not authorize lookup skipping outside this gate;
 - raw `BloomDriver` remains low-level and unchanged;
-- query position generation continues to use Core `BloomProbeGenerator`.
+- query position generation continues to use Core `BloomProbeGenerator`;
+- strict full control-state decoding remains available for management paths but is not paid on every query.
 
 ---
 
@@ -1502,7 +1540,7 @@ bit positions
 
 ## Required atomic checks
 
-Descriptor preparation has already performed a full strict `FilterControlStore::read()`. The final hot-path EVAL therefore uses a **constant-size pinned authorization guard**, not `HGETALL` plus a full scan of every retained generation.
+Descriptor preparation has already obtained a bounded `ActiveGenerationSnapshot` and exact managed generation descriptor. The final hot-path EVAL therefore uses a **constant-size pinned authorization guard**, not `HGETALL` plus a full scan of every retained generation.
 
 Within one Lua operation:
 
@@ -1528,7 +1566,7 @@ Within one Lua operation:
 13. read all requested bits;
 14. return one structured semantic result.
 
-This O(1) control guard is safe under the M5 package-owned-keyspace contract because every legitimate M4 control mutation replaces the snapshot with revision +1. The full strict control snapshot was validated when the descriptor was pinned; unchanged revision plus unchanged active safety fields therefore revalidates the pinned snapshot for legitimate package writes.
+This O(1) control guard is safe under the M5 package-owned-keyspace contract because every legitimate M4 control mutation replaces the snapshot with revision +1. The bounded active snapshot was pinned from safety-critical fields; unchanged revision plus unchanged active safety fields therefore revalidates that query snapshot for legitimate package writes.
 
 Result protocol:
 
@@ -1540,7 +1578,7 @@ BYPASS:<stable reason>
 
 Use the existing structured Redis executor where appropriate.
 
-Do not copy the complete M4 `control-v1` decoder into the hot path. The final Lua logic is an authorization guard over a previously strict-validated pinned snapshot, not a second general control-state parser. Reuse canonical integer/token helpers where practical.
+Do not copy the complete M4 `control-v1` decoder into the hot path. The final Lua logic is an authorization guard over a pinned active-generation safety snapshot, not a second general control-state parser. Reuse canonical integer/token helpers where practical.
 
 Out-of-band mutation of package-owned control fields without advancing revision violates the explicit keyspace-integrity operational contract and is not made safe by scanning unrelated retired-generation fields on every query.
 
@@ -2093,7 +2131,7 @@ feat(lifecycle): add persisted lifecycle and health updates
 feat(laravel): add explicit m5 filter registry
 feat(application): add managed candidate build workflow
 feat(application): add managed verify activate and discard workflows
-feat(application): add query safety descriptors and authorized probe contract
+feat(application): add bounded query safety descriptors
 feat(redis): add revision-pinned authorized bloom probe
 feat(application): add safe query gate
 feat(application): add explicit membership synchronization writes
