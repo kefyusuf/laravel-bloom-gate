@@ -1185,6 +1185,15 @@ Turn `config/bloom-gate.php` named filters into explicit, validated runtime defi
 At minimum:
 
 ```php
+'drivers' => [
+    'redis' => [
+        'connection' => 'default',
+        'trusted_negative_profile' => env(
+            'BLOOM_GATE_REDIS_TRUSTED_NEGATIVE_PROFILE'
+        ),
+    ],
+],
+
 'filters' => [
     'users.email' => [
         'enabled' => true,
@@ -1214,6 +1223,7 @@ Feature/unit tests:
 - invalid class throws;
 - class not implementing FilterDefinition throws;
 - invalid capacity/FPR throws;
+- per-filter `enabled` is explicitly a **query-optimization switch**, not a command that stops synchronization of an already-active managed generation;
 - per-filter enabled flag resolved;
 - global enabled flag resolved separately;
 - Redis trusted-negative profile is null by default;
