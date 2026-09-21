@@ -1668,6 +1668,7 @@ For a registered filter:
 - if no active generation exists, `add/addMany` are explicit no-op/not-required operations because no trusted-negative active generation can be served; the void API remains unambiguous because success means "no synchronization failure requiring caller rollback";
 - if an active managed generation exists, M5 resolves that generation's managed descriptor/layout and requires current definition fingerprints to match before mutation;
 - the current active generation may still be synchronized while query optimization is bypassed for health/enablement reasons; synchronization itself must never mark it healthy or query-safe;
+- for active managed `immutable-v1`, `add/addMany` are forbidden and must raise a typed consistency-contract violation rather than silently mutating the supposedly immutable set;
 - for active managed `preadd-v1`, `add/addMany` must succeed before caller commits authoritative membership entry;
 - semantic mismatch is a hard synchronization/configuration error for write-side `preadd-v1`; it must not silently no-op because a later config rollback could otherwise resurrect an unsafe old generation;
 - operational write failure must propagate so caller can abort its DB transaction;
@@ -1687,6 +1688,8 @@ Prove:
 - per-filter query optimization disabled + active generation -> synchronization still occurs;
 - active generation descriptor supplies the exact layout;
 - semantic mismatch prevents write and propagates before caller DB commit;
+- active `immutable-v1` rejects add/addMany;
+- active `preadd-v1` accepts explicit synchronization writes;
 - non-healthy active generation synchronization does not implicitly change health;
 - add success is retry-safe;
 - addMany uses bounded bulk capability;
@@ -1881,6 +1884,7 @@ At minimum:
 
 ```text
 package config valid
+trusted-negative profile explicitly declared when Redis negatives are intended
 Redis reachable
 Redis version compatible with support claim
 standalone mode / unsupported topology detection
@@ -1905,6 +1909,8 @@ If necessary, add a dedicated Laravel/infrastructure diagnostics port rather tha
 Prove:
 
 - PASS/WARN/FAIL classifications deterministic;
+- no profile declaration is reported as NOT ENABLED / non-authorizing, never PASS;
+- declaration `standalone-primary-durable-v1` is checked against observable server settings;
 - unsupported topology is visible;
 - missing ACL permission to inspect a prerequisite is not reported as PASS;
 - doctor itself does not activate/build/repair;
@@ -1994,7 +2000,8 @@ Documentation must explicitly state:
 - observer-based eventual synchronization is not M5 trusted-negative authority;
 - `preadd-v1` ordering contract;
 - quiescent activation requirement;
-- narrow supported Redis production profile;
+- narrow supported Redis production profile and explicit operator profile declaration;
+- doctor is verification/preflight, while continuous profile correctness remains an operational contract;
 - no Sentinel/Cluster runtime-support claim;
 - no online dual-write rebuild in M5;
 - validation rules are QueryGate adapters;
