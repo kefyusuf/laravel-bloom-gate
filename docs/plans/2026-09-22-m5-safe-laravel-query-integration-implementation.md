@@ -1366,9 +1366,11 @@ The resolver composes existing ports:
 
 ```text
 FilterControlStore
-GenerationContractStore
+BloomGenerationInspector / GenerationContractStore
 ActiveGenerationPolicy
 ```
+
+`FilterControlStore::read()` remains the **full strict `control-v1` validation boundary** during descriptor preparation. This may inspect the complete snapshot because it is not the final per-probe Lua hot-path guard.
 
 A descriptor contains at minimum:
 
@@ -1500,20 +1502,33 @@ bit positions
 
 ## Required atomic checks
 
+Descriptor preparation has already performed a full strict `FilterControlStore::read()`. The final hot-path EVAL therefore uses a **constant-size pinned authorization guard**, not `HGETALL` plus a full scan of every retained generation.
+
 Within one Lua operation:
 
-1. strictly validate current `control-v1`;
-2. require current revision == expected pinned revision;
-3. require current active version == expected version;
-4. require tracked expected version lifecycle ACTIVE;
-5. require tracked expected version health HEALTHY;
-6. validate the supplied generation metadata key is the expected version's canonical M3 storage;
-7. validate M3 storage format/layout;
-8. require all three M5 semantic fingerprints;
-9. compare expected fingerprints exactly;
-10. validate bitmap type/presence semantics;
-11. read all requested bits;
-12. return one structured semantic result.
+1. require the state key type to be HASH;
+2. `HMGET` only the safety-critical pinned fields:
+   - `format`;
+   - `revision`;
+   - `active_version`;
+   - `g:<expected-version>:lifecycle`;
+   - `g:<expected-version>:health`;
+3. require `format == control-v1`;
+4. require current revision == expected pinned revision using canonical integer semantics;
+5. require current active version == expected version;
+6. require lifecycle ACTIVE;
+7. require health HEALTHY;
+8. validate the supplied generation metadata key as canonical M3 storage for the expected layout;
+9. require all three M5 semantic fingerprints;
+10. compare expected fingerprints exactly;
+11. inspect `managed_bitmap_written`;
+12. validate bitmap type/presence semantics:
+    - bitmap missing + marker absent => valid empty managed generation;
+    - bitmap missing + `managed_bitmap_written=1` => bypass/corruption, never ABSENT;
+13. read all requested bits;
+14. return one structured semantic result.
+
+This O(1) control guard is safe under the M5 package-owned-keyspace contract because every legitimate M4 control mutation replaces the snapshot with revision +1. The full strict control snapshot was validated when the descriptor was pinned; unchanged revision plus unchanged active safety fields therefore revalidates the pinned snapshot for legitimate package writes.
 
 Result protocol:
 
@@ -1525,7 +1540,9 @@ BYPASS:<stable reason>
 
 Use the existing structured Redis executor where appropriate.
 
-Do not create a second lax `control-v1` parser. Extract/reuse strict validation fragments if necessary so control semantics cannot drift between CAS and query scripts.
+Do not copy the complete M4 `control-v1` decoder into the hot path. The final Lua logic is an authorization guard over a previously strict-validated pinned snapshot, not a second general control-state parser. Reuse canonical integer/token helpers where practical.
+
+Out-of-band mutation of package-owned control fields without advancing revision violates the explicit keyspace-integrity operational contract and is not made safe by scanning unrelated retired-generation fields on every query.
 
 Do not access Redis keys that were not supplied through `KEYS[]`.
 
@@ -1536,7 +1553,9 @@ Unit/script tests must prove:
 - all accessed keys are explicit script keys;
 - pinned revision mismatch -> bypass;
 - pinned active-version mismatch -> bypass;
-- validation-before-membership decision;
+- final EVAL does not `HGETALL` / scan all retained generations;
+- authorization work remains O(1) with respect to tracked generation count;
+- pinned safety fields are revalidated before membership decision;
 - ACTIVE + HEALTHY only;
 - old unbound generation -> bypass;
 - each fingerprint mismatch -> distinct stable bypass reason;
@@ -1545,7 +1564,8 @@ Unit/script tests must prove:
 - missing generation storage -> never absent;
 - wrong types -> never absent;
 - layout mismatch -> never absent;
-- valid empty provisioned bitmap semantics remain correct;
+- valid empty managed generation with no write marker remains absent-safe;
+- `managed_bitmap_written=1` + missing bitmap never returns absent;
 - maybe result only when all bits set;
 - absent only after all authorization checks pass;
 - script mutates no key.
