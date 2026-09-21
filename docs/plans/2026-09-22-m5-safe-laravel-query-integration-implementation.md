@@ -192,6 +192,40 @@ authoritative lookup
 
 Unknown filters, invalid definitions, invalid configuration, type errors, and programming errors must not be converted into `Bypassed`.
 
+### Stable M5 bypass vocabulary
+
+M5 reuses the existing built-in reasons where they fit:
+
+```text
+optimization_disabled
+lifecycle_not_active
+health_not_healthy
+active_version_unavailable
+backend_unavailable
+operation_failed
+```
+
+M5 additionally reserves these stable machine-readable codes:
+
+```text
+generation_contract_unbound
+normalization_mismatch
+authoritative_set_mismatch
+consistency_mismatch
+control_state_changed
+backend_profile_unasserted
+generation_storage_unavailable
+generation_storage_corrupt
+```
+
+Rules:
+
+- query-time semantic mismatch is a bypass, not a shared lifecycle mutation;
+- write-side semantic mismatch for `preadd-v1` is a hard synchronization/configuration error, not a bypass/no-op;
+- corrupt/missing optimization storage never becomes `DefinitelyAbsent`;
+- unexpected programming/configuration exceptions never map to these codes;
+- new future codes remain possible under ADR-0031, but the codes above are stable once shipped.
+
 ---
 
 ## 6. Supported M5 production Redis profile
@@ -1601,7 +1635,8 @@ Unit/script tests must prove:
 - pinned safety fields are revalidated before membership decision;
 - ACTIVE + HEALTHY only;
 - old unbound generation -> bypass;
-- each fingerprint mismatch -> distinct stable bypass reason;
+- each fingerprint mismatch -> its locked stable M5 bypass reason;
+- pinned revision/active change -> `control_state_changed`;
 - corrupt control state -> never absent;
 - corrupt generation metadata -> never absent;
 - missing generation storage -> never absent;
@@ -1722,6 +1757,7 @@ For a registered filter:
 - operational write failure must propagate so caller can abort its DB transaction;
 - no silent deferred synchronization;
 - no Eloquent observer requirement;
+- package-facing M5 writes never mutate a managed generation through raw low-level `BloomDriver::add()`; direct low-level mutation of a managed generation is outside the M5 trusted-negative contract;
 - M5 never dual-writes a candidate generation.
 
 Semantic-definition changes for a mutable pre-add filter therefore require an explicit deployment/rebuild/quiescent cutover rather than opportunistic rolling write behavior.
@@ -1739,6 +1775,7 @@ Prove:
 - active `immutable-v1` rejects add/addMany;
 - active `preadd-v1` accepts explicit synchronization writes;
 - non-healthy active generation synchronization does not implicitly change health;
+- `add()` routes through the same managed bulk-write capability as a one-item batch so Redis `managed_bitmap_written` semantics cannot be bypassed;
 - add success is retry-safe;
 - addMany uses bounded bulk capability;
 - active Bloom operation failure propagates;
@@ -2251,7 +2288,7 @@ M5 provides membership synchronization primitives, not transaction wrappers.
 
 ### INV-M5-012 — Redis final trusted-negative decision is atomically authorized and bounded
 
-After a full strict descriptor read, the Redis final decision validates only the pinned revision/active safety fields, semantic metadata, storage/layout, managed-bitmap marker, and bit membership in one atomic EVAL operation. The hot-path control check is O(1) with respect to retained generation count. Redis scripts never discover an active version and then access undeclared dynamically constructed generation keys.
+After bounded active-snapshot + managed-generation descriptor preparation, the Redis final decision validates only the pinned revision/active safety fields, semantic metadata, storage/layout, managed-bitmap marker, and bit membership in one atomic EVAL operation. The hot-path control check is O(1) with respect to retained generation count. Redis scripts never discover an active version and then access undeclared dynamically constructed generation keys.
 
 ### INV-M5-013 — Active layout comes from generation storage
 
@@ -2273,11 +2310,15 @@ The supported Redis profile requires `noeviction`. In addition, once an M5-manag
 
 Callers never need to interpret Bloom probability to get the correct boolean.
 
-### INV-M5-018 — Laravel adapters remain thin
+### INV-M5-018 — Managed writes use the managed bulk-write path
+
+Package-facing `add()` and `addMany()` both use the M5 managed bulk-write capability so semantic validation and `managed_bitmap_written` cannot be bypassed by the public M5 API. Raw M2/M3 driver calls remain low-level APIs and are outside the M5 managed-generation safety contract.
+
+### INV-M5-019 — Laravel adapters remain thin
 
 Facade, validation rules, and commands delegate to Application services rather than duplicating correctness logic.
 
-### INV-M5-019 — M6 concerns stay out
+### INV-M5-020 — M6 concerns stay out
 
 No writer barriers, online dual-write rebuild, Sentinel/Cluster runtime claim, CDC/outbox, or backend epoch machinery appears in M5.
 
