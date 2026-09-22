@@ -67,4 +67,18 @@ final class RecordingRedisStructuredCommandExecutor implements RedisStructuredCo
     {
         return $this->structuredCalls;
     }
+
+    /**
+     * @return list<array{mode: 'structured', script: string, keys: list<string>, arguments: list<string>}>
+     */
+    public function calls(): array
+    {
+        return array_map(
+            static fn (array $call): array => [
+                'mode' => 'structured',
+                ...$call,
+            ],
+            $this->structuredCalls,
+        );
+    }
 }

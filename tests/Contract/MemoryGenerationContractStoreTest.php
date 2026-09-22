@@ -12,14 +12,30 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
 
 final class MemoryGenerationContractStoreTest extends GenerationContractStoreContractTestCase
 {
-    protected function makeDriver(): BloomDriver&BloomGenerationInspector
+    private MemoryBloomDriver $driver;
+
+    private MemoryGenerationContractStore $store;
+
+    protected function setUp(): void
     {
-        return new MemoryBloomDriver;
+        parent::setUp();
+
+        $this->driver = new MemoryBloomDriver;
+        $this->store = new MemoryGenerationContractStore($this->driver);
     }
 
-    protected function makeStore(
-        BloomGenerationInspector $inspector,
-    ): GenerationContractStore {
-        return new MemoryGenerationContractStore($inspector);
+    protected function driver(): BloomDriver
+    {
+        return $this->driver;
+    }
+
+    protected function inspector(): BloomGenerationInspector
+    {
+        return $this->driver;
+    }
+
+    protected function store(): GenerationContractStore
+    {
+        return $this->store;
     }
 }
