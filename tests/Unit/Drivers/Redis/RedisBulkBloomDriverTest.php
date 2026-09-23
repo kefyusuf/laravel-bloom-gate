@@ -18,6 +18,9 @@ function task6RedisLayout(): BloomLayout
     return BloomLayout::create(32, 3, ProbeAlgorithm::Sha256DoubleHashV1);
 }
 
+/**
+ * @param  list<int>  $values
+ */
 function task6RedisPositions(array $values, ?BloomLayout $layout = null): BitPositions
 {
     return BitPositions::forLayout(
