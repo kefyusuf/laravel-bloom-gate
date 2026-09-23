@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kefyusuf\BloomGate\Laravel;
 
 use Illuminate\Support\ServiceProvider;
+use Kefyusuf\BloomGate\Contracts\FilterRegistry;
+use Kefyusuf\BloomGate\Laravel\Redis\RedisTrustedNegativeProfileResolver;
 
 final class BloomGateServiceProvider extends ServiceProvider
 {
@@ -13,6 +15,17 @@ final class BloomGateServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../../config/bloom-gate.php',
             'bloom-gate',
+        );
+
+        $this->app->singleton(
+            FilterDefinitionResolver::class,
+        );
+        $this->app->singleton(
+            FilterRegistry::class,
+            ConfigFilterRegistry::class,
+        );
+        $this->app->singleton(
+            RedisTrustedNegativeProfileResolver::class,
         );
     }
 
