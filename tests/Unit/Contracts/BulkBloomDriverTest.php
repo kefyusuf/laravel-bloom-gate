@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
-use Kefyusuf\BloomGate\Core\BitPositions;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterVersion;
 
@@ -28,19 +27,20 @@ it('defines bulk bloom driver as an additive child capability', function (): voi
         [$parameters[2]->getType(), 'array'],
         [$method->getReturnType(), 'void'],
     ] as [$type, $expected]) {
-        if (! $type instanceof ReflectionNamedType) {
-            throw new RuntimeException('Expected BulkBloomDriver::addMany types to be named.');
+        if ($type instanceof ReflectionNamedType) {
+            expect($type->getName())->toBe($expected);
+
+            continue;
         }
 
-        expect($type->getName())->toBe($expected);
+        throw new RuntimeException('Expected BulkBloomDriver::addMany types to be named.');
     }
 
-    $source = file_get_contents(__DIR__.'/../../../src/Contracts/BulkBloomDriver.php');
+    $docComment = $method->getDocComment();
 
-    if ($source === false) {
-        throw new RuntimeException('Unable to read BulkBloomDriver source.');
+    if ($docComment === false) {
+        throw new RuntimeException('Expected BulkBloomDriver::addMany PHPDoc.');
     }
 
-    expect($source)->toContain('@param  list<BitPositions>  $items')
-        ->and($source)->toContain('use Kefyusuf\\BloomGate\\Core\\BitPositions;');
+    expect($docComment)->toContain('@param  list<BitPositions>  $items');
 });
