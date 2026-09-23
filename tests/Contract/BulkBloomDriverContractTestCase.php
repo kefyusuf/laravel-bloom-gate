@@ -20,13 +20,13 @@ abstract class BulkBloomDriverContractTestCase extends TestCase
 
     public function test_empty_batch_is_a_successful_no_op_without_storage(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $this->makeBulkDriver()->addMany(
             $this->filterName(),
             $this->version(),
             [],
         );
-
-        self::assertTrue(true);
     }
 
     public function test_non_empty_batch_sets_every_items_positions(): void
