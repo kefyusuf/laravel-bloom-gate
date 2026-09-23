@@ -45,5 +45,5 @@ it('requires marker to be absent or canonical one before bulk mutation', functio
         ->and($script)->toContain(
             "if managedBitmapWritten ~= false and managedBitmapWritten ~= '1' then",
         )
-        ->and($script)->toContain('__STORAGE_CORRUPT__');
+        ->and($script)->toContain((string) RedisBloomScripts::STATUS_STORAGE_CORRUPT);
 });
