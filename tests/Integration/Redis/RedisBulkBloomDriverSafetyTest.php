@@ -165,6 +165,37 @@ final class RedisBulkBloomDriverSafetyTest extends TestCase
         }
     }
 
+    public function test_written_marker_with_missing_bitmap_is_storage_corruption(): void
+    {
+        $this->driver->provision(
+            $this->filterName(),
+            $this->version(),
+            $this->layout(),
+        );
+        $item = $this->positions([1, 4, 7]);
+
+        $this->driver->addMany(
+            $this->filterName(),
+            $this->version(),
+            [$item],
+        );
+
+        self::assertSame(1, $this->executor->evaluate(
+            "return redis.call('DEL', KEYS[1])",
+            [$this->bitmapKey()],
+            [],
+        ));
+        self::assertSame(1, $this->markerIsCanonicalOne());
+
+        $this->expectException(BloomStorageCorrupt::class);
+
+        $this->driver->addMany(
+            $this->filterName(),
+            $this->version(),
+            [$item],
+        );
+    }
+
     public function test_malformed_late_position_is_rejected_before_marker_or_bitmap_mutation(): void
     {
         $this->driver->provision(
