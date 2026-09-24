@@ -29,6 +29,7 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\ManagedGenerationDescriptor;
 use Kefyusuf\BloomGate\Core\NormalizationIdentity;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
+use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\QuerySafetyDescriptor;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use LogicException;
@@ -291,7 +292,7 @@ function task13Fixture(
     $layout = BloomLayout::create(
         64,
         3,
-        \Kefyusuf\BloomGate\Core\ProbeAlgorithm::Sha256DoubleHashV1,
+        ProbeAlgorithm::Sha256DoubleHashV1,
     );
     $normalizer = new Task13Normalizer($normalizerFailure);
     $authoritativeSet = new Task13AuthoritativeSet(
