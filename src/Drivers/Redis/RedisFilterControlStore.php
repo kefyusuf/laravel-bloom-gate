@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace Kefyusuf\BloomGate\Drivers\Redis;
 
 use InvalidArgumentException;
+use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlStoreOperationFailed;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlWriteConflict;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
+use Kefyusuf\BloomGate\Core\ActiveGenerationSnapshot;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
+use Kefyusuf\BloomGate\Core\FilterVersion;
+use Kefyusuf\BloomGate\Core\HealthState;
+use Kefyusuf\BloomGate\Core\LifecycleState;
 use UnexpectedValueException;
 
-final readonly class RedisFilterControlStore implements FilterControlStore
+final readonly class RedisFilterControlStore implements ActiveGenerationSnapshotReader, FilterControlStore
 {
     private const string STATUS_OK = '100';
 
@@ -31,6 +36,61 @@ final readonly class RedisFilterControlStore implements FilterControlStore
         private RedisKeyspace $keyspace,
         private RedisControlStateCodec $codec,
     ) {}
+
+    public function readActive(FilterName $name): ?ActiveGenerationSnapshot
+    {
+        $response = $this->evaluateStructured(
+            RedisQuerySafetyScripts::readActive(),
+            [$this->keyspace->stateKey($name)],
+            [],
+        );
+
+        if ($response === []) {
+            throw $this->unexpectedReply('readActive', $response);
+        }
+
+        if ($response[0] === RedisQuerySafetyScripts::STATUS_NO_ACTIVE) {
+            if (count($response) !== 1) {
+                throw $this->unexpectedReply('readActive', $response);
+            }
+
+            return null;
+        }
+
+        if ($response[0] === RedisQuerySafetyScripts::STATUS_CORRUPT) {
+            if (count($response) !== 1) {
+                throw $this->unexpectedReply('readActive', $response);
+            }
+
+            throw new FilterControlStateCorrupt(
+                'Redis active-generation control snapshot is corrupt.',
+            );
+        }
+
+        if (
+            $response[0] !== RedisQuerySafetyScripts::STATUS_ACTIVE
+            || count($response) !== 5
+        ) {
+            throw $this->unexpectedReply('readActive', $response);
+        }
+
+        $revision = $this->parseCanonicalPositiveInt(
+            $response[1],
+            'revision',
+        );
+        $activeVersion = $this->parseCanonicalPositiveInt(
+            $response[2],
+            'active_version',
+        );
+
+        return new ActiveGenerationSnapshot(
+            filterName: $name,
+            revision: FilterStateRevision::fromInt($revision),
+            activeVersion: FilterVersion::fromInt($activeVersion),
+            lifecycle: $this->decodeLifecycle($response[3]),
+            health: $this->decodeHealth($response[4]),
+        );
+    }
 
     public function read(FilterName $name): ?FilterControlState
     {

@@ -54,6 +54,11 @@ final readonly class BypassReason
         return self::fromCode('backend_unavailable');
     }
 
+    public static function backendProfileUnasserted(): self
+    {
+        return self::fromCode('backend_profile_unasserted');
+    }
+
     public static function operationFailed(): self
     {
         return self::fromCode('operation_failed');
