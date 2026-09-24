@@ -14,6 +14,7 @@ use Kefyusuf\BloomGate\Core\BypassReason;
 use Kefyusuf\BloomGate\Core\Membership;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task13Fixture;
+
 use function Kefyusuf\BloomGate\Tests\Support\Application\task13Fixture;
 
 function task13Gate(Task13Fixture $fixture): QueryGate
