@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\ServiceProvider;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
 use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
@@ -159,7 +159,7 @@ it('facade resolves the same thin manager and delegates to canonical application
 });
 
 it('keeps config publishing stable after full service wiring', function (): void {
-    $paths = Illuminate\Support\ServiceProvider::pathsToPublish(
+    $paths = ServiceProvider::pathsToPublish(
         BloomGateServiceProvider::class,
         'bloom-gate-config',
     );
