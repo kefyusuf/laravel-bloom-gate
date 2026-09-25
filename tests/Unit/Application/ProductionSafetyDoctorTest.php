@@ -129,7 +129,8 @@ it('reports a missing trusted-negative profile as not enabled and never pass', f
 });
 
 it('makes every unsupported redis production prerequisite visible', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics {        public function runtime(): RedisRuntimeInfo
+    $diagnostics = new class implements RedisRuntimeDiagnostics {
+        public function runtime(): RedisRuntimeInfo
         {
             return new RedisRuntimeInfo(
                 version: '7.4.0',
@@ -173,8 +174,7 @@ it('makes every unsupported redis production prerequisite visible', function ():
 });
 
 it('never reports inaccessible durability prerequisites as pass', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
+    $diagnostics = new class implements RedisRuntimeDiagnostics {
         public function runtime(): RedisRuntimeInfo
         {
             return new RedisRuntimeInfo(
@@ -209,8 +209,7 @@ it('never reports inaccessible durability prerequisites as pass', function (): v
 });
 
 it('classifies an unreachable redis runtime without manufacturing prerequisite passes', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
+    $diagnostics = new class implements RedisRuntimeDiagnostics {
         public function runtime(): RedisRuntimeInfo
         {
             throw new RedisDiagnosticsUnavailable('Redis connection refused.');
