@@ -25,7 +25,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: a2032535e1a76f5d7deaec9195cf24c09d9ea90c
+          ref: a5c4b6382a47a419033c40610c4d63a0d28f7d4b
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -100,7 +100,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: a2032535e1a76f5d7deaec9195cf24c09d9ea90c
+          ref: a5c4b6382a47a419033c40610c4d63a0d28f7d4b
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -127,7 +127,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: a2032535e1a76f5d7deaec9195cf24c09d9ea90c
+          ref: a5c4b6382a47a419033c40610c4d63a0d28f7d4b
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
