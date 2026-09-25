@@ -15,7 +15,7 @@ final readonly class ProductionSafetyCheck
         private string $message,
     ) {
         if (
-            preg_match('/\A[a-z0-9](?:[a-z0-9._-]{0,190}[a-z0-9])?\z/', $this->code) !== 1
+            preg_match('/\A[A-Za-z0-9](?:[A-Za-z0-9._-]{0,190}[A-Za-z0-9])?\z/', $this->code) !== 1
         ) {
             throw new InvalidArgumentException(
                 'Production safety check code is invalid.',
