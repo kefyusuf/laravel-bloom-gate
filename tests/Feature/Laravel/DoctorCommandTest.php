@@ -105,9 +105,8 @@ it('keeps doctor command discovery side-effect free', function (): void {
         ->and($output)->toContain('bloom:doctor');
 });
 
-
 it('classifies an unreachable redis runtime before resolving filter infrastructure', function (): void {
-    if (! class_exists('RedisException', false)) {
+    if (class_exists('RedisException', false) === false) {
         class_alias(FakeRedisClientException::class, 'RedisException');
     }
 

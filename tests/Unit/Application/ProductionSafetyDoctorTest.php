@@ -21,8 +21,7 @@ function task18Doctor(
     ProductionSafetySettings $settings,
     RedisRuntimeDiagnostics $diagnostics,
 ): ProductionSafetyDoctor {
-    $registry = new class implements FilterRegistry
-    {
+    $registry = new class implements FilterRegistry {
         public function globalQueryOptimizationEnabled(): bool
         {
             return true;
@@ -34,8 +33,7 @@ function task18Doctor(
         }
     };
 
-    $filters = new class implements ProductionFilterInspector
-    {
+    $filters = new class implements ProductionFilterInspector {
         public function inspect(FilterName $name): ProductionFilterRuntimeStatus
         {
             throw new LogicException(
@@ -44,8 +42,7 @@ function task18Doctor(
         }
     };
 
-    $configuration = new class($settings) implements ProductionSafetyConfiguration
-    {
+    $configuration = new class($settings) implements ProductionSafetyConfiguration {
         public function __construct(
             private readonly ProductionSafetySettings $settings,
         ) {}
@@ -66,8 +63,7 @@ function task18Doctor(
 
 function task18HealthyRedisDiagnostics(): RedisRuntimeDiagnostics
 {
-    return new class implements RedisRuntimeDiagnostics
-    {
+    return new class implements RedisRuntimeDiagnostics {
         public function runtime(): RedisRuntimeInfo
         {
             return new RedisRuntimeInfo(
@@ -133,9 +129,7 @@ it('reports a missing trusted-negative profile as not enabled and never pass', f
 });
 
 it('makes every unsupported redis production prerequisite visible', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
-        public function runtime(): RedisRuntimeInfo
+    $diagnostics = new class implements RedisRuntimeDiagnostics {        public function runtime(): RedisRuntimeInfo
         {
             return new RedisRuntimeInfo(
                 version: '7.4.0',
