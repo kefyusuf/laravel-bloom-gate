@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Tests\Support\Laravel\Task17FilterDefinition;
+use Kefyusuf\BloomGate\Tests\Support\Redis\FakeRedisClientException;
 
 beforeEach(function (): void {
     config()->set('bloom-gate.default', 'memory');
@@ -102,4 +103,38 @@ it('keeps doctor command discovery side-effect free', function (): void {
 
     expect($exit)->toBe(0)
         ->and($output)->toContain('bloom:doctor');
+});
+
+
+it('classifies an unreachable redis runtime before resolving filter infrastructure', function (): void {
+    if (! class_exists('RedisException', false)) {
+        class_alias(FakeRedisClientException::class, 'RedisException');
+    }
+
+    app()->bind(
+        'redis',
+        static fn (): never => throw new RedisException(
+            'secret-redis-endpoint must never be printed',
+        ),
+    );
+
+    config()->set('bloom-gate.default', 'redis');
+    config()->set(
+        'bloom-gate.drivers.redis.trusted_negative_profile',
+        'standalone-primary-durable-v1',
+    );
+    config()->set('bloom-gate.filters', []);
+
+    $exit = Artisan::call('bloom:doctor');
+    $output = Artisan::output();
+
+    expect($exit)->toBe(1)
+        ->and($output)->toContain('FAIL redis_reachable')
+        ->and($output)->toContain('FAIL redis_version')
+        ->and($output)->toContain('FAIL redis_topology')
+        ->and($output)->toContain('FAIL redis_primary')
+        ->and($output)->not->toContain('secret-redis-endpoint')
+        ->and($output)->not->toContain(
+            'Bloom Gate doctor failed because diagnostics could not be evaluated safely.',
+        );
 });
