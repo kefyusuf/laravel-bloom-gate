@@ -19,17 +19,11 @@ final class ActivateCommand extends Command
 
     protected $description = 'Freshly verify and activate the current Bloom Gate candidate.';
 
-    public function __construct(
-        private readonly ManagedFilterActivator $activator,
-    ) {
-        parent::__construct();
-    }
-
     public function handle(): int
     {
         try {
             $name = $this->filterName();
-            $state = $this->activator->activate(
+            $state = app(ManagedFilterActivator::class)->activate(
                 $name,
                 quiescent: (bool) $this->option('quiescent'),
             );

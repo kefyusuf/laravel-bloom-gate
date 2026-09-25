@@ -17,17 +17,11 @@ final class BuildCommand extends Command
 
     protected $description = 'Build a new Bloom Gate candidate generation.';
 
-    public function __construct(
-        private readonly ManagedFilterBuilder $builder,
-    ) {
-        parent::__construct();
-    }
-
     public function handle(): int
     {
         try {
             $name = $this->filterName();
-            $result = $this->builder->buildResult($name);
+            $result = app(ManagedFilterBuilder::class)->buildResult($name);
             $candidate = $result->state()->candidateVersion();
 
             if ($candidate === null) {

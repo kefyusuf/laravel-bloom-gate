@@ -19,13 +19,6 @@ final class StatusCommand extends Command
 
     protected $description = 'Show Bloom Gate filter lifecycle and semantic-binding status.';
 
-    public function __construct(
-        private readonly ManagedFilterStatusReader $statuses,
-        private readonly Repository $config,
-    ) {
-        parent::__construct();
-    }
-
     public function handle(): int
     {
         try {
@@ -38,7 +31,9 @@ final class StatusCommand extends Command
             }
 
             foreach ($filters as $name) {
-                $this->renderStatus($this->statuses->read($name));
+                $this->renderStatus(
+                    app(ManagedFilterStatusReader::class)->read($name),
+                );
             }
 
             return self::SUCCESS;
@@ -66,7 +61,7 @@ final class StatusCommand extends Command
             return [FilterName::fromString($filter)];
         }
 
-        $configured = $this->config->get('bloom-gate.filters');
+        $configured = app(Repository::class)->get('bloom-gate.filters');
 
         if (! is_array($configured)) {
             throw new InvalidArgumentException(

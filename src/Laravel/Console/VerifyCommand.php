@@ -17,17 +17,11 @@ final class VerifyCommand extends Command
 
     protected $description = 'Verify the current Bloom Gate candidate generation.';
 
-    public function __construct(
-        private readonly ManagedFilterVerifier $verifier,
-    ) {
-        parent::__construct();
-    }
-
     public function handle(): int
     {
         try {
             $name = $this->filterName();
-            $result = $this->verifier->verify($name);
+            $result = app(ManagedFilterVerifier::class)->verify($name);
 
             $this->line(sprintf(
                 'filter=%s candidate=v%d status=%s checked=%d',

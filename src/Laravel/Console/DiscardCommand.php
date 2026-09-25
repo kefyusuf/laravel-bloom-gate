@@ -16,17 +16,11 @@ final class DiscardCommand extends Command
 
     protected $description = 'Retire and clear the current Bloom Gate candidate generation.';
 
-    public function __construct(
-        private readonly CandidateDiscarder $discarder,
-    ) {
-        parent::__construct();
-    }
-
     public function handle(): int
     {
         try {
             $name = $this->filterName();
-            $state = $this->discarder->discard($name);
+            $state = app(CandidateDiscarder::class)->discard($name);
             $active = $state->activeVersion();
 
             $this->line(sprintf(

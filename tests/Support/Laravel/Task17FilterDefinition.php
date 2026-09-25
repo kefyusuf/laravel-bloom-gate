@@ -43,7 +43,7 @@ final class Task17AuthoritativeSet implements AuthoritativeSet
     public ?int $throwAfter = null;
 
     /**
-     * @param list<string|int> $values
+     * @param  list<string|int>  $values
      */
     public function __construct(
         public array $values,
@@ -93,7 +93,7 @@ final class Task17FilterDefinition implements FilterDefinition
     public Task17AuthoritativeSet $authoritativeSet;
 
     /**
-     * @param list<string|int> $values
+     * @param  list<string|int>  $values
      */
     public function __construct(
         array $values,

@@ -57,7 +57,7 @@ function task17Generation(
         }
     }
 
-    throw new \RuntimeException('Task 17 generation not found.');
+    throw new RuntimeException('Task 17 generation not found.');
 }
 
 function task17CreateEmptyShadowCandidate(
@@ -73,7 +73,7 @@ function task17CreateEmptyShadowCandidate(
     $candidate = $allocated->candidateVersion();
 
     if ($candidate === null) {
-        throw new \RuntimeException('Expected Task 17 candidate allocation.');
+        throw new RuntimeException('Expected Task 17 candidate allocation.');
     }
 
     app(GenerationLifecycleTransitioner::class)->transition(
@@ -352,6 +352,34 @@ it('lists configured filters when status is called without a filter argument', f
     expect($output)->toContain('users.email');
 });
 
+it('keeps lifecycle command discovery lazy and side effect free', function (): void {
+    app()->bind(
+        'redis',
+        static fn (): never => throw new RuntimeException(
+            'Redis must not resolve while discovering Bloom Gate commands.',
+        ),
+    );
+    app()->bind(
+        'db',
+        static fn (): never => throw new RuntimeException(
+            'Database must not resolve while discovering Bloom Gate commands.',
+        ),
+    );
+
+    config()->set('bloom-gate.default', 'redis');
+    config()->set('bloom-gate.drivers.redis.connection', 'definitely-missing');
+
+    $exit = Artisan::call('list');
+    $output = Artisan::output();
+
+    expect($exit)->toBe(0)
+        ->and($output)->toContain('bloom:build')
+        ->and($output)->toContain('bloom:verify')
+        ->and($output)->toContain('bloom:activate')
+        ->and($output)->toContain('bloom:discard')
+        ->and($output)->toContain('bloom:status');
+});
+
 it('keeps console commands as thin application adapters', function (): void {
     foreach ([
         'BuildCommand.php',
@@ -364,7 +392,7 @@ it('keeps console commands as thin application adapters', function (): void {
         $source = file_get_contents($path);
 
         if ($source === false) {
-            throw new \RuntimeException('Unable to read Task 17 console adapter.');
+            throw new RuntimeException('Unable to read Task 17 console adapter.');
         }
 
         expect($source)->not->toContain('Drivers\\')
