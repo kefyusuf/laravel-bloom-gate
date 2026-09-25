@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Laravel;
 
-use RuntimeException;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
 use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
@@ -12,6 +11,7 @@ use Kefyusuf\BloomGate\Core\AuthoritativeSetIdentity;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
 use Kefyusuf\BloomGate\Core\NormalizationIdentity;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
+use RuntimeException;
 
 final class Task17Normalizer implements ValueNormalizer
 {
@@ -19,7 +19,9 @@ final class Task17Normalizer implements ValueNormalizer
 
     public function __construct(
         public string $semanticIdentity = 'task17-normalizer@1',
-    ) {}
+    ) {
+        // Explicit test-fixture constructor body.
+    }
 
     public function identity(): NormalizationIdentity
     {
@@ -46,7 +48,9 @@ final class Task17AuthoritativeSet implements AuthoritativeSet
     public function __construct(
         public array $values,
         public string $semanticIdentity = 'task17-authoritative@1',
-    ) {}
+    ) {
+        // Explicit test-fixture constructor body.
+    }
 
     public function identity(): AuthoritativeSetIdentity
     {
