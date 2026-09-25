@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Laravel;
 
+use RuntimeException;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
 use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
@@ -11,7 +12,6 @@ use Kefyusuf\BloomGate\Core\AuthoritativeSetIdentity;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
 use Kefyusuf\BloomGate\Core\NormalizationIdentity;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
-use RuntimeException;
 
 final class Task17Normalizer implements ValueNormalizer
 {
