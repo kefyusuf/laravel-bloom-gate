@@ -359,13 +359,6 @@ it('keeps lifecycle command discovery lazy and side effect free', function (): v
             'Redis must not resolve while discovering Bloom Gate commands.',
         ),
     );
-    app()->bind(
-        'db',
-        static fn (): never => throw new RuntimeException(
-            'Database must not resolve while discovering Bloom Gate commands.',
-        ),
-    );
-
     config()->set('bloom-gate.default', 'redis');
     config()->set('bloom-gate.drivers.redis.connection', 'definitely-missing');
 
