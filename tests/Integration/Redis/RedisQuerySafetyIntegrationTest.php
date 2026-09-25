@@ -29,6 +29,7 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Support\Redis\CountingRedisStructuredCommandExecutor;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -58,7 +59,7 @@ final class RedisQuerySafetyIntegrationTest extends TestCase
             ),
         );
         $this->keyspace = RedisKeyspace::fromPrefix(
-            'lbgquery'.bin2hex((string) random_bytes(8)),
+            RedisTestKeyPrefix::unique('lbgquery'),
         );
         $this->control = new RedisFilterControlStore(
             executor: $this->executor,
