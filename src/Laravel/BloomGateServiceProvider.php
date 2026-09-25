@@ -6,6 +6,7 @@ namespace Kefyusuf\BloomGate\Laravel;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
@@ -23,10 +24,10 @@ use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
 use Kefyusuf\BloomGate\Contracts\BloomGenerationInspector;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
+use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
-use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
@@ -151,11 +152,17 @@ final class BloomGateServiceProvider extends ServiceProvider
 
         $this->app->singleton(
             RedisRuntimeDiagnostics::class,
-            static fn (Application $app): RedisRuntimeDiagnostics => new LaravelRedisRuntimeDiagnostics(
-                static fn () => $app
-                    ->make('redis')
-                    ->connection(self::redisConnectionName($app)),
-            ),
+            static function (Application $app): RedisRuntimeDiagnostics {
+                return new LaravelRedisRuntimeDiagnostics(
+                    static function () use ($app): Connection {
+                        $redis = $app->make('redis');
+
+                        return $redis->connection(
+                            self::redisConnectionName($app),
+                        );
+                    },
+                );
+            },
         );
 
         $this->app->singleton(
