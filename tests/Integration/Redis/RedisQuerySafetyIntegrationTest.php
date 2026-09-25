@@ -58,7 +58,7 @@ final class RedisQuerySafetyIntegrationTest extends TestCase
             ),
         );
         $this->keyspace = RedisKeyspace::fromPrefix(
-            'lbgquery'.bin2hex(random_bytes(8)),
+            'lbgquery'.bin2hex((string) random_bytes(8)),
         );
         $this->control = new RedisFilterControlStore(
             executor: $this->executor,
