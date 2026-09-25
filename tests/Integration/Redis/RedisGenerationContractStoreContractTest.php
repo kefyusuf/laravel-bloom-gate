@@ -13,6 +13,7 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Contract\GenerationContractStoreContractTestCase;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use Throwable;
@@ -32,7 +33,7 @@ final class RedisGenerationContractStoreContractTest extends GenerationContractS
     {
         parent::setUp();
 
-        $prefix = 'lbgsemantic'.bin2hex((string) random_bytes(8));
+        $prefix = RedisTestKeyPrefix::unique('lbgsemantic');
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
