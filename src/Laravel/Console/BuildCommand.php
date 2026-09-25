@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kefyusuf\BloomGate\Laravel\Console;
+
+use Illuminate\Console\Command;
+use InvalidArgumentException;
+use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
+use Kefyusuf\BloomGate\Core\FilterName;
+use LogicException;
+use Throwable;
+
+final class BuildCommand extends Command
+{
+    protected $signature = 'bloom:build {filter : Registered Bloom Gate filter name}';
+
+    protected $description = 'Build a new Bloom Gate candidate generation.';
+
+    public function __construct(
+        private readonly ManagedFilterBuilder $builder,
+    ) {
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
+        try {
+            $name = $this->filterName();
+            $result = $this->builder->buildResult($name);
+            $candidate = $result->state()->candidateVersion();
+
+            if ($candidate === null) {
+                throw new LogicException(
+                    'Managed build completed without a candidate generation.',
+                );
+            }
+
+            $layout = $result->layout();
+
+            $this->line(sprintf(
+                'filter=%s candidate=v%d bits=%d hashes=%d algorithm=%s processed=%d',
+                $name->value(),
+                $candidate->value(),
+                $layout->bitCount(),
+                $layout->hashCount(),
+                $layout->probeAlgorithm()->name,
+                $result->processedCount(),
+            ));
+
+            return self::SUCCESS;
+        } catch (Throwable $failure) {
+            $this->error($failure->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    private function filterName(): FilterName
+    {
+        $filter = $this->argument('filter');
+
+        if (! is_string($filter)) {
+            throw new InvalidArgumentException(
+                'Bloom Gate filter argument must be a string.',
+            );
+        }
+
+        return FilterName::fromString($filter);
+    }
+}
