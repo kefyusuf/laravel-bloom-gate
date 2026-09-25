@@ -27,7 +27,7 @@ final class RedisFilterControlStoreContractTest extends FilterControlStoreContra
     {
         parent::setUp();
 
-        $this->prefix = 'lbgcontrol'.bin2hex(random_bytes(8));
+        $this->prefix = 'lbgcontrol'.bin2hex((string) random_bytes(8));
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
