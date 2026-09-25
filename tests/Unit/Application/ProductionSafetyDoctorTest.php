@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/../../Support/Application/Task18ProductionSafetyFixtures.php';
+
 use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
