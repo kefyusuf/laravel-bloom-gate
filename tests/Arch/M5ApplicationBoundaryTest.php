@@ -173,7 +173,9 @@ it('keeps drivers independent from application and lifecycle', function (): void
         expect($contents)->not->toContain(
             'Kefyusuf\\BloomGate\\Application\\',
             sprintf('Driver depends on Application at [%s].', $path),
-        )->not->toContain(
+        );
+
+        expect($contents)->not->toContain(
             'Kefyusuf\\BloomGate\\Lifecycle\\',
             sprintf('Driver depends on Lifecycle at [%s].', $path),
         );
@@ -263,31 +265,42 @@ it('keeps query gate on query safety and authorized probe abstractions', functio
         'Application/QuerySafetyDescriptorResolver.php',
     );
 
-    expect($gate)
-        ->toContain('use Kefyusuf\\BloomGate\\Contracts\\AuthorizedProbe;')
-        ->toContain('private AuthorizedProbe $authorizedProbe')
-        ->toContain('private QuerySafetyDescriptorResolver $resolver')
-        ->not->toContain('Kefyusuf\\BloomGate\\Drivers\\Redis\\')
-        ->not->toContain('Kefyusuf\\BloomGate\\Laravel\\')
-        ->not->toContain('RedisAuthorizedProbe')
-        ->not->toContain('RedisQuerySafetyScripts');
+    expect($gate)->toContain(
+        'use Kefyusuf\\BloomGate\\Contracts\\AuthorizedProbe;',
+    );
+    expect($gate)->toContain('private AuthorizedProbe $authorizedProbe');
+    expect($gate)->toContain('private QuerySafetyDescriptorResolver $resolver');
+    expect($gate)->not->toContain('Kefyusuf\\BloomGate\\Drivers\\Redis\\');
+    expect($gate)->not->toContain('Kefyusuf\\BloomGate\\Laravel\\');
+    expect($gate)->not->toContain('RedisAuthorizedProbe');
+    expect($gate)->not->toContain('RedisQuerySafetyScripts');
 
-    expect($resolver)
-        ->toContain('use Kefyusuf\\BloomGate\\Contracts\\ActiveGenerationSnapshotReader;')
-        ->toContain('use Kefyusuf\\BloomGate\\Contracts\\GenerationContractStore;')
-        ->not->toContain('Kefyusuf\\BloomGate\\Drivers\\Redis\\')
-        ->not->toContain('Kefyusuf\\BloomGate\\Laravel\\');
+    expect($resolver)->toContain(
+        'use Kefyusuf\\BloomGate\\Contracts\\ActiveGenerationSnapshotReader;',
+    );
+    expect($resolver)->toContain(
+        'use Kefyusuf\\BloomGate\\Contracts\\GenerationContractStore;',
+    );
+    expect($resolver)->not->toContain(
+        'Kefyusuf\\BloomGate\\Drivers\\Redis\\',
+    );
+    expect($resolver)->not->toContain('Kefyusuf\\BloomGate\\Laravel\\');
 });
 
 it('keeps filter definition contracts framework neutral', function (): void {
     $definition = m5ArchitectureSource('Contracts/FilterDefinition.php');
 
-    expect($definition)
-        ->toContain('interface FilterDefinition')
-        ->toContain('public function normalizer(): ValueNormalizer;')
-        ->toContain('public function authoritativeSet(): AuthoritativeSet;')
-        ->toContain('public function consistency(): ConsistencyContract;')
-        ->not->toContain('Illuminate\\')
-        ->not->toContain('Kefyusuf\\BloomGate\\Laravel\\')
-        ->not->toContain('Kefyusuf\\BloomGate\\Drivers\\');
+    expect($definition)->toContain('interface FilterDefinition');
+    expect($definition)->toContain(
+        'public function normalizer(): ValueNormalizer;',
+    );
+    expect($definition)->toContain(
+        'public function authoritativeSet(): AuthoritativeSet;',
+    );
+    expect($definition)->toContain(
+        'public function consistency(): ConsistencyContract;',
+    );
+    expect($definition)->not->toContain('Illuminate\\');
+    expect($definition)->not->toContain('Kefyusuf\\BloomGate\\Laravel\\');
+    expect($definition)->not->toContain('Kefyusuf\\BloomGate\\Drivers\\');
 });
