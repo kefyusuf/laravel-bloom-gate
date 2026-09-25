@@ -1,12 +1,12 @@
 # Redis Keyspace
 
-Redis keys are deterministic and Cluster-aware by construction from v1.
+Redis keys are deterministic and use a same-filter hash tag from v1.
 
-Redis Cluster runtime support is **not** an official package claim until dedicated Cluster integration evidence exists.
+Redis Cluster runtime support is **not** an M5 support claim.
 
 ## Logical-filter hash tag
 
-All keys for one logical filter use the exact case-sensitive `FilterName` inside the same Redis hash tag:
+All keys for one logical filter use the exact case-sensitive `FilterName` inside:
 
 ```text
 {<filter-name>}
@@ -18,11 +18,11 @@ Example:
 {products.sku}
 ```
 
-Filter names exclude braces, so application-controlled filter identity cannot alter hash-tag boundaries.
+Filter names exclude braces, so application-controlled identity cannot change hash-tag boundaries.
 
-## M3 generation data-plane keys
+## Generation keys
 
-Each `FilterName + FilterVersion` generation owns:
+Each `FilterName + FilterVersion` owns:
 
 ```text
 <prefix>:{<filter-name>}:v:<version>:meta
@@ -36,73 +36,111 @@ lbg:{products.sku}:v:1:meta
 lbg:{products.sku}:v:1:bf
 ```
 
-The version is canonical unpadded base-10. `v:1` is valid; `v:000001` is not canonical.
+The version is canonical unpadded base-10.
 
-### Generation metadata
+## `:meta` generation HASH
 
-The `:meta` HASH is the canonical provision marker:
+The canonical provision/layout fields remain:
 
 ```text
 format           redis-bitmap-v1
 bit_count        <canonical positive decimal>
 hash_count       <canonical positive decimal>
-probe_algorithm  <non-empty algorithm identifier>
+probe_algorithm  <algorithm identifier>
 ```
 
-A valid metadata key with no `:bf` key is a provisioned empty generation.
+M5 may additionally bind:
 
-Unknown additive generation-metadata HASH fields are ignored. An unknown generation storage `format` is corruption. A structurally valid but different probe algorithm is a layout incompatibility, not corruption.
+```text
+normalization_fingerprint
+authoritative_set_fingerprint
+consistency_fingerprint
+```
 
-### Generation bitmap
+Each fingerprint uses:
+
+```text
+sha256:<64 lowercase hex>
+```
+
+The three semantic fields are an all-or-none generation contract.
+
+### Legacy/unbound generation
+
+If none of the semantic fields exists, the generation can still be valid M3 low-level Bloom storage.
+
+M5 treats it as unbound and query-skip-ineligible.
+
+This state is not automatically corruption.
+
+### Bound generation
+
+If all three semantic fields exist and are canonical, they are immutable for that generation.
+
+Binding the same values again is idempotent.
+
+Attempting to bind different semantic fingerprints conflicts.
+
+A partial semantic binding is corruption rather than a valid migration state.
+
+## Managed bitmap marker
+
+Managed non-empty bulk writes set:
+
+```text
+managed_bitmap_written  1
+```
+
+The marker is optional before any managed bitmap write.
+
+If it is present it must equal `1`.
+
+If it equals `1` but the `:bf` key is missing, managed storage is unsafe/corrupt and cannot authorize a negative.
+
+The marker prevents data loss from masquerading as an empty Bloom generation.
+
+## Bitmap key
 
 The `:bf` key is a Redis STRING used with `SETBIT` / `GETBIT`.
 
-Provision does not eagerly allocate the complete bitmap. No TTL is assigned to generation keys.
+Provision does not eagerly allocate a full bitmap.
 
-### Generation corruption boundary
+For a genuinely empty/never-written valid generation, the bitmap may be absent.
 
-Examples classified as Bloom storage corruption:
+No TTL is assigned by the package to managed generation keys.
+
+## Generation corruption boundary
+
+Examples include:
 
 - bitmap exists while metadata is missing;
-- metadata key has a non-HASH type;
-- bitmap key has a non-STRING type;
-- required metadata fields are missing;
-- numeric metadata is non-canonical or outside protocol limits;
-- generation storage format is unknown.
+- metadata is not a HASH;
+- bitmap is not a STRING;
+- required layout fields are missing/malformed;
+- storage format is unknown;
+- partial/invalid M5 semantic fields;
+- invalid `managed_bitmap_written`;
+- `managed_bitmap_written=1` while bitmap storage is missing.
 
-Corruption is never interpreted as membership absence and is never repaired silently.
+Corruption is never interpreted as membership absence.
 
-The raw M3 recovery primitive remains:
+## Control-plane keys
 
-```text
-destroy -> provision
-```
-
-That low-level primitive does not authorize destructive in-place rebuild of an M4-managed generation. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
-
-## M4 control-plane keys
-
-Each logical filter owns one **durable current correctness-state** key:
+Each logical filter owns one durable current correctness-state key:
 
 ```text
 <prefix>:{<filter-name>}:state
 ```
 
-Example:
-
-```text
-lbg:{products.sku}:state
-```
-
-Redis CAS also uses one implementation-only staging key while materializing a replacement snapshot:
+CAS replacement uses:
 
 ```text
 <prefix>:{<filter-name>}:state:staging
 ```
 
-The staging key is not a second source of truth. It exists only during a CAS replacement, is written completely before the durable state is replaced, and is consumed by `RENAME` on success.
+The staging key is implementation-only and is not read as correctness state.
 
-Both control keys share the same logical-filter hash tag as the generation keys:
+Control and generation keys share the same filter hash tag:
 
 ```text
 lbg:{products.sku}:state
@@ -111,18 +149,14 @@ lbg:{products.sku}:v:1:meta
 lbg:{products.sku}:v:1:bf
 ```
 
-No separate `:active` or `:candidate` Redis key exists in M4. Those pointers remain fields inside the single durable revisioned control HASH.
-
-## control-v1
-
-The `:state` HASH uses strict `control-v1` persistence.
+## `control-v1`
 
 Required top-level fields:
 
 ```text
 format                  control-v1
-revision                <canonical positive decimal>
-last_allocated_version  <canonical positive decimal>
+revision
+last_allocated_version
 ```
 
 Optional pointers are absent when null:
@@ -132,49 +166,20 @@ active_version
 candidate_version
 ```
 
-Tracked generation fields use:
+Tracked generations:
 
 ```text
 g:<version>:lifecycle
 g:<version>:health
 ```
 
-Lifecycle tokens:
+Unlike additive generation metadata, `control-v1` is strict. Unknown fields are corruption.
 
-```text
-configured
-building
-shadow
-verified
-active
-retired
-```
-
-Health tokens:
-
-```text
-healthy
-degraded
-stale
-unavailable
-```
-
-Unlike M3 generation metadata, `control-v1` is strict: unknown control fields are corruption rather than ignored forward-compatible metadata.
-
-The codec also rejects:
-
-- duplicate fields;
-- malformed generation field names;
-- incomplete lifecycle/health pairs;
-- non-canonical or out-of-range integers;
-- unknown lifecycle/health tokens;
-- decoded snapshots that violate Core control-state invariants.
-
-The durable control state has no TTL. The package also assigns no TTL to the transient staging key; successful CAS consumes it with `RENAME`, while handled staging-write/rename failures explicitly delete it.
+M5 semantic fingerprints are deliberately **not** stored in `control-v1`; they are immutable properties of a concrete generation and therefore live in generation `:meta`.
 
 ## Prefix grammar
 
-The key prefix accepted by `RedisKeyspace` is 1–64 ASCII bytes:
+Accepted prefix:
 
 ```text
 [A-Za-z0-9][A-Za-z0-9._-]{0,63}
@@ -182,10 +187,26 @@ The key prefix accepted by `RedisKeyspace` is 1–64 ASCII bytes:
 
 Braces, colons, whitespace, Unicode, and leading punctuation are rejected.
 
-## Control state is not history
+## No TTL correctness model
 
-The `:state` HASH represents current correctness state.
+The package does not use TTL expiration as a lifecycle mechanism for:
 
-It is not an audit log and does not retain every historical snapshot.
+- generation metadata;
+- managed bitmap storage;
+- durable control state.
 
-M4 keeps retired generation records in the current snapshot. Future pruning may remove retired records, but `last_allocated_version` must remain monotonic so version numbers are never reused.
+Managed version ownership changes through explicit lifecycle operations.
+
+## Recovery versus managed rebuild
+
+The raw M3 driver still exposes low-level:
+
+```text
+destroy -> provision
+```
+
+That is not the M5 managed rebuild model.
+
+A managed replacement uses a new generation version.
+
+Online dual-write rebuild and automated old-generation retention/purge are deferred beyond M5.

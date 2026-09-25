@@ -38,8 +38,29 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 - Live Redis shared control-store contract, two-writer winner-preservation evidence, corruption fixtures, and no-TTL evidence.
 - Executable M4 architecture boundaries covering layer direction, Illuminate isolation, and Core persistence agnosticism.
 - ADR-0034 revisioned lifecycle control plane, ADR-0035 candidate verification/explicit promotion, and ADR-0036 Redis control-plane persistence.
+- M5 explicit framework-neutral `FilterDefinition`, `ValueNormalizer`, and `AuthoritativeSet` contracts.
+- Stable semantic identities and deterministic SHA-256 normalization, authoritative-set, and consistency fingerprints.
+- Generation-scoped semantic bindings with typed write-once conflict behavior.
+- Deterministic managed Bloom sizing from capacity and false-positive-rate targets.
+- Bounded managed bulk Bloom writes with Redis `managed_bitmap_written` loss detection.
+- Laravel filter registry with lazy definition resolution and side-effect-free package discovery.
+- Managed candidate build, verification, activation, discard, and status application workflows.
+- `immutable-v1` and `preadd-v1` consistency contracts.
+- Fresh activation verification and quiescent full reconciliation for `preadd-v1`.
+- Revision-pinned atomic Redis authorized probe that validates control state, generation layout, semantic bindings, and bitmap state before authorizing a negative.
+- Authoritative-correct `QueryGate::exists()` and diagnostic `existsResult()` fail-open orchestration.
+- Explicit managed `MembershipAdder::add()` / `addMany()` synchronization writes.
+- Laravel `BloomGate` facade and thin `BloomUnique` / `BloomExists` validation adapters.
+- Artisan lifecycle commands: `bloom:build`, `bloom:verify`, `bloom:activate`, `bloom:discard`, and `bloom:status`.
+- Read-only `bloom:doctor` production-safety diagnostics with deterministic PASS/WARN/FAIL/NOT_ENABLED classifications.
+- Dedicated Redis runtime diagnostics for version, topology, role, AOF, appendfsync, and maxmemory policy.
+- Real Redis diagnostics integration evidence without Redis configuration mutation.
+- Executable M5 architecture enforcement covering Application/Contracts framework neutrality, Driver direction, QueryGate abstraction boundaries, and Core persistence-token isolation.
+- ADR-0037 generation semantic fingerprints, ADR-0038 explicit filter definitions and managed sizing, ADR-0039 safe query gate and atomic authorized probe, and ADR-0040 M5 consistency contracts.
 
 ### Fixed
 
 - Redis control-store CAS precedence now resolves missing/stale expected-revision conflicts before proposed revision-progression validation, matching the Memory reference contract.
 - Redis control-state replacement now stages bounded HASH writes and swaps them into place only after full materialization, preventing large-snapshot Lua `unpack` failures from deleting the previous correctness snapshot.
+- Managed Redis query safety now treats a missing bitmap after a recorded managed write as corruption/bypass rather than as a valid empty generation.
+- Laravel command discovery remains lazy and does not resolve Redis merely to register lifecycle or doctor commands.

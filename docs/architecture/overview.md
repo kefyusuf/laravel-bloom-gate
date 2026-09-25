@@ -1,8 +1,8 @@
 # Architecture Overview
 
-Laravel Bloom Gate is a Laravel-first Composer package with a framework-independent internal core.
+Laravel Bloom Gate is Laravel-first at the package edge and framework-independent in its correctness-critical internal layers.
 
-The current internal dependency direction is:
+The enforced dependency direction is:
 
 ```text
 Core        -> PHP/SPL only
@@ -15,126 +15,208 @@ Laravel     -> internal package layers + Illuminate
 
 Only the `Laravel` namespace may depend on Illuminate.
 
-## Data plane
+## Core and data plane
 
-Core owns deterministic probe generation.
-
-Drivers never receive raw application values and do not perform normalization or hashing. They receive a `BloomLayout` at provision time and layout-bound `BitPositions` for add/check operations.
-
-The Bloom data-plane implementations are:
+Core owns deterministic normalization-independent Bloom probe semantics:
 
 ```text
-                    BloomDriver
-                    /         \
-                   /           \
-        MemoryBloomDriver   RedisBloomDriver
-                                  |
-                                  v
-                       RedisCommandExecutor
-                           ^             ^
-                           |             |
-                 test RESP executor   Laravel adapter
-                                         |
-                                         v
-                           Illuminate Redis Connection
+NormalizedValue
+      |
+      v
+BloomProbeGenerator + BloomLayout
+      |
+      v
+BitPositions
+      |
+      v
+BloomDriver / BulkBloomDriver
 ```
 
-The memory driver is deterministic process-local reference storage.
+Drivers never receive raw application values and never define business normalization.
 
-The Redis driver uses stock Redis bitmap primitives and atomic Lua/EVAL scripts. It remains framework-neutral.
-
-The raw M3 driver primitive:
-
-```text
-destroy -> provision
-```
-
-remains available for low-level storage recovery and direct driver use.
-
-For M4-managed generations, a managed version is not destructively rebuilt or reused in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
+The production Redis driver uses stock Redis bitmap primitives and Lua/EVAL. The Memory driver remains the deterministic reference implementation.
 
 ## Control plane
 
-M4 adds a separate logical-filter control plane.
+The M4 control plane remains the owner of current logical-filter lifecycle state:
 
-```text
-                         FilterControlStore
-                         /                \
-                        /                  \
-       MemoryFilterControlStore      RedisFilterControlStore
-                                             |
-                                             v
-                              RedisStructuredCommandExecutor
-                                      ^              ^
-                                      |              |
-                            test RESP executor   Laravel adapter
-```
-
-The control plane tracks:
-
-- current state revision;
-- `lastAllocatedVersion`;
-- optional active generation;
-- optional candidate generation;
+- revision;
+- monotonic generation allocation;
+- active/candidate pointers;
 - generation lifecycle;
 - generation health.
 
-The current snapshot is correctness state, not an audit log.
+`FilterControlStore` uses compare-and-swap semantics. Lifecycle policy remains outside persistence drivers.
 
-Control-plane writes use compare-and-swap semantics. Memory and Redis implementations conform to the same `FilterControlStore` contract.
+Lifecycle and health remain independent axes.
 
-Redis replacement CAS materializes the next strict snapshot in a same-slot staging HASH and only then swaps it into the durable `:state` key with `RENAME`. This keeps the previous correctness snapshot intact if replacement materialization fails.
+## M5 semantic contract
 
-## Lifecycle and verification
+M5 adds generation-scoped semantic compatibility on top of the M3 data plane and M4 control plane.
 
-M4 lifecycle and health are independent axes.
-
-The generic lifecycle policy intentionally excludes:
+A managed generation binds:
 
 ```text
-SHADOW   -> VERIFIED
-VERIFIED -> ACTIVE
+normalization fingerprint
+authoritative-set fingerprint
+consistency fingerprint
 ```
 
-Those transitions belong exclusively to:
+The semantic contract is immutable for one `FilterName + FilterVersion`.
 
-- version-bound activation verification evidence;
-- explicit candidate promotion.
+Bindings are write-once:
 
-Verification accepts `iterable<NormalizedValue>`, detects the first operational false negative, and never normalizes raw values.
+- same-value rebind is idempotent;
+- different-value rebind is a conflict.
 
-Promotion requires the current candidate to be `VERIFIED + HEALTHY` and changes only the control plane. It does not move or rewrite Bloom data.
+The fingerprint inputs are explicit stable semantic identities. They are not derived from PHP class names, closures, object hashes, source files, or arbitrary Laravel config serialization.
 
-## Probe eligibility versus query-skip authorization
+Existing provisioned M3 generations with none of the M5 semantic fields remain valid low-level Bloom generations. They are treated as **unbound** and cannot authorize M5 query skipping.
 
-The M4 `ActiveGenerationPolicy` returns a version only when the current active pointer resolves to:
+## Explicit filter definitions
+
+Laravel configuration resolves a framework-neutral `FilterDefinition`.
+
+A definition exposes:
+
+- one `ValueNormalizer`;
+- one `AuthoritativeSet`;
+- one `ConsistencyContract`.
+
+Managed configuration supplies capacity and target false-positive rate. `OptimalBloomSizingV1` derives the managed layout deterministically.
+
+## Managed lifecycle workflow
+
+The M5 build path is explicit:
 
 ```text
-ACTIVE + HEALTHY
+allocate candidate
+    ->
+BUILDING
+    ->
+provision exact derived layout
+    ->
+bind semantic contract
+    ->
+stream authoritative present values
+    ->
+normalize + managed bulk add
+    ->
+HEALTHY + SHADOW
 ```
 
-That result means **control-plane probe eligibility only**.
+Build does not verify or activate.
 
-M4 does not implement package-facing authoritative-query orchestration or final authorization to skip an authoritative lookup.
+Normal managed verification requires the current `SHADOW + HEALTHY` candidate. Passed evidence transitions the same candidate to `VERIFIED`; a detected false negative prevents promotion.
 
-The package may safely expose negative-result query skipping only after later orchestration also establishes every required runtime invariant.
+Activation always performs **fresh verification** before promotion.
 
-Runtime normalization identity/fingerprint compatibility remains a mandatory M5 design blocker.
+For `preadd-v1`, activation additionally requires an explicit quiescent membership-entry window and performs full reconciliation before that fresh verification.
 
-## Redis boundary
+Promotion remains control-plane-only.
 
-The Redis generation data plane uses the original integer `RedisCommandExecutor`.
+## Query safety
 
-M4 adds the additive `RedisStructuredCommandExecutor` child contract for structured Lua replies required by control-plane persistence. The original integer executor contract remains source-compatible.
+The package-facing query path is:
 
-Laravel supplies an already-resolved Illuminate Redis connection through `LaravelRedisCommandExecutor`. Connection credentials and selection remain application-owned.
+```text
+raw value
+   |
+   v
+FilterDefinition
+   |
+   +--> normalize exactly once
+   |
+   +--> derive runtime semantic contract
+   |
+   v
+QuerySafetyDescriptorResolver
+   |
+   +--> bypass -> authoritative lookup
+   |
+   v
+revision/layout/semantic-pinned descriptor
+   |
+   v
+AuthorizedProbe
+   |
+   +--> DEFINITELY_ABSENT -> exists = false
+   |
+   +--> MAYBE_PRESENT    -> authoritative lookup
+   |
+   +--> BYPASSED         -> authoritative lookup
+```
 
-## Architecture enforcement
+`QueryGate::exists()` is authoritative-correct.
 
-Executable tests enforce:
+A Bloom positive is never truth. A bypass is not an error result; it means the optimization was not safe to use.
 
-- Core has no framework/infrastructure knowledge;
-- Drivers do not depend on Lifecycle;
-- Lifecycle does not depend on Drivers;
-- non-Laravel layers do not import Illuminate;
-- Core lifecycle/control-state objects do not contain Redis or persistence tokens.
+## ACTIVE + HEALTHY is not enough
+
+M4 `ACTIVE + HEALTHY` means the control plane has an eligible active generation.
+
+M5 additionally requires:
+
+- exact active revision/version state;
+- exact persisted layout;
+- bound generation semantics;
+- exact normalization fingerprint equality;
+- exact authoritative-set fingerprint equality;
+- exact consistency fingerprint equality;
+- safe backend profile requirements;
+- an authorized probe that observes a stable correctness snapshot.
+
+Only after all of those conditions can a Bloom negative authorize skipping the authoritative lookup.
+
+## Redis authorized probe
+
+Redis query authorization is one atomic Lua/EVAL operation over same-filter keys.
+
+The script validates the pinned control revision, active version/lifecycle/health, generation storage/layout, semantic fingerprints, and managed bitmap state before reading Bloom bits.
+
+If any observed state differs from the descriptor that the Application layer prepared, the result is BYPASS rather than a trusted negative.
+
+The query hot path does not call `bloom:doctor` or Redis admin diagnostics.
+
+## Laravel layer
+
+Laravel provides thin adapters:
+
+- config-backed registry and definition resolution;
+- Redis connection adapters;
+- `BloomGateManager` and `BloomGate` facade;
+- `BloomUnique` / `BloomExists` validation rules;
+- lifecycle/status/doctor Artisan commands.
+
+Correctness logic stays in Core/Contracts/Lifecycle/Application/Drivers.
+
+## Production diagnostics
+
+`bloom:doctor` is a read-only preflight.
+
+For the M5 Redis trusted-negative profile it can inspect:
+
+- Redis reachability;
+- version;
+- standalone topology;
+- primary/master role;
+- AOF;
+- appendfsync;
+- maxmemory policy;
+- registered filter/runtime generation safety.
+
+A successful doctor run is point-in-time evidence, not a daemon or lease. The operator remains responsible for keeping the declared production profile true.
+
+## M5 boundary
+
+M5 intentionally does not implement or claim:
+
+- Redis Sentinel runtime support;
+- Redis Cluster runtime support;
+- online dual-write rebuild;
+- writer barriers;
+- CDC/outbox-based synchronization;
+- background continuous profile attestation;
+- observer-based trusted-negative authority.
+
+Those concerns require separate later scope.

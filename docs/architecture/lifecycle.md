@@ -1,8 +1,10 @@
 # Filter Lifecycle
 
-M4 implements the framework-neutral lifecycle and verification control plane around the existing Bloom data plane.
+M4 established the framework-neutral lifecycle/control plane.
 
-Lifecycle and operational health are independent generation-scoped axes.
+M5 keeps that state machine and adds managed build, semantic binding, verification, activation, discard, status, and query-safety orchestration around it.
+
+Lifecycle and operational health remain independent generation-scoped axes.
 
 ## Lifecycle states
 
@@ -15,7 +17,7 @@ ACTIVE
 RETIRED
 ```
 
-The generic lifecycle transition policy exposes only:
+The generic lifecycle transition policy exposes:
 
 ```text
 CONFIGURED -> BUILDING
@@ -31,14 +33,14 @@ VERIFIED   -> RETIRED
 ACTIVE     -> RETIRED
 ```
 
-Two transitions are intentionally excluded from the generic transition API:
+These two transitions remain privileged:
 
 ```text
 SHADOW   -> VERIFIED   verification evidence only
 VERIFIED -> ACTIVE     explicit promotion only
 ```
 
-`RETIRED` has no outgoing transition in the M4 policy.
+`RETIRED` has no outgoing transition.
 
 ## Operational health
 
@@ -49,130 +51,153 @@ STALE
 UNAVAILABLE
 ```
 
-Lifecycle mutation never changes health implicitly. A generation can therefore be ACTIVE while DEGRADED, STALE, or UNAVAILABLE.
+Lifecycle mutation does not implicitly rewrite health.
 
 ## Logical-filter control state
 
-One logical filter has a revisioned current snapshot containing:
+One logical filter owns a revisioned current snapshot containing:
 
-- the exact `FilterName`;
-- a monotonically increasing `FilterStateRevision`;
+- exact `FilterName`;
+- monotonic `FilterStateRevision`;
 - `lastAllocatedVersion`;
-- at most one active generation pointer;
-- at most one candidate generation pointer;
-- tracked generation lifecycle and health state.
+- optional active version;
+- optional candidate version;
+- tracked generation lifecycle + health.
 
-Generation versions are allocated monotonically and are never reused. Gaps are valid.
+Generation versions are never reused.
 
-The control snapshot is **current correctness state**, not an event stream or audit log.
+The control snapshot is current correctness state, not an audit log.
 
-M4 retains retired generation records in the current snapshot. Future pruning may remove retired records, but it must preserve `lastAllocatedVersion` so version allocation can never reuse an old generation number.
+## M5 managed build
 
-## Candidate allocation
+`bloom:build <filter>` invokes the managed build workflow.
 
-The first candidate for an empty logical filter is version 1.
+The workflow:
 
-Later candidates use:
+1. resolves the registered `FilterDefinition`;
+2. derives a deterministic layout from configured capacity/FPR;
+3. allocates a new candidate version;
+4. moves the candidate to `BUILDING`;
+5. provisions exactly that layout;
+6. binds normalization/authoritative-set/consistency fingerprints;
+7. streams the authoritative-present set;
+8. normalizes each value with the bound runtime normalizer;
+9. writes Bloom positions through bounded managed bulk writes;
+10. marks the candidate `HEALTHY`;
+11. moves it to `SHADOW`.
 
-```text
-lastAllocatedVersion + 1
-```
+Build does **not** auto-verify or auto-activate.
 
-A newly allocated candidate starts as:
+If an operational build fails after allocation, the candidate remains observable rather than being silently erased.
 
-```text
-CONFIGURED + UNAVAILABLE
-```
+## Managed verification
 
-A second candidate cannot be allocated while another candidate exists.
-
-## Activation verification
-
-Activation verification accepts only a streaming:
-
-```text
-iterable<NormalizedValue>
-```
-
-It does not accept raw application/database values and does not normalize them.
-
-For the supplied authoritative-present stream:
-
-- every item must probe as maybe-present;
-- the first false Bloom result is an operational false negative and fails verification;
-- the verifier may short-circuit on the first false negative;
-- an empty authoritative-present stream may pass with checked count 0;
-- Bloom driver operational failures and storage corruption propagate as typed failures.
-
-A passed result is bound to the exact:
+`bloom:verify <filter>` requires the current candidate to be:
 
 ```text
-FilterName + FilterVersion
+SHADOW + HEALTHY
 ```
 
-and can move only the same current candidate:
+It requires the persisted generation semantic contract to match the current runtime definition.
+
+Verification streams the complete authoritative-present set and checks that every value probes maybe-present.
+
+A false negative:
+
+- stops verification;
+- prevents `SHADOW -> VERIFIED`;
+- marks the candidate stale through verification evidence handling.
+
+Passed evidence is bound to the exact `FilterName + FilterVersion`.
+
+Sampling is not activation evidence.
+
+## Managed activation
+
+`bloom:activate <filter>` always performs fresh verification before promotion.
+
+### `immutable-v1`
+
+No quiescent flag is required.
+
+The package freshly verifies the candidate and promotes only after a pass.
+
+### `preadd-v1`
+
+Activation requires:
 
 ```text
-SHADOW -> VERIFIED
+--quiescent
 ```
 
-A health-only change does not invalidate otherwise matching version-bound verification evidence.
+The acknowledgement means the caller/operator has established a quiescent membership-entry window.
 
-The verifier proves coverage only of the supplied complete/reconciled authoritative-present stream. Stream completeness and reconciliation are caller responsibilities. Sampling is not activation evidence.
-
-## Explicit promotion
-
-Promotion requires the current candidate to be:
+Within that window M5 performs:
 
 ```text
-VERIFIED + HEALTHY
+full candidate reconciliation
+    ->
+fresh verification
+    ->
+promotion
 ```
+
+The package does not implement the external writer barrier itself.
+
+## Promotion
+
+Promotion requires the current candidate to satisfy the activation workflow and be `VERIFIED + HEALTHY`.
 
 On success:
 
-- the previous ACTIVE generation, when present, becomes RETIRED;
-- the candidate becomes ACTIVE;
-- `activeVersion` switches to the candidate;
-- `candidateVersion` is cleared;
-- generation health is preserved;
-- the control revision advances exactly once.
+- previous active generation -> `RETIRED`, when present;
+- candidate -> `ACTIVE`;
+- active pointer -> candidate;
+- candidate pointer -> null.
 
-Promotion changes only control-plane ownership. It does not copy, move, provision, destroy, or rewrite Bloom data-plane storage.
+Promotion changes control-plane ownership only. It does not move or copy Bloom storage.
 
-## Explicit deactivation
+## Discard
 
-Deactivation retires the current ACTIVE generation and clears the active pointer.
+`bloom:discard <filter>` retires only the current candidate and clears candidate ownership.
 
-It does not implicitly promote a candidate.
+It never retires or rewrites the active generation.
 
-## Active-generation policy
+## Status
 
-M4 exposes a control-plane policy that selects a version only when the active pointer resolves to:
+`bloom:status [filter]` is read-only.
+
+It reports, when available:
+
+- registered/enabled state;
+- active/candidate versions;
+- lifecycle;
+- health;
+- layout;
+- semantic binding presence;
+- semantic match state;
+- consistency contract.
+
+It does not print authoritative membership values.
+
+## Query eligibility after activation
+
+An active generation being:
 
 ```text
 ACTIVE + HEALTHY
 ```
 
-All other lifecycle/health combinations are ineligible for probing through that policy.
+remains only one prerequisite.
 
-This is **probe eligibility only**. It is not final authorization to skip an authoritative lookup.
+M5 trusted-negative authorization additionally requires exact semantic fingerprints, valid generation storage/layout, a stable control revision/version, and the backend-specific authorized-probe safety checks.
 
-Package-facing query orchestration and final fail-open query-skip authorization remain outside M4.
+Therefore activation never turns the Bloom filter into a positive source of truth and never makes lifecycle state alone sufficient to skip the authoritative source.
 
-## Versioned rebuild boundary
+## Rebuild boundary
 
-The M3 `BloomDriver` still exposes raw driver primitives including:
+M5 managed replacement always uses a new generation version.
 
-```text
-destroy -> provision
-```
+The raw M3 `destroy -> provision` primitive remains available to low-level driver users, but it is not the managed rebuild workflow.
 
-Those primitives remain valid for low-level storage recovery and driver use.
-
-M4-managed generations, however, are versioned lifecycle entities. They must not be destructively rebuilt or reused in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement under this model must use a newly allocated generation version rather than reusing the old one.
-
-## M5 blocker
-
-Runtime normalization identity/fingerprint compatibility is intentionally not solved by M4.
-
-Before package-facing query orchestration can safely use a negative Bloom result, M5 must define how runtime normalization identity is verified against the identity used to build/synchronize a generation.
+M5 does not implement online dual-write rebuild or automatic candidate rollover. Those are deferred.

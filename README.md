@@ -1,8 +1,10 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M4 lifecycle and verification is complete.
+> **Status:** pre-release — M5 safe Laravel query integration is implemented and under final documentation/verification.
 
-Laravel Bloom Gate is being built as a production-safe probabilistic query gate for Laravel applications. Its eventual purpose is to let applications skip authoritative lookups only when every required runtime invariant establishes that a Bloom negative is safe to use.
+Laravel Bloom Gate is a production-safe probabilistic query gate for Laravel applications.
+
+It can skip an authoritative existence lookup only when the runtime proves that a Bloom negative is safe to trust. A Bloom positive is never authoritative.
 
 ## Why
 
@@ -11,7 +13,13 @@ A Bloom filter can answer:
 - **definitely absent**
 - **maybe present**
 
-A positive result is never authoritative. Database constraints, caches, idempotency stores, and business rules remain authoritative.
+Laravel Bloom Gate preserves the authoritative datastore as the source of truth:
+
+- **definitely absent** may skip the authoritative lookup only after every M5 safety precondition passes;
+- **maybe present** always performs the authoritative lookup;
+- any safety uncertainty bypasses the optimization and performs the authoritative lookup.
+
+The public `exists()` result is therefore authoritative-correct.
 
 ## Design goals
 
@@ -19,56 +27,175 @@ A positive result is never authoritative. Database constraints, caches, idempote
 - PHP 8.3+.
 - Greenfield and existing applications as equal use cases.
 - Redis-backed production operation.
-- Side-effect-free Composer installation.
-- Explicit versioned lifecycle: build, shadow, verify, activate, rebuild.
-- Fail-open behavior when Bloom infrastructure is unavailable or unsafe.
-- Framework-independent core boundaries inside a Laravel-first package.
+- Side-effect-free Composer/package discovery.
+- Explicit versioned lifecycle: build, shadow, verify, activate, retire.
+- Fail-open query optimization.
+- Framework-independent Core, Contracts, Lifecycle, Drivers, and Application layers.
+- No hidden database interception or observer assumptions.
 
 ## Current milestone
 
-**M4 — lifecycle and verification**
+**M5 — Safe Laravel Query Integration**
 
-M4 adds a framework-neutral lifecycle/control plane around the M2/M3 Bloom data plane:
+M5 adds the application and Laravel integration required to turn the M4 lifecycle/control plane into a safe query gate:
 
-- immutable revisioned logical-filter control state;
-- monotonic generation allocation with no version reuse;
-- shared `FilterControlStore` contract with Memory and Redis implementations;
-- explicit lifecycle transition policy;
-- streaming activation verification over `NormalizedValue`;
-- version-bound verification evidence;
-- explicit `SHADOW -> VERIFIED` evidence application;
-- explicit `VERIFIED + HEALTHY -> ACTIVE` promotion;
-- explicit active-generation deactivation;
-- control-plane probe eligibility for only the current `ACTIVE + HEALTHY` generation;
-- strict Redis `control-v1` persistence;
-- atomic Redis compare-and-swap with live two-writer concurrency evidence;
-- additive structured Redis EVAL support;
-- executable M4 architecture boundaries.
+- explicit framework-neutral `FilterDefinition` contracts;
+- deterministic semantic identities and SHA-256 fingerprints;
+- deterministic Bloom sizing from capacity + false-positive-rate targets;
+- generation-scoped semantic binding;
+- managed candidate build, verification, activation, discard, and status workflows;
+- two explicit consistency contracts: `immutable-v1` and `preadd-v1`;
+- public authoritative-correct `QueryGate::exists()`;
+- Laravel `BloomGate` facade;
+- `BloomUnique` and `BloomExists` validation adapters;
+- revision-pinned atomic Redis authorized probing;
+- fail-open authoritative fallback;
+- explicit managed membership synchronization for `preadd-v1`;
+- `bloom:build`, `bloom:verify`, `bloom:activate`, `bloom:discard`, `bloom:status`;
+- `bloom:doctor` production-safety diagnostics;
+- executable M5 architecture boundaries.
 
-The M3 stock-Redis bitmap data plane remains unchanged in purpose. Core still owns probe generation; Redis receives validated layouts/positions and does not normalize or hash application values.
+## Query-skip safety boundary
 
-The raw M3 `destroy -> provision` driver primitive remains available for low-level recovery. M4-managed generations are versioned and must not be destructively rebuilt/reused in place.
+`ACTIVE + HEALTHY` is necessary but **not sufficient** to skip an authoritative lookup.
 
-## Important safety boundary
+A trusted negative also requires, at minimum:
 
-`ACTIVE + HEALTHY` in M4 means **control-plane probe eligibility**.
+1. query optimization enabled globally and for the filter;
+2. the current active generation to be the revision-pinned `ACTIVE + HEALTHY` generation;
+3. valid generation storage and the exact persisted layout;
+4. bound generation semantics;
+5. exact runtime/persisted equality for:
+   - normalization fingerprint;
+   - authoritative-set fingerprint;
+   - consistency fingerprint;
+6. a safe authorized probe result;
+7. for Redis trusted negatives, explicit declaration of the supported production profile.
 
-It does **not** mean the package has implemented final authorization to skip an authoritative lookup.
+If any prerequisite is absent, stale, mismatched, corrupt, unavailable, or changed during the authorized probe, the optimization is bypassed and the authoritative source is queried.
 
-M4 does not yet provide package-facing query interception, Eloquent orchestration, or authoritative-query bypass APIs.
+Existing M3 generations without M5 semantic fingerprints are **not corrupt**. They remain valid low-level Bloom storage, but they are query-skip-ineligible until rebuilt/bound through the M5 managed workflow.
 
-Runtime normalization identity/fingerprint compatibility remains a mandatory M5 design blocker before safe negative-result query skipping can be exposed.
+## Explicit filter definitions
+
+Each registered filter resolves a framework-neutral `FilterDefinition`:
+
+```php
+interface FilterDefinition
+{
+    public function normalizer(): ValueNormalizer;
+
+    public function authoritativeSet(): AuthoritativeSet;
+
+    public function consistency(): ConsistencyContract;
+}
+```
+
+Managed sizing is configured with:
+
+- capacity;
+- false-positive rate.
+
+The package derives the Bloom layout deterministically with the current M5 sizing policy rather than accepting an arbitrary runtime layout for managed builds.
+
+## Consistency contracts
+
+### `immutable-v1`
+
+Use when membership does not change while the generation is active.
+
+Managed synchronization writes are rejected.
+
+### `preadd-v1`
+
+Use when the application can guarantee this ordering for every membership-entry write:
+
+```text
+Bloom add first
+then authoritative write
+```
+
+This avoids a committed authoritative-present row appearing before its Bloom bits.
+
+Activation requires an explicit quiescent membership-entry window. During activation the package performs full candidate reconciliation, then fresh verification, then promotion.
+
+Eloquent observers are not considered trusted-negative authority because they do not cover every possible write path.
+
+## Laravel-facing API
+
+The facade delegates to the canonical Application services:
+
+```php
+BloomGate::exists('users.email', $email);
+BloomGate::existsResult('users.email', $email);
+
+BloomGate::add('users.email', $email);
+BloomGate::addMany('users.email', $emails);
+```
+
+`add()` / `addMany()` are managed synchronization operations and are valid only for the supported mutable consistency contract.
+
+Validation adapters:
+
+```php
+new BloomUnique('users.email');
+new BloomExists('users.email');
+```
+
+They delegate to `QueryGate`. They do not reimplement query correctness and do not claim Laravel native rule features such as `ignore()`, arbitrary `where()`, `withoutTrashed()`, or `onlyTrashed()`.
+
+## Managed lifecycle commands
+
+```text
+php artisan bloom:build <filter>
+php artisan bloom:verify <filter>
+php artisan bloom:activate <filter> [--quiescent]
+php artisan bloom:discard <filter>
+php artisan bloom:status [filter]
+php artisan bloom:doctor
+```
+
+`bloom:build` creates a candidate only; it does not silently verify or activate.
+
+`bloom:activate` always performs fresh verification before promotion. `preadd-v1` additionally requires `--quiescent` and performs reconciliation under that window.
+
+`bloom:doctor` is read-only preflight/diagnostics. It does not repair Redis configuration or mutate filter lifecycle.
+
+## Redis production support
+
+M5 trusted-negative Redis support is intentionally narrow.
+
+The recognized profile declaration is:
+
+```text
+standalone-primary-durable-v1
+```
+
+The production-safety contract requires the configured connection to remain:
+
+- Redis 8;
+- standalone;
+- authoritative primary/master;
+- AOF enabled;
+- `appendfsync = always`;
+- `maxmemory-policy = noeviction`.
+
+`bloom:doctor` can verify these observable prerequisites at a point in time. It does not make them continuously true. Keeping the declared profile valid remains an operator responsibility.
+
+Redis Sentinel and Redis Cluster runtime support are **not** M5 support claims. The keyspace remains same-slot/Cluster-aware by construction, but runtime support requires separate evidence.
 
 ## Safety principles
 
 1. The authoritative datastore remains the source of truth.
-2. A positive Bloom result always requires authoritative verification.
-3. Only the current `ACTIVE + HEALTHY` generation is probe-eligible in the M4 control plane.
-4. Probe eligibility alone does not authorize skipping an authoritative lookup.
-5. Infrastructure failure must bypass the optimization rather than change application correctness.
-6. Installing the package must not scan a database, contact Redis, activate filters, or intercept queries.
-7. Missing or corrupt Redis storage is never interpreted as a definite negative.
-8. Redis operational failures, control-state conflicts, and storage corruption remain distinct.
+2. Bloom positives never authorize existence.
+3. `ACTIVE + HEALTHY` alone never authorizes query skipping.
+4. Semantic compatibility is generation-scoped and exact.
+5. Infrastructure uncertainty fails open to the authoritative lookup.
+6. Installation and command discovery do not contact Redis or scan authoritative data.
+7. Missing/corrupt managed Redis storage is never interpreted as a definite negative.
+8. Old unbound M3 generations are query-skip-ineligible, not automatically corrupt.
+9. Observer-based eventual synchronization is not trusted-negative authority.
+10. M5 does not claim online dual-write rebuild, CDC/outbox synchronization, Redis Sentinel, or Redis Cluster runtime support.
 
 ## Architecture
 
@@ -77,6 +204,8 @@ See:
 - [Architecture overview](docs/architecture/overview.md)
 - [Core semantics](docs/architecture/core-semantics.md)
 - [Bloom probe and driver contract](docs/architecture/bloom-probe-and-driver-contract.md)
+- [Normalization](docs/architecture/normalization.md)
+- [Consistency](docs/architecture/consistency.md)
 - [Lifecycle](docs/architecture/lifecycle.md)
 - [Redis foundation](docs/architecture/redis-foundation.md)
 - [Redis keyspace](docs/architecture/redis-keyspace.md)
@@ -88,15 +217,13 @@ Current verified anchors:
 
 - PHP 8.3+;
 - Laravel 12 or 13;
-- Redis 8 standalone integration anchor;
-- PhpRedis-backed Laravel/Testbench integer and structured EVAL execution;
-- memory-backed deterministic Bloom and control-state reference stores.
+- Redis 8 standalone integration;
+- PhpRedis-backed Laravel/Testbench execution;
+- deterministic Memory reference implementations;
+- real Redis generation/control/query-safety integration;
+- real Redis production-diagnostics reads.
 
-Redis Cluster keyspace compatibility is designed in, but Redis Cluster runtime support is not yet an official claim.
-
-Predis operational-exception normalization is unit-tested, but real Predis runtime execution is not yet an official support claim.
-
-Support claims are considered official only after automated compatibility evidence exists.
+Predis operational-exception normalization is unit-tested, but real Predis runtime execution is not an official support claim.
 
 ## Roadmap
 
@@ -105,10 +232,8 @@ Support claims are considered official only after automated compatibility eviden
 - **M2:** memory reference driver and contract suite — complete
 - **M3:** Redis foundation — complete
 - **M4:** lifecycle and verification — complete
-- **M5:** Laravel/Eloquent integration — requires a separate scope/design gate
-- **M6:** production hardening
-
-M5 must not start automatically after M4. Its scope/design gate must begin with runtime normalization-identity compatibility.
+- **M5:** safe Laravel query integration — implementation complete
+- **M6:** deferred hardening such as online rebuild/dual-write coordination and broader runtime profiles
 
 ## Contributing
 
