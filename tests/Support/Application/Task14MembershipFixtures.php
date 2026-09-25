@@ -6,7 +6,6 @@ namespace Kefyusuf\BloomGate\Tests\Support\Application;
 
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
-use Kefyusuf\BloomGate\Contracts\BloomDriver;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
