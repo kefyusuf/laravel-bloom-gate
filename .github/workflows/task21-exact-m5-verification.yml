@@ -25,7 +25,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+          ref: 5bfe21271096b632edafc47d88d455ed4a7caaf8
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -46,7 +46,7 @@ jobs:
       - name: composer check
         run: composer check
       - name: Verify Redis service
-        run: redis-cli -h 127.0.0.1 -p 6379 ping
+        run: php -r '$s = fsockopen("127.0.0.1", 6379, $errno, $error, 2); if ($s === false) { fwrite(STDERR, "$error\n"); exit(1); } fwrite($s, "PING\r\n"); $reply = fgets($s); if (trim((string) $reply) !== "+PONG") { exit(1); } echo "Redis service reachable\n";'
       - name: Focused M5 Redis live evidence
         run: |
           vendor/bin/pest \
@@ -100,7 +100,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+          ref: 5bfe21271096b632edafc47d88d455ed4a7caaf8
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -127,7 +127,7 @@ jobs:
       - name: Checkout exact canonical M5 head
         uses: actions/checkout@v7
         with:
-          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+          ref: 5bfe21271096b632edafc47d88d455ed4a7caaf8
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
