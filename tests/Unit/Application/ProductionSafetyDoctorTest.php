@@ -3,89 +3,27 @@
 declare(strict_types=1);
 
 use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
-use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
-use Kefyusuf\BloomGate\Contracts\FilterRegistry;
-use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
-use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
-use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
-use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
-use Kefyusuf\BloomGate\Core\ProductionFilterRuntimeStatus;
 use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
-use Kefyusuf\BloomGate\Core\RedisDurabilitySettings;
-use Kefyusuf\BloomGate\Core\RedisRuntimeInfo;
-use LogicException;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18DurabilityUnavailableRedisDiagnostics;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18HealthyRedisDiagnostics;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18NoFilterInspector;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18NoFilterRegistry;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18StaticProductionSafetyConfiguration;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18UnavailableRedisDiagnostics;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18UnsupportedRedisDiagnostics;
 
 function task18Doctor(
     ProductionSafetySettings $settings,
     RedisRuntimeDiagnostics $diagnostics,
 ): ProductionSafetyDoctor {
-    $registry = new class implements FilterRegistry
-    {
-        public function globalQueryOptimizationEnabled(): bool
-        {
-            return true;
-        }
-
-        public function get(FilterName $name): RegisteredFilter
-        {
-            throw new LogicException('Task 18 no-filter fixture must not resolve filters.');
-        }
-    };
-
-    $filters = new class implements ProductionFilterInspector
-    {
-        public function inspect(FilterName $name): ProductionFilterRuntimeStatus
-        {
-            throw new LogicException(
-                'Task 18 no-filter fixture must not inspect filter runtime state.',
-            );
-        }
-    };
-
-    $configuration = new class($settings) implements ProductionSafetyConfiguration
-    {
-        public function __construct(
-            private readonly ProductionSafetySettings $settings,
-        ) {}
-
-        public function resolve(): ProductionSafetySettings
-        {
-            return $this->settings;
-        }
-    };
-
     return new ProductionSafetyDoctor(
-        configuration: $configuration,
-        registry: $registry,
-        filters: $filters,
+        configuration: new Task18StaticProductionSafetyConfiguration($settings),
+        registry: new Task18NoFilterRegistry,
+        filters: new Task18NoFilterInspector,
         redis: $diagnostics,
     );
-}
-
-function task18HealthyRedisDiagnostics(): RedisRuntimeDiagnostics
-{
-    return new class implements RedisRuntimeDiagnostics
-    {
-        public function runtime(): RedisRuntimeInfo
-        {
-            return new RedisRuntimeInfo(
-                version: '8.2.1',
-                mode: 'standalone',
-                role: 'master',
-            );
-        }
-
-        public function durability(): RedisDurabilitySettings
-        {
-            return new RedisDurabilitySettings(
-                appendOnly: true,
-                appendFsync: 'always',
-                maxmemoryPolicy: 'noeviction',
-            );
-        }
-    };
 }
 
 it('classifies the complete declared redis production profile deterministically', function (): void {
@@ -96,7 +34,7 @@ it('classifies the complete declared redis production profile deterministically'
             keyspacePrefix: 'lbg',
             filterNames: [],
         ),
-        task18HealthyRedisDiagnostics(),
+        new Task18HealthyRedisDiagnostics,
     );
 
     $report = $doctor->inspect();
@@ -122,7 +60,7 @@ it('reports a missing trusted-negative profile as not enabled and never pass', f
             keyspacePrefix: 'lbg',
             filterNames: [],
         ),
-        task18HealthyRedisDiagnostics(),
+        new Task18HealthyRedisDiagnostics,
     )->inspect();
 
     expect($report->status('trusted_negative_profile'))
@@ -133,27 +71,6 @@ it('reports a missing trusted-negative profile as not enabled and never pass', f
 });
 
 it('makes every unsupported redis production prerequisite visible', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
-        public function runtime(): RedisRuntimeInfo
-        {
-            return new RedisRuntimeInfo(
-                version: '7.4.0',
-                mode: 'cluster',
-                role: 'slave',
-            );
-        }
-
-        public function durability(): RedisDurabilitySettings
-        {
-            return new RedisDurabilitySettings(
-                appendOnly: false,
-                appendFsync: 'everysec',
-                maxmemoryPolicy: 'allkeys-lru',
-            );
-        }
-    };
-
     $report = task18Doctor(
         new ProductionSafetySettings(
             driver: 'redis',
@@ -161,7 +78,7 @@ it('makes every unsupported redis production prerequisite visible', function ():
             keyspacePrefix: 'lbg',
             filterNames: [],
         ),
-        $diagnostics,
+        new Task18UnsupportedRedisDiagnostics,
     )->inspect();
 
     foreach ([
@@ -179,25 +96,6 @@ it('makes every unsupported redis production prerequisite visible', function ():
 });
 
 it('never reports inaccessible durability prerequisites as pass', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
-        public function runtime(): RedisRuntimeInfo
-        {
-            return new RedisRuntimeInfo(
-                version: '8.2.1',
-                mode: 'standalone',
-                role: 'master',
-            );
-        }
-
-        public function durability(): RedisDurabilitySettings
-        {
-            throw new RedisDiagnosticsUnavailable(
-                'CONFIG GET is not permitted by the Redis ACL.',
-            );
-        }
-    };
-
     $report = task18Doctor(
         new ProductionSafetySettings(
             driver: 'redis',
@@ -205,7 +103,7 @@ it('never reports inaccessible durability prerequisites as pass', function (): v
             keyspacePrefix: 'lbg',
             filterNames: [],
         ),
-        $diagnostics,
+        new Task18DurabilityUnavailableRedisDiagnostics,
     )->inspect();
 
     expect($report->status('redis_reachable'))->toBe(ProductionSafetyCheckStatus::Pass)
@@ -215,19 +113,6 @@ it('never reports inaccessible durability prerequisites as pass', function (): v
 });
 
 it('classifies an unreachable redis runtime without manufacturing prerequisite passes', function (): void {
-    $diagnostics = new class implements RedisRuntimeDiagnostics
-    {
-        public function runtime(): RedisRuntimeInfo
-        {
-            throw new RedisDiagnosticsUnavailable('Redis connection refused.');
-        }
-
-        public function durability(): RedisDurabilitySettings
-        {
-            throw new LogicException('Durability must not run after runtime reachability failed.');
-        }
-    };
-
     $report = task18Doctor(
         new ProductionSafetySettings(
             driver: 'redis',
@@ -235,7 +120,7 @@ it('classifies an unreachable redis runtime without manufacturing prerequisite p
             keyspacePrefix: 'lbg',
             filterNames: [],
         ),
-        $diagnostics,
+        new Task18UnavailableRedisDiagnostics,
     )->inspect();
 
     foreach ([
