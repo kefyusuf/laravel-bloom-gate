@@ -40,13 +40,13 @@ function redisGenerationSemanticContract(string $seed = 'a'): GenerationSemantic
 {
     return new GenerationSemanticContract(
         normalizationFingerprint: NormalizationFingerprint::fromString(
-            'sha256:'.str_repeat($seed, 64),
+            'sha256:'.hash('sha256', 'normalization:'.$seed),
         ),
         authoritativeSetFingerprint: AuthoritativeSetFingerprint::fromString(
-            'sha256:'.str_repeat(chr(ord($seed) + 1), 64),
+            'sha256:'.hash('sha256', 'authoritative-set:'.$seed),
         ),
         consistencyFingerprint: ConsistencyFingerprint::fromString(
-            'sha256:'.str_repeat(chr(ord($seed) + 2), 64),
+            'sha256:'.hash('sha256', 'consistency:'.$seed),
         ),
     );
 }
