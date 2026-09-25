@@ -6,7 +6,6 @@ namespace Kefyusuf\BloomGate\Laravel;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Redis\RedisManager;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
@@ -111,12 +110,6 @@ final class BloomGateServiceProvider extends ServiceProvider
             LaravelRedisCommandExecutor::class,
             static function (Application $app): LaravelRedisCommandExecutor {
                 $redis = $app->make('redis');
-
-                if (! $redis instanceof RedisManager) {
-                    throw new InvalidConfiguration(
-                        'Laravel Redis manager is not available.',
-                    );
-                }
 
                 return new LaravelRedisCommandExecutor(
                     $redis->connection(self::redisConnectionName($app)),
@@ -275,6 +268,9 @@ final class BloomGateServiceProvider extends ServiceProvider
         );
     }
 
+    /**
+     * @return 'memory'|'redis'
+     */
     private static function driverName(Application $app): string
     {
         $driver = self::requiredString($app, 'bloom-gate.default');
