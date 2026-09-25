@@ -10,6 +10,7 @@ use Kefyusuf\BloomGate\Core\FilterVersion;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Contract\BulkBloomDriverContractTestCase;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use Throwable;
@@ -23,7 +24,7 @@ final class RedisBulkBloomDriverContractTest extends BulkBloomDriverContractTest
     {
         parent::setUp();
 
-        $this->prefix = 'lgbbulk'.bin2hex(random_bytes(8));
+        $this->prefix = RedisTestKeyPrefix::unique('lgbbulk');
     }
 
     protected function tearDown(): void

@@ -18,6 +18,7 @@ use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -42,7 +43,7 @@ final class RedisGenerationSemanticMetadataTest extends TestCase
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
         );
-        $this->keyspace = RedisKeyspace::fromPrefix('lbgsemantic'.bin2hex(random_bytes(8)));
+        $this->keyspace = RedisKeyspace::fromPrefix(RedisTestKeyPrefix::unique('lbgsemantic'));
         $this->driver = new RedisBloomDriver($this->executor, $this->keyspace);
         $this->store = new RedisGenerationContractStore($this->executor, $this->keyspace);
     }

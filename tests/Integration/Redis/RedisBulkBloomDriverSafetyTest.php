@@ -13,6 +13,7 @@ use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomScripts;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -36,7 +37,7 @@ final class RedisBulkBloomDriverSafetyTest extends TestCase
             (int) (getenv('REDIS_PORT') ?: 6379),
         );
         $this->keyspace = RedisKeyspace::fromPrefix(
-            'lgbbulk'.bin2hex(random_bytes(8)),
+            RedisTestKeyPrefix::unique('lgbbulk'),
         );
         $this->driver = new RedisBloomDriver(
             $this->executor,
