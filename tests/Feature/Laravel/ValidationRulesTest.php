@@ -99,17 +99,16 @@ it('keeps validation rules as thin QueryGate adapters without driver access', fu
     }
 });
 
-it('does not silently claim native unique-rule customization in M5', function (string $rule): void {
-    $reflection = new ReflectionClass($rule);
-    $constructor = $reflection->getConstructor();
+it('does not silently claim native unique-rule customization in M5', function (): void {
+    foreach ([BloomUnique::class, BloomExists::class] as $rule) {
+        $reflection = new ReflectionClass($rule);
+        $constructor = $reflection->getConstructor();
 
-    expect($constructor)->not->toBeNull()
-        ->and($constructor?->getNumberOfRequiredParameters())->toBe(1)
-        ->and($reflection->hasMethod('ignore'))->toBeFalse()
-        ->and($reflection->hasMethod('where'))->toBeFalse()
-        ->and($reflection->hasMethod('withoutTrashed'))->toBeFalse()
-        ->and($reflection->hasMethod('onlyTrashed'))->toBeFalse();
-})->with([
-    BloomUnique::class,
-    BloomExists::class,
-]);
+        expect($constructor)->not->toBeNull()
+            ->and($constructor?->getNumberOfRequiredParameters())->toBe(1)
+            ->and($reflection->hasMethod('ignore'))->toBeFalse()
+            ->and($reflection->hasMethod('where'))->toBeFalse()
+            ->and($reflection->hasMethod('withoutTrashed'))->toBeFalse()
+            ->and($reflection->hasMethod('onlyTrashed'))->toBeFalse();
+    }
+});
