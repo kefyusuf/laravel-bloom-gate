@@ -23,7 +23,7 @@ final class RedisBloomDriverContractTest extends BloomDriverContractTestCase
     {
         parent::setUp();
 
-        $this->prefix = 'lbgtest'.bin2hex(random_bytes(8));
+        $this->prefix = 'lbgtest'.bin2hex((string) random_bytes(8));
     }
 
     protected function tearDown(): void
