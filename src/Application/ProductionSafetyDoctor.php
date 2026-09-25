@@ -6,10 +6,10 @@ namespace Kefyusuf\BloomGate\Application;
 
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
-use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
-use Kefyusuf\BloomGate\Core\LifecycleState;
+use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Core\HealthState;
+use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
 use Throwable;
 
@@ -22,7 +22,9 @@ final readonly class ProductionSafetyDoctor
         private FilterRegistry $registry,
         private ManagedFilterStatusReader $statuses,
         private RedisRuntimeDiagnostics $redis,
-    ) {}
+    ) {
+        // Dependencies are framework-neutral and side-effect free until inspect().
+    }
 
     public function inspect(): ProductionSafetyReport
     {
