@@ -13,6 +13,7 @@ use Kefyusuf\BloomGate\Core\FilterVersion;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
     {
         parent::setUp();
 
-        $this->prefix = 'lbgcorrupt'.bin2hex((string) random_bytes(8));
+        $this->prefix = RedisTestKeyPrefix::unique('lbgcorrupt');
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
