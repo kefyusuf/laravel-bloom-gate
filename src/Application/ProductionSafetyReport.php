@@ -31,7 +31,7 @@ final readonly class ProductionSafetyReport
             $byCode[$check->code()] = true;
         }
 
-        $this->checks = array_values($checks);
+        $this->checks = $checks;
     }
 
     /**

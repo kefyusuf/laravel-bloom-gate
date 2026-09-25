@@ -35,12 +35,7 @@ final class RecordingIlluminateRedisDiagnosticsConnection extends Connection
      */
     public function command($method, array $parameters = [])
     {
-        if (! is_string($method)) {
-            throw new \LogicException('Task 18 diagnostic command method must be a string.');
-        }
-
         $method = strtolower($method);
-        $parameters = array_values($parameters);
 
         $this->calls[] = [
             'method' => $method,
