@@ -42,7 +42,7 @@ final class RedisGenerationSemanticMetadataTest extends TestCase
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
         );
-        $this->keyspace = RedisKeyspace::fromPrefix('lbgsemantic'.bin2hex(random_bytes(8)));
+        $this->keyspace = RedisKeyspace::fromPrefix('lbgsemantic'.bin2hex((string) random_bytes(8)));
         $this->driver = new RedisBloomDriver($this->executor, $this->keyspace);
         $this->store = new RedisGenerationContractStore($this->executor, $this->keyspace);
     }
