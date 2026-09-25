@@ -1,0 +1,147 @@
+name: Task 21 Exact M5 Verification
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/task21-exact-m5-verification.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  full-verification:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - name: Checkout exact canonical M5 head
+        uses: actions/checkout@v7
+        with:
+          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          extensions: redis
+          tools: composer:v2
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: composer validate --strict
+        run: composer validate --strict
+      - name: composer lint
+        run: composer lint
+      - name: composer analyse
+        run: composer analyse
+      - name: composer test:fast
+        run: composer test:fast
+      - name: composer check
+        run: composer check
+      - name: Verify Redis service
+        run: redis-cli -h 127.0.0.1 -p 6379 ping
+      - name: Focused M5 Redis live evidence
+        run: |
+          vendor/bin/pest \
+            tests/Integration/Redis/RedisGenerationSemanticMetadataTest.php \
+            tests/Integration/Redis/RedisBulkBloomDriverContractTest.php \
+            tests/Integration/Redis/RedisBulkBloomDriverSafetyTest.php \
+            tests/Integration/Redis/RedisQuerySafetyIntegrationTest.php \
+            tests/Integration/Redis/RedisBloomDriverCorruptionTest.php \
+            tests/Integration/Redis/RedisFilterControlStoreContractTest.php \
+            tests/Integration/Redis/RedisFilterControlStoreEvidenceTest.php \
+            tests/Integration/Redis/RedisBloomDriverContractTest.php \
+            --group=redis
+      - name: Focused M2-M4 regression evidence
+        run: |
+          vendor/bin/pest \
+            tests/Unit/Core/BloomProbeGeneratorTest.php \
+            tests/Unit/Lifecycle/ActivationVerifierTest.php \
+            tests/Unit/Application/ManagedFilterLifecycleWorkflowsTest.php \
+            tests/Contract/MemoryBloomDriverContractTest.php \
+            tests/Contract/MemoryFilterControlStoreTest.php
+      - name: composer test:redis
+        run: composer test:redis
+      - name: composer test:all
+        run: composer test:all
+
+  compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.4'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.5'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.3'
+            laravel: '^13.0'
+            testbench: '^11.0'
+          - php: '8.4'
+            laravel: '^13.0'
+            testbench: '^11.0'
+          - php: '8.5'
+            laravel: '^13.0'
+            testbench: '^11.0'
+    steps:
+      - name: Checkout exact canonical M5 head
+        uses: actions/checkout@v7
+        with:
+          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+      - name: Pin compatibility target
+        run: >
+          composer require --dev
+          "laravel/framework:${{ matrix.laravel }}"
+          "orchestra/testbench:${{ matrix.testbench }}"
+          --no-update
+          --no-interaction
+      - name: Resolve dependencies
+        run: composer update --with-all-dependencies --prefer-dist --no-interaction --no-progress
+      - name: Verify exact head
+        run: composer check
+      - name: Verify package discovery
+        run: vendor/bin/testbench package:discover
+
+  prefer-lowest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact canonical M5 head
+        uses: actions/checkout@v7
+        with:
+          ref: f564d515f8bf0f23542eeb25b4a5a9ff31f1faa2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+      - name: Pin Laravel 12
+        run: >
+          composer require --dev
+          "laravel/framework:^12.0"
+          "orchestra/testbench:^10.0"
+          --no-update
+          --no-interaction
+      - name: Resolve minimum supported dependencies
+        run: composer update --prefer-lowest --with-all-dependencies --prefer-dist --no-interaction --no-progress
+      - name: Verify minimum dependency set
+        run: composer check
