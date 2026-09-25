@@ -56,6 +56,33 @@ it('exposes bloom doctor as a read-only preflight command', function (): void {
         ->and($output)->not->toContain('secret-two@example.test');
 });
 
+it('reports a registered filter without an active generation as a warning without creating state', function (): void {
+    $definition = new Task17FilterDefinition([]);
+
+    app()->instance(Task17FilterDefinition::class, $definition);
+    config()->set('bloom-gate.filters', [
+        'users.email' => [
+            'enabled' => true,
+            'definition' => Task17FilterDefinition::class,
+            'capacity' => 1_000,
+            'false_positive_rate' => 0.01,
+        ],
+    ]);
+
+    $name = FilterName::fromString('users.email');
+
+    expect(app(FilterControlStore::class)->read($name))->toBeNull();
+
+    $exit = Artisan::call('bloom:doctor');
+    $output = Artisan::output();
+
+    expect($exit)->toBe(0)
+        ->and($output)->toContain('WARN filter.users.email.active_layout')
+        ->and($output)->toContain('WARN filter.users.email.active_semantics')
+        ->and($output)->not->toContain('FAIL filter.users.email')
+        ->and(app(FilterControlStore::class)->read($name))->toBeNull();
+});
+
 it('reports active semantic drift as a doctor failure without repairing it', function (): void {
     $definition = new Task17FilterDefinition(['one']);
 
