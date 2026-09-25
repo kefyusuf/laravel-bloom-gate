@@ -21,7 +21,6 @@ use Kefyusuf\BloomGate\Lifecycle\CandidateAllocator;
 use Kefyusuf\BloomGate\Lifecycle\GenerationHealthUpdater;
 use Kefyusuf\BloomGate\Lifecycle\GenerationLifecycleTransitioner;
 use Kefyusuf\BloomGate\Tests\Support\Laravel\Task17FilterDefinition;
-use RuntimeException;
 
 function task17Configure(
     Task17FilterDefinition $definition,
@@ -58,7 +57,7 @@ function task17Generation(
         }
     }
 
-    throw new RuntimeException('Task 17 generation not found.');
+    throw new \RuntimeException('Task 17 generation not found.');
 }
 
 function task17CreateEmptyShadowCandidate(
@@ -74,7 +73,7 @@ function task17CreateEmptyShadowCandidate(
     $candidate = $allocated->candidateVersion();
 
     if ($candidate === null) {
-        throw new RuntimeException('Expected Task 17 candidate allocation.');
+        throw new \RuntimeException('Expected Task 17 candidate allocation.');
     }
 
     app(GenerationLifecycleTransitioner::class)->transition(
@@ -124,8 +123,10 @@ beforeEach(function (): void {
 it('fails loudly when bloom build targets an unknown filter', function (): void {
     $exit = Artisan::call('bloom:build', ['filter' => 'missing.filter']);
 
+    $output = Artisan::output();
+
     expect($exit)->toBe(1)
-        ->and(Artisan::output())->toContain('not registered');
+        ->and($output)->toContain('not registered');
 });
 
 it('builds only a candidate and reports layout plus processed count without leaking values', function (): void {
@@ -136,6 +137,7 @@ it('builds only a candidate and reports layout plus processed count without leak
     task17Configure($definition);
 
     $exit = Artisan::call('bloom:build', ['filter' => 'users.email']);
+    $output = Artisan::output();
     $state = task17State();
 
     expect($exit)->toBe(0)
@@ -144,13 +146,13 @@ it('builds only a candidate and reports layout plus processed count without leak
         ->and($state?->candidateVersion()?->value())->toBe(1)
         ->and(task17Generation($state, 1)->lifecycle())->toBe(LifecycleState::Shadow)
         ->and(task17Generation($state, 1)->health())->toBe(HealthState::Healthy)
-        ->and(Artisan::output())->toContain('candidate=v1')
-        ->and(Artisan::output())->toContain('processed=2')
-        ->and(Artisan::output())->toContain('bits=')
-        ->and(Artisan::output())->toContain('hashes=')
-        ->and(Artisan::output())->toContain('Sha256DoubleHashV1')
-        ->and(Artisan::output())->not->toContain('secret-one@example.test')
-        ->and(Artisan::output())->not->toContain('secret-two@example.test');
+        ->and($output)->toContain('candidate=v1')
+        ->and($output)->toContain('processed=2')
+        ->and($output)->toContain('bits=')
+        ->and($output)->toContain('hashes=')
+        ->and($output)->toContain('Sha256DoubleHashV1')
+        ->and($output)->not->toContain('secret-one@example.test')
+        ->and($output)->not->toContain('secret-two@example.test');
 });
 
 it('leaves an interrupted build candidate observable through status', function (): void {
@@ -171,12 +173,13 @@ it('leaves an interrupted build candidate observable through status', function (
         ->and(task17Generation($state, 1)->health())->toBe(HealthState::Unavailable);
 
     $statusExit = Artisan::call('bloom:status', ['filter' => 'users.email']);
+    $output = Artisan::output();
 
     expect($statusExit)->toBe(0)
-        ->and(Artisan::output())->toContain('candidate')
-        ->and(Artisan::output())->toContain('v1')
-        ->and(Artisan::output())->toContain('Building')
-        ->and(Artisan::output())->toContain('Unavailable');
+        ->and($output)->toContain('candidate')
+        ->and($output)->toContain('v1')
+        ->and($output)->toContain('Building')
+        ->and($output)->toContain('Unavailable');
 });
 
 it('verifies only a current shadow healthy candidate and reports evidence', function (): void {
@@ -188,6 +191,7 @@ it('verifies only a current shadow healthy candidate and reports evidence', func
     expect(Artisan::call('bloom:build', ['filter' => 'users.email']))->toBe(0);
     expect(Artisan::call('bloom:verify', ['filter' => 'users.email']))->toBe(0);
 
+    $output = Artisan::output();
     $state = task17State();
 
     expect($state)->not->toBeNull()
@@ -195,8 +199,8 @@ it('verifies only a current shadow healthy candidate and reports evidence', func
         ->and($state?->candidateVersion()?->value())->toBe(1)
         ->and(task17Generation($state, 1)->lifecycle())->toBe(LifecycleState::Verified)
         ->and(task17Generation($state, 1)->health())->toBe(HealthState::Healthy)
-        ->and(Artisan::output())->toContain('status=Passed')
-        ->and(Artisan::output())->toContain('checked=2');
+        ->and($output)->toContain('status=Passed')
+        ->and($output)->toContain('checked=2');
 });
 
 it('reports false-negative verification without promoting the candidate', function (): void {
@@ -205,6 +209,7 @@ it('reports false-negative verification without promoting the candidate', functi
     task17CreateEmptyShadowCandidate($definition);
 
     $exit = Artisan::call('bloom:verify', ['filter' => 'users.email']);
+    $output = Artisan::output();
     $state = task17State();
 
     expect($exit)->toBe(1)
@@ -213,8 +218,8 @@ it('reports false-negative verification without promoting the candidate', functi
         ->and($state?->candidateVersion()?->value())->toBe(1)
         ->and(task17Generation($state, 1)->lifecycle())->toBe(LifecycleState::Shadow)
         ->and(task17Generation($state, 1)->health())->toBe(HealthState::Stale)
-        ->and(Artisan::output())->toContain('status=FalseNegativeDetected')
-        ->and(Artisan::output())->toContain('checked=1');
+        ->and($output)->toContain('status=FalseNegativeDetected')
+        ->and($output)->toContain('checked=1');
 });
 
 it('activates immutable candidates without a quiescent flag', function (): void {
@@ -329,16 +334,22 @@ it('reports registered lifecycle layout semantic binding and consistency status 
 
     $definition->normalizer->semanticIdentity = 'task17-normalizer@2';
 
-    expect(Artisan::call('bloom:status', ['filter' => 'users.email']))->toBe(0)
-        ->and(Artisan::output())->toContain('semantic-match=no');
+    expect(Artisan::call('bloom:status', ['filter' => 'users.email']))->toBe(0);
+
+    $mismatchOutput = Artisan::output();
+
+    expect($mismatchOutput)->toContain('semantic-match=no');
 });
 
 it('lists configured filters when status is called without a filter argument', function (): void {
     $definition = new Task17FilterDefinition([]);
     task17Configure($definition);
 
-    expect(Artisan::call('bloom:status'))->toBe(0)
-        ->and(Artisan::output())->toContain('users.email');
+    expect(Artisan::call('bloom:status'))->toBe(0);
+
+    $output = Artisan::output();
+
+    expect($output)->toContain('users.email');
 });
 
 it('keeps console commands as thin application adapters', function (): void {
@@ -353,7 +364,7 @@ it('keeps console commands as thin application adapters', function (): void {
         $source = file_get_contents($path);
 
         if ($source === false) {
-            throw new RuntimeException('Unable to read Task 17 console adapter.');
+            throw new \RuntimeException('Unable to read Task 17 console adapter.');
         }
 
         expect($source)->not->toContain('Drivers\\')
