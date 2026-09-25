@@ -33,7 +33,7 @@ final class RedisBloomDriverCorruptionTest extends TestCase
     {
         parent::setUp();
 
-        $this->prefix = 'lbgcorrupt'.bin2hex(random_bytes(8));
+        $this->prefix = 'lbgcorrupt'.bin2hex((string) random_bytes(8));
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
