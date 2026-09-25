@@ -44,6 +44,11 @@ final readonly class ManagedFilterBuilder
 
     public function build(FilterName $name): FilterControlState
     {
+        return $this->buildResult($name)->state();
+    }
+
+    public function buildResult(FilterName $name): ManagedFilterBuildResult
+    {
         $registered = $this->registry->get($name);
         $definition = $registered->definition();
 
@@ -96,8 +101,10 @@ final readonly class ManagedFilterBuilder
 
         /** @var list<BitPositions> $batch */
         $batch = [];
+        $processedCount = 0;
 
         foreach ($authoritativeSet->values() as $value) {
+            $processedCount++;
             $batch[] = $this->probes->generate(
                 $normalizer->normalize($value),
                 $layout,
@@ -129,10 +136,16 @@ final readonly class ManagedFilterBuilder
             HealthState::Healthy,
         );
 
-        return $this->transitions->transition(
+        $state = $this->transitions->transition(
             $name,
             $candidateVersion,
             LifecycleState::Shadow,
+        );
+
+        return new ManagedFilterBuildResult(
+            state: $state,
+            layout: $layout,
+            processedCount: $processedCount,
         );
     }
 }

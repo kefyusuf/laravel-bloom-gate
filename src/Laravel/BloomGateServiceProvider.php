@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
 use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
+use Kefyusuf\BloomGate\Application\ManagedFilterStatusReader;
 use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
@@ -39,6 +40,11 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisControlStateCodec;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Laravel\Console\ActivateCommand;
+use Kefyusuf\BloomGate\Laravel\Console\BuildCommand;
+use Kefyusuf\BloomGate\Laravel\Console\DiscardCommand;
+use Kefyusuf\BloomGate\Laravel\Console\StatusCommand;
+use Kefyusuf\BloomGate\Laravel\Console\VerifyCommand;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
 use Kefyusuf\BloomGate\Laravel\Redis\RedisTrustedNegativeProfileResolver;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerificationEvidenceApplier;
@@ -73,6 +79,14 @@ final class BloomGateServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../../config/bloom-gate.php' => config_path('bloom-gate.php'),
         ], 'bloom-gate-config');
+
+        $this->commands([
+            BuildCommand::class,
+            VerifyCommand::class,
+            ActivateCommand::class,
+            DiscardCommand::class,
+            StatusCommand::class,
+        ]);
     }
 
     private function registerRegistry(): void
@@ -230,6 +244,7 @@ final class BloomGateServiceProvider extends ServiceProvider
             QueryGate::class,
             MembershipAdder::class,
             ManagedFilterVerifier::class,
+            ManagedFilterStatusReader::class,
             CandidateDiscarder::class,
             BloomGateManager::class,
         ] as $service) {
