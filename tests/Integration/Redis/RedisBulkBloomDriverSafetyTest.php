@@ -36,7 +36,7 @@ final class RedisBulkBloomDriverSafetyTest extends TestCase
             (int) (getenv('REDIS_PORT') ?: 6379),
         );
         $this->keyspace = RedisKeyspace::fromPrefix(
-            'lgbbulk'.bin2hex(random_bytes(8)),
+            'lgbbulk'.bin2hex((string) random_bytes(8)),
         );
         $this->driver = new RedisBloomDriver(
             $this->executor,
