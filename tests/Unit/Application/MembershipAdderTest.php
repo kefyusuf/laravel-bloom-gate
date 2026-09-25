@@ -8,6 +8,7 @@ use Kefyusuf\BloomGate\Application\ConsistencyContractViolation;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
+use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
 use Kefyusuf\BloomGate\Core\ConsistencyFingerprint;
@@ -17,6 +18,7 @@ use Kefyusuf\BloomGate\Core\NormalizationFingerprint;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task14Fixture;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task14GenerationContractStore;
 
 use function Kefyusuf\BloomGate\Tests\Support\Application\task14Fixture;
 
@@ -27,7 +29,7 @@ function task14Adder(Task14Fixture $fixture): MembershipAdder
         snapshots: $fixture->snapshots,
         contracts: $fixture->contracts,
         driver: $fixture->driver,
-        probes: new Kefyusuf\BloomGate\Core\BloomProbeGenerator,
+        probes: new BloomProbeGenerator,
         fingerprints: new SemanticFingerprintCalculator,
     );
 }
@@ -162,7 +164,7 @@ it('rejects semantic mismatch as hard configuration failure before bloom mutatio
 
 it('rejects an unbound active generation rather than silently skipping synchronization', function (): void {
     $fixture = task14Fixture();
-    $contracts = new Kefyusuf\BloomGate\Tests\Support\Application\Task14GenerationContractStore(
+    $contracts = new Task14GenerationContractStore(
         descriptor: null,
     );
     $adder = new MembershipAdder(
@@ -170,7 +172,7 @@ it('rejects an unbound active generation rather than silently skipping synchroni
         snapshots: $fixture->snapshots,
         contracts: $contracts,
         driver: $fixture->driver,
-        probes: new Kefyusuf\BloomGate\Core\BloomProbeGenerator,
+        probes: new BloomProbeGenerator,
         fingerprints: new SemanticFingerprintCalculator,
     );
 
