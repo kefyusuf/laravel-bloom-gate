@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kefyusuf\BloomGate\Laravel\Console;
 
 use Illuminate\Console\Command;
-use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
 use Kefyusuf\BloomGate\Core\FilterName;
 use LogicException;
@@ -51,14 +50,6 @@ final class ActivateCommand extends Command
 
     private function filterName(): FilterName
     {
-        $filter = $this->argument('filter');
-
-        if (! is_string($filter)) {
-            throw new InvalidArgumentException(
-                'Bloom Gate filter argument must be a string.',
-            );
-        }
-
-        return FilterName::fromString($filter);
+        return FilterName::fromString($this->argument('filter'));
     }
 }

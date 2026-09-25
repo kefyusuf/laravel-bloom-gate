@@ -48,9 +48,13 @@ function task17State(): ?FilterControlState
 }
 
 function task17Generation(
-    FilterControlState $state,
+    ?FilterControlState $state,
     int $version,
 ): GenerationControlState {
+    if ($state === null) {
+        throw new RuntimeException('Task 17 control state is missing.');
+    }
+
     foreach ($state->generations() as $generation) {
         if ($generation->version()->value() === $version) {
             return $generation;

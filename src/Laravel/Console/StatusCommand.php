@@ -52,12 +52,6 @@ final class StatusCommand extends Command
         $filter = $this->argument('filter');
 
         if ($filter !== null) {
-            if (! is_string($filter)) {
-                throw new InvalidArgumentException(
-                    'Bloom Gate filter argument must be a string.',
-                );
-            }
-
             return [FilterName::fromString($filter)];
         }
 
@@ -86,13 +80,15 @@ final class StatusCommand extends Command
 
     private function renderStatus(ManagedFilterStatus $status): void
     {
+        $consistency = $status->consistency();
+
         $this->line(sprintf(
             'filter=%s registered=%s enabled=%s global-enabled=%s consistency=%s',
             $status->name()->value(),
             $this->boolean($status->registered()),
             $this->nullableBoolean($status->queryOptimizationEnabled()),
             $this->boolean($status->globalQueryOptimizationEnabled()),
-            $status->consistency()?->name ?? 'n/a',
+            $consistency === null ? 'n/a' : $consistency->name,
         ));
 
         $rendered = false;
