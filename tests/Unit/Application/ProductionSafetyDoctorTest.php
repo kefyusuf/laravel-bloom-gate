@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-use Kefyusuf\BloomGate\Application\ManagedFilterStatusReader;
 use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
+use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
+use Kefyusuf\BloomGate\Core\ProductionFilterRuntimeStatus;
 use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
 use Kefyusuf\BloomGate\Core\RedisDurabilitySettings;
 use Kefyusuf\BloomGate\Core\RedisRuntimeInfo;
-use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
-use Kefyusuf\BloomGate\Drivers\Memory\MemoryBloomDriver;
-use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
-use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
 use LogicException;
 
 function task18Doctor(
@@ -37,17 +34,15 @@ function task18Doctor(
         }
     };
 
-    $driver = new MemoryBloomDriver;
-    $control = new MemoryFilterControlStore;
-    $contracts = new MemoryGenerationContractStore($driver);
-
-    $statuses = new ManagedFilterStatusReader(
-        registry: $registry,
-        control: $control,
-        inspector: $driver,
-        contracts: $contracts,
-        fingerprints: new SemanticFingerprintCalculator,
-    );
+    $filters = new class implements ProductionFilterInspector
+    {
+        public function inspect(FilterName $name): ProductionFilterRuntimeStatus
+        {
+            throw new LogicException(
+                'Task 18 no-filter fixture must not inspect filter runtime state.',
+            );
+        }
+    };
 
     $configuration = new class($settings) implements ProductionSafetyConfiguration
     {
@@ -64,7 +59,7 @@ function task18Doctor(
     return new ProductionSafetyDoctor(
         configuration: $configuration,
         registry: $registry,
-        statuses: $statuses,
+        filters: $filters,
         redis: $diagnostics,
     );
 }

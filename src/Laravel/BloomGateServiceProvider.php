@@ -29,6 +29,7 @@ use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
+use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
@@ -109,6 +110,10 @@ final class BloomGateServiceProvider extends ServiceProvider
         $this->app->singleton(
             ProductionSafetyConfiguration::class,
             ConfigProductionSafetyConfiguration::class,
+        );
+        $this->app->singleton(
+            ProductionFilterInspector::class,
+            LazyProductionFilterInspector::class,
         );
     }
 

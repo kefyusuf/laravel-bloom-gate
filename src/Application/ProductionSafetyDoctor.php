@@ -7,6 +7,7 @@ namespace Kefyusuf\BloomGate\Application;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
+use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\LifecycleState;
@@ -20,7 +21,7 @@ final readonly class ProductionSafetyDoctor
     public function __construct(
         private ProductionSafetyConfiguration $configuration,
         private FilterRegistry $registry,
-        private ManagedFilterStatusReader $statuses,
+        private ProductionFilterInspector $filters,
         private RedisRuntimeDiagnostics $redis,
     ) {
         // Dependencies are framework-neutral and side-effect free until inspect().
@@ -103,7 +104,7 @@ final readonly class ProductionSafetyDoctor
             }
 
             try {
-                $status = $this->statuses->read($name);
+                $runtime = $this->filters->inspect($name);
                 $checks[] = $this->check(
                     $prefix.'.control_state',
                     ProductionSafetyCheckStatus::Pass,
@@ -119,9 +120,7 @@ final readonly class ProductionSafetyDoctor
                 continue;
             }
 
-            $active = $status->active();
-
-            if ($active === null) {
+            if ($runtime->hasActiveGeneration() === false) {
                 $checks[] = $this->check(
                     $prefix.'.active_layout',
                     ProductionSafetyCheckStatus::Warn,
@@ -136,8 +135,8 @@ final readonly class ProductionSafetyDoctor
                 continue;
             }
 
-            $activeHealthy = $active->lifecycle() === LifecycleState::Active
-                && $active->health() === HealthState::Healthy;
+            $activeHealthy = $runtime->activeLifecycle() === LifecycleState::Active
+                && $runtime->activeHealth() === HealthState::Healthy;
 
             $checks[] = $this->check(
                 $prefix.'.active_state',
@@ -151,16 +150,16 @@ final readonly class ProductionSafetyDoctor
 
             $checks[] = $this->check(
                 $prefix.'.active_layout',
-                $active->layout() !== null
+                $runtime->activeLayoutAvailable()
                     ? ProductionSafetyCheckStatus::Pass
                     : ProductionSafetyCheckStatus::Fail,
-                $active->layout() !== null
+                $runtime->activeLayoutAvailable()
                     ? 'Active generation storage layout is available.'
                     : 'Active generation storage layout is unavailable.',
             );
 
-            $semanticSafe = $active->semanticBound()
-                && $active->semanticMatches() === true;
+            $semanticSafe = $runtime->activeSemanticBound()
+                && $runtime->activeSemanticMatches() === true;
 
             $checks[] = $this->check(
                 $prefix.'.active_semantics',
