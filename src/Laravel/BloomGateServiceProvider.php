@@ -6,6 +6,7 @@ namespace Kefyusuf\BloomGate\Laravel;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
@@ -15,6 +16,7 @@ use Kefyusuf\BloomGate\Application\ManagedFilterStatusReader;
 use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
+use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
 use Kefyusuf\BloomGate\Application\QueryGate;
 use Kefyusuf\BloomGate\Application\QuerySafetyDescriptorResolver;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
@@ -22,10 +24,13 @@ use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
 use Kefyusuf\BloomGate\Contracts\BloomGenerationInspector;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
+use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
+use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
+use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -43,9 +48,11 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Laravel\Console\ActivateCommand;
 use Kefyusuf\BloomGate\Laravel\Console\BuildCommand;
 use Kefyusuf\BloomGate\Laravel\Console\DiscardCommand;
+use Kefyusuf\BloomGate\Laravel\Console\DoctorCommand;
 use Kefyusuf\BloomGate\Laravel\Console\StatusCommand;
 use Kefyusuf\BloomGate\Laravel\Console\VerifyCommand;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
+use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Laravel\Redis\RedisTrustedNegativeProfileResolver;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerificationEvidenceApplier;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerifier;
@@ -86,6 +93,7 @@ final class BloomGateServiceProvider extends ServiceProvider
             ActivateCommand::class,
             DiscardCommand::class,
             StatusCommand::class,
+            DoctorCommand::class,
         ]);
     }
 
@@ -98,6 +106,14 @@ final class BloomGateServiceProvider extends ServiceProvider
         );
         $this->app->singleton(
             RedisTrustedNegativeProfileResolver::class,
+        );
+        $this->app->singleton(
+            ProductionSafetyConfiguration::class,
+            ConfigProductionSafetyConfiguration::class,
+        );
+        $this->app->singleton(
+            ProductionFilterInspector::class,
+            LazyProductionFilterInspector::class,
         );
     }
 
@@ -137,6 +153,21 @@ final class BloomGateServiceProvider extends ServiceProvider
         $this->app->alias(
             LaravelRedisCommandExecutor::class,
             RedisCommandExecutor::class,
+        );
+
+        $this->app->singleton(
+            RedisRuntimeDiagnostics::class,
+            static function (Application $app): RedisRuntimeDiagnostics {
+                return new LaravelRedisRuntimeDiagnostics(
+                    static function () use ($app): Connection {
+                        $redis = $app->make('redis');
+
+                        return $redis->connection(
+                            self::redisConnectionName($app),
+                        );
+                    },
+                );
+            },
         );
 
         $this->app->singleton(
@@ -245,6 +276,7 @@ final class BloomGateServiceProvider extends ServiceProvider
             MembershipAdder::class,
             ManagedFilterVerifier::class,
             ManagedFilterStatusReader::class,
+            ProductionSafetyDoctor::class,
             CandidateDiscarder::class,
             BloomGateManager::class,
         ] as $service) {
