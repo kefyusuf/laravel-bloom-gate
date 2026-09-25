@@ -23,7 +23,7 @@ final class RedisBulkBloomDriverContractTest extends BulkBloomDriverContractTest
     {
         parent::setUp();
 
-        $this->prefix = 'lgbbulk'.bin2hex(random_bytes(8));
+        $this->prefix = 'lgbbulk'.bin2hex((string) random_bytes(8));
     }
 
     protected function tearDown(): void
