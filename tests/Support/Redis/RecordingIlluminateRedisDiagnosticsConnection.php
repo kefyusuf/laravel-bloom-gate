@@ -30,9 +30,16 @@ final class RecordingIlluminateRedisDiagnosticsConnection extends Connection
         $this->responses = $responses;
     }
 
+    /**
+     * @param  list<mixed>  $parameters
+     */
     public function command($method, array $parameters = [])
     {
-        $method = strtolower((string) $method);
+        if (! is_string($method)) {
+            throw new \LogicException('Task 18 diagnostic command method must be a string.');
+        }
+
+        $method = strtolower($method);
         $parameters = array_values($parameters);
 
         $this->calls[] = [
@@ -47,10 +54,19 @@ final class RecordingIlluminateRedisDiagnosticsConnection extends Connection
         $key = $method;
 
         if ($parameters !== []) {
-            $key .= ':'.implode(':', array_map(
-                static fn (mixed $value): string => (string) $value,
-                $parameters,
-            ));
+            $encoded = [];
+
+            foreach ($parameters as $value) {
+                if (! is_string($value) && ! is_int($value)) {
+                    throw new \LogicException(
+                        'Task 18 diagnostic command parameters must be scalar strings or integers.',
+                    );
+                }
+
+                $encoded[] = (string) $value;
+            }
+
+            $key .= ':'.implode(':', $encoded);
         }
 
         return $this->responses[$key] ?? null;

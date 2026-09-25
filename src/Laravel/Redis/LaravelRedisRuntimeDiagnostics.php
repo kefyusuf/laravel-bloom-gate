@@ -121,17 +121,21 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         }
 
         if (array_is_list($reply)) {
+            $returnedKey = $reply[0] ?? null;
+            $value = $reply[1] ?? null;
+
             if (
                 count($reply) !== 2
-                || (string) ($reply[0] ?? '') !== $key
-                || ! is_string($reply[1] ?? null)
+                || ! is_string($returnedKey)
+                || $returnedKey !== $key
+                || ! is_string($value)
             ) {
                 throw new UnexpectedValueException(
                     'Redis CONFIG GET diagnostic list reply is invalid.',
                 );
             }
 
-            return $reply[1];
+            return $value;
         }
 
         $value = $reply[$key] ?? null;

@@ -34,15 +34,7 @@ final readonly class ProductionSafetySettings
             );
         }
 
-        foreach ($filterNames as $filterName) {
-            if (! $filterName instanceof FilterName) {
-                throw new InvalidArgumentException(
-                    'Production safety filter names must be FilterName values.',
-                );
-            }
-        }
-
-        $this->filterNames = array_values($filterNames);
+        $this->filterNames = $filterNames;
     }
 
     public function driver(): string
