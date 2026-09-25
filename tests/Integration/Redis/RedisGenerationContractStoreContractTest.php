@@ -32,7 +32,7 @@ final class RedisGenerationContractStoreContractTest extends GenerationContractS
     {
         parent::setUp();
 
-        $prefix = 'lbgsemantic'.bin2hex(random_bytes(8));
+        $prefix = 'lbgsemantic'.bin2hex((string) random_bytes(8));
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
