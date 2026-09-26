@@ -131,7 +131,6 @@ final class Task18UnavailableRedisDiagnostics implements RedisRuntimeDiagnostics
     }
 }
 
-
 final class Task18MalformedRuntimeRedisDiagnostics implements RedisRuntimeDiagnostics
 {
     public function runtime(): RedisRuntimeInfo
