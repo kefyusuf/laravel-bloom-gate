@@ -314,6 +314,57 @@ Deletes still do not clear standard Bloom bits and may only increase false posit
 
 ADR-0011 remains unchanged.
 
+### M6-D016 — writer lease acquisition is atomic with epoch/target capture
+
+A coordinated writer must not:
+
+~~~text
+read epoch/targets
+then later
+register a lease
+~~~
+
+because an epoch rotation between those operations can create an untracked writer with stale targets.
+
+Acquisition must atomically:
+
+1. observe the current coordination epoch and exact target versions;
+2. register one unique writer token against that epoch;
+3. return that same epoch/target snapshot to the caller.
+
+The returned lease is the only authority for which generations that write must pre-add.
+
+### M6-D017 — brownfield adoption needs a one-time explicit migration fence
+
+An already-running M5 preadd-v1 deployment may have in-flight writers that never acquired M6 leases.
+
+The package cannot retroactively discover those operations.
+
+Therefore switching an existing filter from uncoordinated M5 writes to coordinated-v1 cannot honestly claim pause-free safety without an adoption boundary.
+
+M6 brownfield rollout must require an explicit one-time migration fence/quiescent handoff that proves:
+
+- old uncoordinated membership-entry writers are no longer in flight;
+- all future participating writers use the coordination-aware API;
+- sync-v1 can then be initialized from the current control state.
+
+After that adoption boundary, subsequent coordinated rebuilds can avoid planned global write pauses.
+
+This one-time adoption requirement is not a failure of the online rebuild protocol; it is the unavoidable boundary between unobservable legacy writers and observable leased writers.
+
+### M6-D018 — conflicting lifecycle operations are coordination-aware
+
+Once an online rebuild coordination session is open, legacy lifecycle actions must not independently mutate the candidate/active relationship in ways the sync plane cannot observe.
+
+At minimum, coordinated mode must guard or reject conflicting operations such as:
+
+- allocating a second candidate;
+- discarding/replacing the coordinated candidate;
+- promoting through a path that does not close/advance the coordination state correctly;
+- starting another online rebuild while a prior draining epoch remains.
+
+The exact ownership boundary is a next-gate decision, but silent lifecycle bypass is invalid.
+
 ## 5. Conceptual epoch model
 
 ### Steady
@@ -435,6 +486,9 @@ Drain remains blocked. No automatic unsafe expiry. Status/diagnostics must make 
 - INV-M6-012: writer leases do not auto-expire.
 - INV-M6-013: C is not removed from required write targets before successful promotion.
 - INV-M6-014: Sentinel/Cluster/failover support is not part of M6 scope.
+- INV-M6-015: lease token registration and epoch/target capture are one atomic coordination operation.
+- INV-M6-016: an existing uncoordinated M5 deployment requires an explicit one-time adoption fence before coordinated-v1 safety can be claimed.
+- INV-M6-017: conflicting lifecycle operations cannot bypass an open coordination session.
 
 ## 9. Next design blockers
 
@@ -449,7 +503,8 @@ No implementation begins until the next design gate resolves:
 7. candidate discard while dual-write is open;
 8. command/API surface for online rebuild;
 9. drain wait/timeout/status behavior;
-10. brownfield rollout sequence from an already-active M5 preadd-v1 filter.
+10. brownfield adoption sequence and one-time migration fence from an already-active M5 preadd-v1 filter;
+11. how existing build/activate/discard flows are guarded while a coordinated session is open.
 
 ## 10. Alternatives rejected
 
@@ -504,6 +559,8 @@ The scope introduces only the machinery required for safe online rebuild:
 ### Brownfield safety — PASS
 
 M5 stays the default. Existing control/data schemas remain unchanged. Coordinated mode is opt-in.
+
+The design does not pretend legacy in-flight writers are observable: first adoption from an existing M5 deployment explicitly requires a one-time migration fence before pause-free coordinated rebuild guarantees begin.
 
 ### Verification evidence — NOT APPLICABLE YET
 
