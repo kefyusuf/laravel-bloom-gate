@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Application;
 
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
@@ -126,6 +127,42 @@ final class Task18UnavailableRedisDiagnostics implements RedisRuntimeDiagnostics
     {
         throw new LogicException(
             'Durability must not run after runtime reachability failed.',
+        );
+    }
+}
+
+final class Task18MalformedRuntimeRedisDiagnostics implements RedisRuntimeDiagnostics
+{
+    public function runtime(): RedisRuntimeInfo
+    {
+        throw new RedisDiagnosticsInvalid(
+            'Redis runtime diagnostic reply is malformed.',
+        );
+    }
+
+    public function durability(): RedisDurabilitySettings
+    {
+        throw new LogicException(
+            'Durability must not run after malformed runtime diagnostics.',
+        );
+    }
+}
+
+final class Task18MalformedDurabilityRedisDiagnostics implements RedisRuntimeDiagnostics
+{
+    public function runtime(): RedisRuntimeInfo
+    {
+        return new RedisRuntimeInfo(
+            version: '8.2.1',
+            mode: 'standalone',
+            role: 'master',
+        );
+    }
+
+    public function durability(): RedisDurabilitySettings
+    {
+        throw new RedisDiagnosticsInvalid(
+            'Redis durability diagnostic reply is malformed.',
         );
     }
 }

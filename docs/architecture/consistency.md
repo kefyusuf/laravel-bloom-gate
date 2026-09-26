@@ -60,6 +60,8 @@ Managed writes:
 - use the persisted active layout;
 - use the bounded managed bulk-write path.
 
+If no active generation exists, `MembershipAdder::add()` / `addMany()` return successfully without writing to a candidate. Callers must not interpret that return as proof that a pending candidate was synchronized. Before first promotion, and whenever a `preadd-v1` candidate may have missed live writes, activation reconciliation under the explicit quiescent window is mandatory.
+
 They are not generic database observers.
 
 ## Why observers are not trusted-negative authority

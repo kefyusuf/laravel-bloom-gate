@@ -11,11 +11,13 @@ interface RedisRuntimeDiagnostics
 {
     /**
      * @throws Exception\RedisDiagnosticsUnavailable
+     * @throws Exception\RedisDiagnosticsInvalid
      */
     public function runtime(): RedisRuntimeInfo;
 
     /**
      * @throws Exception\RedisDiagnosticsUnavailable
+     * @throws Exception\RedisDiagnosticsInvalid
      */
     public function durability(): RedisDurabilitySettings;
 }

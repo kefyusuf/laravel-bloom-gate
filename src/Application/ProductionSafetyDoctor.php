@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Application;
 
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
@@ -67,12 +68,16 @@ final readonly class ProductionSafetyDoctor
                 'Redis trusted-negative profile is not declared; negatives cannot authorize query skipping.',
             );
         } else {
+            $recognized = $settings->trustedNegativeProfile() === self::REDIS_PROFILE;
+
             $checks[] = $this->check(
                 'trusted_negative_profile',
-                $settings->trustedNegativeProfile() === self::REDIS_PROFILE
+                $recognized
                     ? ProductionSafetyCheckStatus::Pass
                     : ProductionSafetyCheckStatus::Fail,
-                'Redis trusted-negative profile declaration is recognized.',
+                $recognized
+                    ? 'Redis trusted-negative profile declaration is recognized.'
+                    : 'Redis trusted-negative profile declaration is not recognized.',
             );
         }
 
@@ -182,9 +187,9 @@ final readonly class ProductionSafetyDoctor
     {
         try {
             $runtime = $this->redis->runtime();
-        } catch (RedisDiagnosticsUnavailable) {
+        } catch (RedisDiagnosticsUnavailable|RedisDiagnosticsInvalid) {
             return [
-                $this->check('redis_reachable', ProductionSafetyCheckStatus::Fail, 'Redis runtime diagnostics are unavailable.'),
+                $this->check('redis_reachable', ProductionSafetyCheckStatus::Fail, 'Redis runtime diagnostics are unavailable or invalid.'),
                 $this->check('redis_version', ProductionSafetyCheckStatus::Fail, 'Redis version could not be verified.'),
                 $this->check('redis_topology', ProductionSafetyCheckStatus::Fail, 'Redis topology could not be verified.'),
                 $this->check('redis_primary', ProductionSafetyCheckStatus::Fail, 'Redis primary role could not be verified.'),
@@ -231,12 +236,12 @@ final readonly class ProductionSafetyDoctor
 
         try {
             $durability = $this->redis->durability();
-        } catch (RedisDiagnosticsUnavailable) {
+        } catch (RedisDiagnosticsUnavailable|RedisDiagnosticsInvalid) {
             return [
                 ...$checks,
-                $this->check('redis_aof', ProductionSafetyCheckStatus::Fail, 'Redis AOF setting is not observable with current permissions.'),
-                $this->check('redis_appendfsync', ProductionSafetyCheckStatus::Fail, 'Redis appendfsync setting is not observable with current permissions.'),
-                $this->check('redis_maxmemory_policy', ProductionSafetyCheckStatus::Fail, 'Redis maxmemory policy is not observable with current permissions.'),
+                $this->check('redis_aof', ProductionSafetyCheckStatus::Fail, 'Redis AOF setting is unavailable, invalid, or not observable with current permissions.'),
+                $this->check('redis_appendfsync', ProductionSafetyCheckStatus::Fail, 'Redis appendfsync setting is unavailable, invalid, or not observable with current permissions.'),
+                $this->check('redis_maxmemory_policy', ProductionSafetyCheckStatus::Fail, 'Redis maxmemory policy is unavailable, invalid, or not observable with current permissions.'),
             ];
         }
 

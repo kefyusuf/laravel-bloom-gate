@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Redis\Connections\Connection;
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Tests\Support\Redis\FakeRedisClientException;
@@ -104,4 +105,34 @@ it('does not mask programming failures in diagnostics', function (): void {
     } catch (LogicException $actual) {
         expect($actual)->toBe($failure);
     }
+});
+
+it('maps malformed runtime replies to a dedicated invalid diagnostics failure', function (): void {
+    $connection = new RecordingIlluminateRedisDiagnosticsConnection([
+        'info:server' => [
+            'redis_version' => '8.2.1',
+            'redis_mode' => 'standalone',
+        ],
+        'info:replication' => [],
+    ]);
+    $diagnostics = new LaravelRedisRuntimeDiagnostics(
+        static fn (): Connection => $connection,
+    );
+
+    expect(fn () => $diagnostics->runtime())
+        ->toThrow(RedisDiagnosticsInvalid::class);
+});
+
+it('maps malformed durability replies to a dedicated invalid diagnostics failure', function (): void {
+    $connection = new RecordingIlluminateRedisDiagnosticsConnection([
+        'config:GET:appendonly' => [
+            'appendonly' => 'sometimes',
+        ],
+    ]);
+    $diagnostics = new LaravelRedisRuntimeDiagnostics(
+        static fn (): Connection => $connection,
+    );
+
+    expect(fn () => $diagnostics->durability())
+        ->toThrow(RedisDiagnosticsInvalid::class);
 });

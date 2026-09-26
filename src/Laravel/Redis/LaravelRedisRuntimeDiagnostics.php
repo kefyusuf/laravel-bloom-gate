@@ -6,12 +6,12 @@ namespace Kefyusuf\BloomGate\Laravel\Redis;
 
 use Closure;
 use Illuminate\Redis\Connections\Connection;
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Core\RedisDurabilitySettings;
 use Kefyusuf\BloomGate\Core\RedisRuntimeInfo;
 use Throwable;
-use UnexpectedValueException;
 
 final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagnostics
 {
@@ -47,7 +47,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         $appendOnly = $this->configValue('appendonly');
 
         if ($appendOnly !== 'yes' && $appendOnly !== 'no') {
-            throw new UnexpectedValueException(
+            throw new RedisDiagnosticsInvalid(
                 'Redis appendonly diagnostic value is invalid.',
             );
         }
@@ -71,7 +71,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
 
             foreach ($reply as $key => $value) {
                 if (! is_string($key) || (! is_string($value) && ! is_int($value))) {
-                    throw new UnexpectedValueException(
+                    throw new RedisDiagnosticsInvalid(
                         'Redis INFO diagnostic reply contains an unsupported field.',
                     );
                 }
@@ -83,7 +83,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         }
 
         if (! is_string($reply)) {
-            throw new UnexpectedValueException(
+            throw new RedisDiagnosticsInvalid(
                 'Redis INFO diagnostic reply must be an array or string.',
             );
         }
@@ -115,7 +115,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         $reply = $this->command('config', ['GET', $key]);
 
         if (! is_array($reply)) {
-            throw new UnexpectedValueException(
+            throw new RedisDiagnosticsInvalid(
                 'Redis CONFIG GET diagnostic reply must be an array.',
             );
         }
@@ -130,7 +130,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
                 || $returnedKey !== $key
                 || ! is_string($value)
             ) {
-                throw new UnexpectedValueException(
+                throw new RedisDiagnosticsInvalid(
                     'Redis CONFIG GET diagnostic list reply is invalid.',
                 );
             }
@@ -141,7 +141,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         $value = $reply[$key] ?? null;
 
         if (! is_string($value)) {
-            throw new UnexpectedValueException(
+            throw new RedisDiagnosticsInvalid(
                 'Redis CONFIG GET diagnostic map reply is invalid.',
             );
         }
@@ -182,7 +182,7 @@ final readonly class LaravelRedisRuntimeDiagnostics implements RedisRuntimeDiagn
         $value = $fields[$key] ?? null;
 
         if (! is_string($value) || $value === '') {
-            throw new UnexpectedValueException(sprintf(
+            throw new RedisDiagnosticsInvalid(sprintf(
                 'Redis runtime diagnostic field [%s] is missing.',
                 $key,
             ));
