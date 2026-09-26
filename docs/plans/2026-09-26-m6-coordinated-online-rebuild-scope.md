@@ -339,23 +339,208 @@ The exact recovery mechanism remains unresolved.
 
 ---
 
+## 13. Blocker A + B resolution — coordinated consistency identity and writer-session contract
+
+### Decision M6-D008 — exact consistency identity is `coordinated-preadd-v1`
+
+M6 introduces one new built-in consistency identity:
+
+```text
+coordinated-preadd-v1
+```
+
+Its semantic meaning is:
+
+> every authoritative membership-entry mutation that may overlap an online rebuild participates in the M6 coordinated writer-session protocol, and required Bloom routing completes before that authoritative mutation is allowed to commit.
+
+This is intentionally distinct from M5 `preadd-v1`.
+
+Consequences:
+
+- `preadd-v1` keeps its M5 meaning and quiescent activation requirement;
+- `coordinated-preadd-v1` gets a distinct consistency fingerprint;
+- changing a filter between these contracts requires a new managed generation;
+- M6 online-rebuild safety cannot be claimed while relevant writers still use the old uncoordinated write path;
+- the new contract remains additive-membership-only.
+
+The token describes the safety semantics, not a Redis implementation detail.
+
+### Decision M6-D009 — coordinated writes use prepare -> authoritative outcome
+
+The framework-neutral application surface is conceptually:
+
+```php
+interface CoordinatedMembershipWriter
+{
+    /**
+     * @param iterable<string|int> $values
+     */
+    public function prepare(
+        FilterName $name,
+        iterable $values,
+    ): PreparedMembershipWrite;
+}
+
+interface PreparedMembershipWrite
+{
+    public function authoritativeCommitted(): void;
+
+    public function authoritativeAborted(): void;
+}
+```
+
+Exact class/interface ownership may receive naming-only review, but the protocol is locked by this gate.
+
+The lifecycle is:
+
+```text
+caller asks package to prepare coordinated membership write
+    ->
+package joins the current writer epoch
+    ->
+package resolves the exact required Bloom routing targets
+    ->
+package completes required Bloom writes to every target
+    ->
+prepare() returns PreparedMembershipWrite
+    ->
+caller performs/finishes its own authoritative transaction
+    ->
+caller reports authoritativeCommitted()
+        OR authoritativeAborted()
+    ->
+writer session becomes drain-complete
+```
+
+### Preparation boundary
+
+`prepare()` must not return until every Bloom mutation required by the captured coordination route has succeeded.
+
+The caller must not perform the authoritative membership mutation before `prepare()` succeeds.
+
+Therefore a preparation failure before the handle is returned is still on the package-controlled side of the authoritative boundary.
+
+The package may safely attempt to mark that not-yet-returned session aborted/complete because the contract guarantees that the caller has not begun the authoritative membership mutation.
+
+If cleanup of that failed preparation cannot itself be proven, the writer remains outstanding and observable rather than being silently forgotten.
+
+### Returned session boundary
+
+Once `prepare()` returns, the package must assume that an authoritative transaction may be in progress or may already have committed.
+
+The returned session therefore exposes only explicit authoritative outcomes:
+
+```text
+authoritativeCommitted()
+authoritativeAborted()
+```
+
+It must not expose correctness-significant shortcuts such as:
+
+```text
+release()
+close()
+done()
+detach()
+```
+
+There is no destructor/finalizer auto-completion.
+
+Losing a session handle or crashing after `prepare()` must not cause the coordination layer to infer completion.
+
+### Completion failure
+
+If the authoritative transaction commits successfully but `authoritativeCommitted()` cannot persist completion:
+
+- the authoritative commit remains the application's fact;
+- the writer session remains outstanding;
+- future drains remain blocked;
+- completion must be retryable/recoverable under the later identity/idempotency design;
+- the package must not guess completion from elapsed time.
+
+This intentionally prefers a stuck rebuild over a false-negative window.
+
+### Abort semantics
+
+`authoritativeAborted()` closes the writer from the coordination perspective.
+
+Bloom bits written during preparation are not removed. They are safe false positives and remain consistent with the existing no-delete v1 model.
+
+### Old M5 write API boundary
+
+The existing M5 managed write surface:
+
+```text
+MembershipAdder::add()
+MembershipAdder::addMany()
+BloomGate::add()
+BloomGate::addMany()
+```
+
+must not silently operate a `coordinated-preadd-v1` filter.
+
+For that consistency contract, the old path must fail loudly and direct callers to the coordinated writer-session surface.
+
+This prevents an application from accidentally claiming coordinated online-rebuild safety while still using a write API whose lifetime ends before authoritative commit/abort.
+
+### Writer-session state machine
+
+At the semantic level:
+
+```text
+PREPARING
+    |
+    +-- preparation fails before return
+    |       -> ABORTED when cleanup is proven
+    |       -> otherwise remains outstanding/unsafe
+    |
+    v
+PREPARED
+    |
+    +-- authoritativeCommitted() -> COMMITTED
+    |
+    +-- authoritativeAborted()   -> ABORTED
+```
+
+Only `COMMITTED` and `ABORTED` are drain-complete.
+
+The exact persisted representation of these states is deferred to `sync-v1` design.
+
+### API self-review
+
+This contract deliberately does **not**:
+
+- own or open a database transaction;
+- accept an arbitrary transaction callback;
+- auto-release a writer;
+- infer commit from a successful Bloom write;
+- infer abort from timeout;
+- reuse M5 `preadd-v1` identity;
+- make Laravel/Eloquent part of the correctness core.
+
+---
+
 ## 13. Required design blockers before implementation
 
 No M6 implementation branch may be created until these are resolved.
 
-### Blocker A — consistency identity
+### Blocker A — consistency identity — RESOLVED
 
-Choose the exact stable semantic token and define its caller obligations.
+Locked by M6-D008 as:
 
-### Blocker B — writer-session API
+```text
+coordinated-preadd-v1
+```
 
-Define the framework-neutral session lifecycle.
+### Blocker B — writer-session API — RESOLVED
 
-It must make it difficult to:
+Locked by M6-D009 as the explicit:
 
-- release before authoritative commit/abort;
-- confuse Bloom preparation with authoritative success;
-- accidentally use the coordinated contract through the old M5 API.
+```text
+prepare -> authoritativeCommitted | authoritativeAborted
+```
+
+protocol. The old M5 add/addMany path must reject this consistency contract.
 
 ### Blocker C — writer identity and idempotency
 
@@ -527,8 +712,10 @@ This is scope/design only. No M6 production or test implementation has started.
 
 **M6 scope is provisionally accepted as Coordinated Online Rebuild.**
 
+Blocker A + Blocker B are now resolved.
+
 This gate authorizes only the next design step:
 
-> resolve **Blocker A + Blocker B** — the exact coordinated consistency identity and framework-neutral writer-session contract.
+> resolve **Blocker C + Blocker D** — writer identity/idempotency/crash semantics and the minimum revisioned `sync-v1` state model.
 
 It does **not** authorize implementation, Redis schema creation, Laravel API wiring, or an M6 implementation branch.
