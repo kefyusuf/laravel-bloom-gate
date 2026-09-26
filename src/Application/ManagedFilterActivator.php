@@ -61,6 +61,10 @@ final readonly class ManagedFilterActivator
             );
         }
 
+        $expectedCandidateVersion = $this->requireCandidateVersion(
+            $this->requireControlState($name),
+        );
+
         if ($consistency === ConsistencyContract::PreAddV1) {
             $this->reconcile($name, $definition);
         }
@@ -76,15 +80,18 @@ final readonly class ManagedFilterActivator
         $state = $this->requireControlState($name);
         $candidateVersion = $state->candidateVersion();
 
-        if ($candidateVersion === null) {
+        if (
+            $candidateVersion === null
+            || $candidateVersion->equals($expectedCandidateVersion) === false
+        ) {
             throw new InvalidArgumentException(
-                'Managed activation requires a current candidate generation.',
+                'Managed activation candidate changed during reconciliation or verification.',
             );
         }
 
         return $this->promoter->promote(
             $name,
-            $candidateVersion,
+            $expectedCandidateVersion,
         );
     }
 
