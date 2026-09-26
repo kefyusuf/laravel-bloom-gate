@@ -37,6 +37,8 @@ without
 an operator-provided global quiescent window
 ~~~
 
+Here, "zero-downtime" means **no planned global membership-write pause is required for a healthy coordinated workflow**. It is not a liveness guarantee: a leaked writer lease may deliberately block cutover rather than weaken correctness.
+
 This capability is opt-in. Existing M5 behavior remains valid.
 
 ## 3. Explicit non-goals
@@ -120,13 +122,25 @@ Exact public API shape is a next-gate decision:
 
 Any API that releases coordination before authoritative completion is invalid.
 
-### M6-D004 — the package still does not own DB transactions
+### M6-D004 — M5 add/addMany are invalid as coordinated writer APIs
+
+When coordinated-v1 is enabled for a filter, the existing M5 add/addMany API cannot be treated as participation in the writer barrier.
+
+Those calls end before authoritative commit completion is known.
+
+Therefore coordinated mode must fail loudly if callers attempt to use the legacy managed-write surface as though it were coordination-aware.
+
+A future convenience API may internally perform the same Bloom pre-add work, but it must keep a writer lease open across the authoritative mutation lifetime.
+
+This prevents a dangerous "looks synchronized but is not barrier-safe" migration path.
+
+### M6-D005 — the package still does not own DB transactions
 
 Laravel Bloom Gate may own coordination lifetime, but the application remains responsible for authoritative transaction semantics.
 
 No hidden Eloquent observer or implicit model-event integration is allowed.
 
-### M6-D005 — coordination must be persistent and framework-neutral
+### M6-D006 — coordination must be persistent and framework-neutral
 
 Coordination cannot live only in one PHP process.
 
@@ -140,7 +154,7 @@ M6 requires a framework-neutral coordination boundary representing at least:
 
 Memory remains the reference implementation. Redis is the production implementation.
 
-### M6-D006 — use a separate sync-v1 coordination plane
+### M6-D007 — use a separate sync-v1 coordination plane
 
 M6 must not change strict M4 control-v1.
 
@@ -160,7 +174,7 @@ Exact encoding is not locked yet.
 
 All coordination keys must preserve the existing logical-filter Redis hash tag.
 
-### M6-D007 — coordinated writers use epoch-pinned target sets
+### M6-D008 — coordinated writers use epoch-pinned target sets
 
 Each coordinated membership-entry operation obtains a unique writer lease bound to one synchronization epoch and explicit generation targets.
 
@@ -181,7 +195,7 @@ A writer must successfully pre-add all targets in its lease before authoritative
 
 Partial Bloom writes remain safe because they create at worst false positives.
 
-### M6-D008 — candidate is published before the authoritative rebuild scan
+### M6-D009 — candidate is published before the authoritative rebuild scan
 
 Safe online rebuild ordering:
 
@@ -207,7 +221,7 @@ Once C is published:
 
 This is the barrier that replaces M5's quiescent window.
 
-### M6-D009 — lease release means authoritative completion
+### M6-D010 — lease release means authoritative completion
 
 A writer lease means:
 
@@ -217,7 +231,7 @@ It may be released only after the authoritative mutation has committed or defini
 
 Releasing merely because Bloom pre-add completed is invalid.
 
-### M6-D010 — no automatic lease expiry
+### M6-D011 — no automatic lease expiry
 
 Correctness is preferred over cutover availability.
 
@@ -235,7 +249,7 @@ incorrect trusted negative
 
 Automatic TTL, force release, and fencing for crashed external transactions are later design topics.
 
-### M6-D011 — query fail-open and coordinated-write fail-closed are distinct
+### M6-D012 — query fail-open and coordinated-write fail-closed are distinct
 
 Query uncertainty remains:
 
@@ -253,7 +267,7 @@ coordination or target-write failure
 
 Coordinated mode must never silently fall back to active-only writes while an online candidate may exist.
 
-### M6-D012 — promotion ordering must remain interruption-safe
+### M6-D013 — promotion ordering must remain interruption-safe
 
 Before promotion, active+candidate dual-write stays enabled.
 
@@ -276,7 +290,7 @@ The reverse ordering is unsafe and forbidden.
 
 The coordinator must therefore be persistent/idempotent enough to resume after interruption.
 
-### M6-D013 — M5 remains fully supported
+### M6-D014 — M5 remains fully supported
 
 Existing:
 
@@ -292,7 +306,7 @@ Applications must migrate all membership-entry writers that participate in the f
 
 Raw database writers remain outside package guarantees under ADR-0010.
 
-### M6-D014 — deletes remain unchanged
+### M6-D015 — deletes remain unchanged
 
 M6 coordinates membership-entry writes only.
 
@@ -409,6 +423,7 @@ Drain remains blocked. No automatic unsafe expiry. Status/diagnostics must make 
 - INV-M6-001: old M5 preadd-v1 + quiescent activation remains valid.
 - INV-M6-002: no coordination-aware writer protocol means no online-rebuild safety claim.
 - INV-M6-003: writer lease spans authoritative completion.
+- INV-M6-003A: legacy M5 add/addMany cannot silently participate in coordinated-v1; misuse fails loudly.
 - INV-M6-004: candidate is provisioned and semantically bound before publication.
 - INV-M6-005: prior epoch drains before reconciliation baseline.
 - INV-M6-006: every new-epoch writer includes C.
@@ -460,7 +475,7 @@ Rejected. Rebuild coordination does not change active membership semantics.
 
 ### Reuse current add/addMany and infer commit completion
 
-Rejected. The package cannot know the caller's authoritative commit lifetime after add/addMany returns.
+Rejected. The package cannot know the caller's authoritative commit lifetime after add/addMany returns. In coordinated mode, allowing this surface to appear barrier-safe would be a correctness footgun, so the coordinated path must reject it.
 
 ## 11. Explicit self-review
 
