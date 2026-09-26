@@ -58,7 +58,8 @@ M6 does not include:
 - counting Bloom filters;
 - RedisBloom replacement;
 - generic DB transaction ownership;
-- automatic discovery of application database writers.
+- automatic discovery of application database writers;
+- zero-downtime migration between different normalization/authoritative-set/consistency semantics.
 
 ## 4. Locked scope decisions
 
@@ -365,6 +366,77 @@ At minimum, coordinated mode must guard or reject conflicting operations such as
 
 The exact ownership boundary is a next-gate decision, but silent lifecycle bypass is invalid.
 
+### M6-D019 — M6 online rebuild is not semantic migration
+
+For an existing active generation A, coordinated online rebuild requires candidate C to use the same generation semantic contract:
+
+- normalization fingerprint;
+- authoritative-set fingerprint;
+- consistency fingerprint.
+
+A and C may have different Bloom layouts because capacity/FPR sizing may change.
+
+This restriction exists because one coordinated membership-entry write must safely update both A and C. If their normalization or membership semantics differ, a single current FilterDefinition cannot prove the correct bytes/membership interpretation for both generations.
+
+Changing normalization, authoritative-set semantics, or consistency contract remains outside M6 online rebuild and must use a separate safe migration path.
+
+First activation has no old active semantic contract and is unaffected by this restriction.
+
+### M6-D020 — persisted coordination state outranks runtime mode changes during a session
+
+The synchronization protocol may be configured explicitly, but an already-open persisted coordination session cannot be disabled by merely changing local/runtime configuration.
+
+If sync-v1 says an online session or draining epoch is active:
+
+- coordination-aware writer rules remain mandatory;
+- legacy add/addMany cannot become permitted because one node changed config;
+- lifecycle operations remain coordination-guarded.
+
+Enable/disable transitions for coordinated mode must themselves be explicit safe state transitions.
+
+Dynamic de-adoption semantics are deferred to the next design gate.
+
+### M6-D021 — writer lease acquire/release are retry-safe by token
+
+Network ambiguity must not create unbounded duplicate leases or decrement the wrong epoch.
+
+The caller/package creates a unique stable lease token before acquisition.
+
+Acquire with the same token must be idempotent:
+
+- if the token is new, atomically bind it to the current epoch/targets;
+- if the token already exists, return the original lease binding;
+- never silently rebind the same token to a later epoch.
+
+Release must also be idempotent for the same completed token.
+
+Token collision with incompatible state is a loud error.
+
+Exact token grammar/storage is a next-gate decision.
+
+### M6-D022 — post-commit release uncertainty is not an authoritative-write failure
+
+A coordinated convenience API may experience:
+
+~~~text
+Bloom pre-add succeeded
+authoritative transaction committed
+lease release reply failed / is uncertain
+~~~
+
+At that point the authoritative mutation is already committed.
+
+The package must not collapse this into a generic "write failed" result that encourages callers to retry the authoritative mutation blindly.
+
+Correctness-safe interpretation:
+
+- authoritative commit remains successful;
+- coordination cleanup is uncertain;
+- the lease may remain conservatively registered;
+- future cutover may block until cleanup is reconciled.
+
+The next API-design gate must define a result/error boundary that distinguishes pre-commit synchronization failure from post-commit lease-release uncertainty.
+
 ## 5. Conceptual epoch model
 
 ### Steady
@@ -489,6 +561,10 @@ Drain remains blocked. No automatic unsafe expiry. Status/diagnostics must make 
 - INV-M6-016: lease token registration and epoch/target capture are one atomic coordination operation.
 - INV-M6-017: an existing uncoordinated M5 deployment requires an explicit one-time adoption fence before coordinated-v1 safety can be claimed.
 - INV-M6-018: conflicting lifecycle operations cannot bypass an open coordination session.
+- INV-M6-019: active and candidate semantic contracts must match for M6 online rebuild; layout may differ.
+- INV-M6-020: an open persisted sync session cannot be disabled by runtime config drift.
+- INV-M6-021: lease acquire/release semantics are token-idempotent under retry ambiguity.
+- INV-M6-022: post-authoritative-commit release uncertainty cannot be reported as though the authoritative mutation never committed.
 
 ## 9. Next design blockers
 
@@ -504,7 +580,11 @@ No implementation begins until the next design gate resolves:
 8. command/API surface for online rebuild;
 9. drain wait/timeout/status behavior;
 10. brownfield adoption sequence and one-time migration fence from an already-active M5 preadd-v1 filter;
-11. how existing build/activate/discard flows are guarded while a coordinated session is open.
+11. how existing build/activate/discard flows are guarded while a coordinated session is open;
+12. token-idempotent acquire/release and ambiguous network outcomes;
+13. post-commit release failure/result semantics;
+14. coordinated-mode enable/disable transitions;
+15. enforcement that online rebuild refuses active/candidate semantic-contract drift.
 
 ## 10. Alternatives rejected
 
@@ -532,6 +612,12 @@ Rejected. Rebuild coordination does not change active membership semantics.
 
 Rejected. The package cannot know the caller's authoritative commit lifetime after add/addMany returns. In coordinated mode, allowing this surface to appear barrier-safe would be a correctness footgun, so the coordinated path must reject it.
 
+### Allow active/candidate semantic drift during online rebuild
+
+Rejected for M6.
+
+Dual-writing one membership operation into two generations with different normalization or authoritative-set semantics requires two independently available semantic interpretations and creates a different migration problem. M6 stays focused on online generation replacement under stable membership semantics.
+
 ## 11. Explicit self-review
 
 ### Scope alignment — PASS
@@ -554,7 +640,10 @@ The scope introduces only the machinery required for safe online rebuild:
 - epoch;
 - explicit target set;
 - drain barrier;
-- persisted coordinator state.
+- persisted coordinator state;
+- retry-safe lease token identity.
+
+It explicitly rejects semantic-migration machinery and keeps post-commit coordination uncertainty separate from authoritative transaction success.
 
 ### Brownfield safety — PASS
 
