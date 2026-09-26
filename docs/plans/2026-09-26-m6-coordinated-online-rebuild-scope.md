@@ -520,7 +520,7 @@ This contract deliberately does **not**:
 
 ---
 
-## 13. Required design blockers before implementation
+## 14. Required design blockers before implementation
 
 No M6 implementation branch may be created until these are resolved.
 
@@ -583,7 +583,7 @@ Define status, doctor, build/activate command behavior, cancellation/discard sem
 
 ---
 
-## 14. Explicitly rejected shortcuts
+## 15. Explicitly rejected shortcuts
 
 ### "Just write active + candidate"
 
@@ -615,7 +615,7 @@ Rejected from M6 core scope. Coordination remains framework-neutral and explicit
 
 ---
 
-## 15. M6 invariants established by this gate
+## 16. M6 invariants established by this gate
 
 ### INV-M6-001 — Existing M5 contracts keep their meaning
 
@@ -667,7 +667,7 @@ Online rebuild coordination and Redis failover/topology support remain separate 
 
 ---
 
-## 16. Scope-gate self-review
+## 17. Scope-gate self-review
 
 ### Scope alignment — PASS
 
@@ -708,7 +708,7 @@ This is scope/design only. No M6 production or test implementation has started.
 
 ---
 
-## 17. Gate result
+## 18. Gate result
 
 **M6 scope is provisionally accepted as Coordinated Online Rebuild.**
 
