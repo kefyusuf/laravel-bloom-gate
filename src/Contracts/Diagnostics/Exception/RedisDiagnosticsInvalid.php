@@ -6,6 +6,4 @@ namespace Kefyusuf\BloomGate\Contracts\Diagnostics\Exception;
 
 use UnexpectedValueException;
 
-final class RedisDiagnosticsInvalid extends UnexpectedValueException
-{
-}
+final class RedisDiagnosticsInvalid extends UnexpectedValueException {}
