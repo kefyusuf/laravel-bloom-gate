@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Drivers\Memory;
 
-use Kefyusuf\BloomGate\Contracts\BloomDriver;
+use Kefyusuf\BloomGate\Contracts\BloomGenerationInspector;
+use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomFilterNotProvisioned;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomLayoutConflict;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomLayoutMismatch;
@@ -13,7 +14,7 @@ use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterVersion;
 
-final class MemoryBloomDriver implements BloomDriver
+final class MemoryBloomDriver implements BloomGenerationInspector, BulkBloomDriver
 {
     /**
      * @var array<string, array<int, array{layout: BloomLayout, bits: array<int, true>}>>
@@ -60,6 +61,36 @@ final class MemoryBloomDriver implements BloomDriver
         $this->filters[$name->value()][$version->value()] = $entry;
     }
 
+    /**
+     * @param  list<BitPositions>  $items
+     */
+    public function addMany(
+        FilterName $name,
+        FilterVersion $version,
+        array $items,
+    ): void {
+        if ($items === []) {
+            return;
+        }
+
+        $entry = $this->entry($name, $version);
+
+        foreach ($items as $positions) {
+            $this->assertLayoutMatches(
+                $entry['layout'],
+                $positions->layout(),
+            );
+        }
+
+        foreach ($items as $positions) {
+            foreach ($positions->values() as $position) {
+                $entry['bits'][$position] = true;
+            }
+        }
+
+        $this->filters[$name->value()][$version->value()] = $entry;
+    }
+
     public function mightContain(
         FilterName $name,
         FilterVersion $version,
@@ -82,6 +113,13 @@ final class MemoryBloomDriver implements BloomDriver
         FilterVersion $version,
     ): void {
         unset($this->filters[$name->value()][$version->value()]);
+    }
+
+    public function layout(
+        FilterName $name,
+        FilterVersion $version,
+    ): ?BloomLayout {
+        return $this->filters[$name->value()][$version->value()]['layout'] ?? null;
     }
 
     /**

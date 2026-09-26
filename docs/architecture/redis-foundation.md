@@ -1,259 +1,221 @@
 # Redis Foundation
 
-**M3 data plane:** implemented and retained  
-**M4 control plane:** implemented
+**M3 data plane:** implemented  
+**M4 control plane:** implemented  
+**M5 safe query integration:** implemented for the narrow supported Redis profile
 
-The Redis architecture keeps Bloom data-plane storage separate from logical-filter lifecycle/control state.
+Redis storage remains separated into generation data-plane keys and logical-filter control-plane state.
 
-## Data-plane boundary
+## Data plane
 
 ```text
 NormalizedValue
       |
       v
-BloomProbeGenerator + BloomLayout
+BloomProbeGenerator + persisted BloomLayout
       |
       v
 BitPositions
       |
       v
-RedisBloomDriver
+RedisBloomDriver / BulkBloomDriver
       |
       v
-RedisCommandExecutor
-      |
-      +--> LaravelRedisCommandExecutor --> Illuminate Redis Connection
-      |
-      +--> test-only RESP executor
+RedisCommandExecutor / RedisStructuredCommandExecutor
       |
       v
-stock Redis
+LaravelRedisCommandExecutor
+      |
+      v
+Illuminate Redis Connection
 ```
 
-`RedisBloomDriver` never receives raw values and never performs normalization or hashing.
+The Redis driver uses stock Redis STRING bitmaps and Lua/EVAL.
 
-### Stock Redis, not RedisBloom
+It does not use RedisBloom and does not normalize application values.
 
-The implementation uses Redis STRING bitmaps and Lua/EVAL. It intentionally does not use RedisBloom commands such as `BF.ADD` or `BF.EXISTS`.
+## Generation metadata
 
-Core remains the single owner of Bloom probe generation.
+Each generation has:
 
-### Generation storage
+- one `:meta` HASH;
+- an optional `:bf` STRING bitmap.
 
-Each generation owns:
+The canonical M3 layout fields remain:
 
-- a metadata HASH;
-- an optional STRING bitmap.
-
-See [redis-keyspace.md](redis-keyspace.md) for exact formats.
-
-Metadata existence is the provision marker. A missing bitmap with valid metadata is a valid empty generation; a bitmap without metadata is corruption.
-
-### Atomic Bloom operations
-
-Each Bloom driver operation executes as one Redis Lua script:
-
-#### provision
-
-- rejects orphan or wrong-type storage as corruption;
-- creates metadata when absent;
-- treats equivalent reprovision as success without clearing bits;
-- reports a valid different layout as `BloomLayoutConflict`.
-
-#### add
-
-- validates storage and layout before mutation;
-- sets supplied positions with `SETBIT`;
-- is monotonic and retry-safe.
-
-#### mightContain
-
-- validates storage and layout before membership reads;
-- returns absent for a valid empty generation;
-- returns maybe-present only when every supplied position is set.
-
-#### destroy
-
-- atomically deletes generation metadata and bitmap;
-- is retry-safe;
-- remains the raw explicit recovery primitive for low-level generation storage.
-
-The raw `destroy -> provision` capability remains part of the M3 driver surface.
-
-M4-managed generations must not use that primitive to destructively rebuild/reuse a managed version in place. M4 does not implement rebuild scheduling/orchestration; any managed replacement must use a newly allocated generation version.
-
-## M3 private script protocol
-
-The Bloom data-plane scripts use private integer status codes:
-
-| Code | Internal meaning | Driver mapping |
-| ---: | --- | --- |
-| 100 | OK | success |
-| 101 | membership absent | `false` |
-| 102 | membership maybe-present | `true` |
-| 200 | not provisioned | `BloomFilterNotProvisioned` |
-| 201 | layout conflict | `BloomLayoutConflict` |
-| 202 | layout mismatch | `BloomLayoutMismatch` |
-| 203 | storage corrupt | `BloomStorageCorrupt` |
-
-These are implementation protocol, not public API.
-
-## Redis command ports
-
-The original data-plane port remains:
-
-```php
-RedisCommandExecutor::evaluate(
-    string $script,
-    array $keys,
-    array $arguments,
-): int
+```text
+format
+bit_count
+hash_count
+probe_algorithm
 ```
 
-M4 adds an additive child contract:
+M5 adds generation semantic fields:
 
-```php
-RedisStructuredCommandExecutor::evaluateStructured(
-    string $script,
-    array $keys,
-    array $arguments,
-): array
+```text
+normalization_fingerprint
+authoritative_set_fingerprint
+consistency_fingerprint
 ```
 
-Its semantic return type is a strict `list<string>`.
+Those fields are additive to `redis-bitmap-v1`; M5 does not introduce a new storage format token.
 
-The original integer executor contract is unchanged.
+The three semantic fields are all-or-none:
 
-`LaravelRedisCommandExecutor` implements both behaviors and keeps Redis client/transport exception normalization at the Laravel adapter boundary.
+- none -> valid unbound legacy generation;
+- all three valid -> bound managed generation;
+- partial/invalid semantic metadata -> corruption.
 
-## M4 Redis control plane
+Binding is write-once and layout-checked.
 
-`RedisFilterControlStore` implements the same `FilterControlStore` contract as the Memory reference store.
+## Managed bitmap loss marker
 
-It stores one strict durable `control-v1` HASH per logical filter:
+The managed bulk-write path sets:
+
+```text
+managed_bitmap_written = 1
+```
+
+before setting the managed batch bits.
+
+This marker distinguishes:
+
+- a valid never-written/empty generation whose bitmap may not exist;
+- a managed generation that previously had a non-empty managed write.
+
+If `managed_bitmap_written=1` but the bitmap key is later missing, M5 treats the generation as corrupt/unsafe and bypasses. It is never interpreted as a valid empty Bloom filter.
+
+This is one reason the supported production profile requires `maxmemory-policy=noeviction`.
+
+## Control plane
+
+M4 `RedisFilterControlStore` persists one strict durable:
 
 ```text
 <prefix>:{<filter-name>}:state
 ```
 
-CAS replacement additionally uses a transient same-slot staging HASH:
+and uses a transient same-slot staging key during CAS replacement.
+
+The schema remains strict `control-v1`.
+
+M5 does not place semantic fingerprints in `control-v1`. They belong to generation-scoped data-plane metadata because they describe the exact generation that was built.
+
+## Atomic authorized probe
+
+M5 Redis trusted-negative authorization uses a dedicated atomic structured EVAL.
+
+The Application layer first prepares a query-safety descriptor containing:
+
+- filter name;
+- pinned control revision;
+- pinned active version;
+- exact persisted layout;
+- expected semantic contract.
+
+The Redis script then atomically re-checks the current control and generation state before reading bits.
+
+It validates, among other invariants:
+
+- control key shape;
+- control revision unchanged;
+- active version unchanged;
+- active lifecycle is active;
+- active health is healthy;
+- generation metadata/storage shape;
+- exact storage format/layout;
+- exact normalization fingerprint;
+- exact authoritative-set fingerprint;
+- exact consistency fingerprint;
+- `managed_bitmap_written` integrity;
+- bitmap bits.
+
+Possible semantic outcomes are:
 
 ```text
-<prefix>:{<filter-name>}:state:staging
+ABSENT
+MAYBE
+BYPASS <reason>
 ```
 
-### Atomic control CAS
+A changed/unsafe snapshot returns BYPASS rather than a trusted negative.
 
-Control reads and compare-and-swap writes execute through Lua/EVAL.
+The query path never uses `bloom:doctor` to authorize an individual request.
 
-CAS validates, in order:
+## Failure model
 
-1. Redis key type;
-2. existing strict `control-v1` state;
-3. expected revision/conflict;
-4. proposed strict `control-v1` state;
-5. proposed revision progression;
-6. clears only the transient staging key;
-7. materializes the complete replacement into staging using bounded HSET chunks;
-8. atomically replaces the durable state with `RENAME staging -> state`.
+Infrastructure uncertainty fails open.
 
-Semantic conflict/corruption/revision failures occur before staging mutation.
+Examples that bypass trusted-negative optimization include:
 
-The current durable `:state` key is never deleted before a complete replacement exists. Staging HSET/RENAME errors are handled through Redis `pcall`; staging is cleaned and the previous durable correctness snapshot remains intact.
+- Redis transport failure;
+- changed control revision;
+- changed active version;
+- missing/unbound semantic contract;
+- semantic fingerprint mismatch;
+- missing/corrupt generation storage;
+- managed bitmap loss;
+- unsupported/unasserted trusted-negative profile.
 
-Private control-script statuses:
+Programming/protocol errors remain loud rather than being silently converted into trusted negatives.
 
-| Code | Internal meaning | Store mapping |
-| ---: | --- | --- |
-| 100 | OK | success |
-| 200 | revision conflict | `FilterControlWriteConflict` |
-| 201 | storage corrupt | `FilterControlStateCorrupt` |
-| 202 | invalid revision progression | `InvalidArgumentException` |
+## Supported M5 Redis profile
 
-These codes are also private implementation protocol.
-
-The control scripts know storage shape and CAS semantics only. They do not encode lifecycle transition legality.
-
-They touch only the control-plane `:state` and `:state:staging` keys and never mutate generation `:meta` / `:bf` keys.
-
-No TTL is assigned to the durable control HASH. The staging key is transient and is consumed on success or explicitly cleaned on handled write/rename failure.
-
-## Failure taxonomy
+Trusted Redis negatives require explicit declaration:
 
 ```text
-Redis client/transport operational failure
-      |
-      v
-RedisCommandFailed
-      |
-      +--> BloomDriverOperationFailed
-      |
-      +--> FilterControlStoreOperationFailed
-
-valid Redis response + corrupt generation state
-      |
-      v
-BloomStorageCorrupt
-
-valid Redis response + corrupt control state
-      |
-      v
-FilterControlStateCorrupt
-
-stale control writer
-      |
-      v
-FilterControlWriteConflict
+standalone-primary-durable-v1
 ```
 
-Missing state, storage corruption, revision conflict, and Redis availability remain distinct.
+The operational profile requires:
 
-## Verification evidence
+- Redis 8;
+- standalone topology;
+- authoritative primary/master connection;
+- AOF enabled;
+- `appendfsync = always`;
+- `maxmemory-policy = noeviction`.
 
-Executable evidence includes:
+The hot query path checks the explicit profile declaration and performs correctness-safe atomic probing.
 
-- deterministic generation and control key construction;
-- Bloom Lua validation-before-mutation ordering;
-- strict `control-v1` codec tests;
-- control Lua validation-before-mutation ordering;
-- real Redis `BloomDriverContractTestCase`;
-- real Redis `FilterControlStoreContractTestCase`;
-- real two-writer CAS conflict proving the loser cannot overwrite the winner;
-- live wrong-type/malformed/unknown-field/unknown-format control corruption;
-- live 5,000-generation replacement proving bounded staged writes avoid the prior unbounded-unpack failure mode;
-- no-TTL checks after control create/update;
-- real Testbench + PhpRedis structured/integer EVAL execution;
-- Laravel 12 / PHP 8.3 and Laravel 13 / PHP 8.5 compatibility anchors;
-- executable architecture boundaries.
+It does **not** execute Redis admin diagnostics on every request.
 
-The Redis integration suite remains isolated behind the `redis` Pest group.
+## `bloom:doctor`
 
-## Support-claim boundary
+`bloom:doctor` is a separate read-only diagnostics/preflight path.
 
-Verified:
+It observes:
 
-- standalone Redis 8 integration anchor;
-- PhpRedis-backed Laravel/Testbench EVAL path;
-- real control-store concurrency and corruption semantics.
+- `INFO server`;
+- `INFO replication`;
+- `CONFIG GET appendonly`;
+- `CONFIG GET appendfsync`;
+- `CONFIG GET maxmemory-policy`;
+- filter/runtime generation safety.
 
-Designed but not runtime-verified:
+Missing ACL permission to inspect a required prerequisite is reported as failure, not pass.
 
-- Redis Cluster;
-- Predis execution.
+Doctor does not change Redis configuration.
 
-Same-filter keys are hash-tag compatible by construction, but that does not constitute a Redis Cluster runtime-support claim.
+A passing doctor report is point-in-time verification. Continuous adherence to the declared profile is an operational contract.
 
-Predis operational-exception normalization is unit-tested without adding Predis as a production dependency.
+## Support boundary
 
-## Out of scope
+Verified M5 Redis support:
 
-M4 Redis work does not implement:
+- Redis 8 standalone;
+- primary/master query path;
+- PhpRedis-backed Laravel adapter;
+- revision-pinned authorized EVAL;
+- production diagnostics reads;
+- `noeviction` profile expectation.
 
-- package-facing query interception;
-- authoritative database lookup orchestration;
-- runtime normalization identity/fingerprint verification;
-- automatic rebuild scheduling;
-- retention/purge policy;
-- rollback workflow;
-- background health monitoring;
-- Redis Cluster runtime verification.
+Not claimed in M5:
+
+- Redis Sentinel runtime support;
+- Redis Cluster runtime support;
+- replica trusted negatives;
+- online dual-write rebuild;
+- automatic writer barriers.
+
+Same-filter keys remain Cluster hash-tag compatible by construction, but that is not a Cluster runtime-support claim.

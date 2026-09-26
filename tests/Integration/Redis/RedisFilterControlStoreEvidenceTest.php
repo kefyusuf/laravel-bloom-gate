@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
+use InvalidArgumentException;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlWriteConflict;
 use Kefyusuf\BloomGate\Core\FilterControlState;
@@ -16,6 +17,7 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisControlStateCodec;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -36,7 +38,7 @@ final class RedisFilterControlStoreEvidenceTest extends TestCase
     {
         parent::setUp();
 
-        $this->prefix = 'lbgcontrolevidence'.bin2hex(random_bytes(8));
+        $this->prefix = RedisTestKeyPrefix::unique('lbgcontrolevidence');
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),
@@ -198,7 +200,7 @@ LUA);
             null,
         );
 
-        self::assertSame(-1, $this->ttl());
+        self::assertSame(-1, $this->ttl(afterRevision: 1));
 
         $this->store->compareAndSwap(
             $this->filterName(),
@@ -206,7 +208,7 @@ LUA);
             FilterStateRevision::fromInt(1),
         );
 
-        self::assertSame(-1, $this->ttl());
+        self::assertSame(-1, $this->ttl(afterRevision: 2));
     }
 
     public function test_large_control_snapshot_replacement_is_complete_and_does_not_hit_unbounded_unpack(): void
@@ -326,8 +328,12 @@ LUA);
         ));
     }
 
-    private function ttl(): int
+    private function ttl(int $afterRevision): int
     {
+        if ($afterRevision < 1) {
+            throw new InvalidArgumentException('TTL evidence revision marker must be positive.');
+        }
+
         return $this->executor->evaluate(
             "return redis.call('TTL', KEYS[1])",
             [$this->stateKey()],

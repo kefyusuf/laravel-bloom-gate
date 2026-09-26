@@ -19,6 +19,9 @@ return [
     'drivers' => [
         'redis' => [
             'connection' => env('BLOOM_GATE_REDIS_CONNECTION', 'default'),
+            'trusted_negative_profile' => env(
+                'BLOOM_GATE_REDIS_TRUSTED_NEGATIVE_PROFILE',
+            ),
         ],
 
         'memory' => [],

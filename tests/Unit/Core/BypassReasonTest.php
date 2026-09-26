@@ -12,6 +12,7 @@ it('provides the built-in bypass reasons', function (BypassReason $reason, strin
     'health not healthy' => [BypassReason::healthNotHealthy(), 'health_not_healthy'],
     'active version unavailable' => [BypassReason::activeVersionUnavailable(), 'active_version_unavailable'],
     'backend unavailable' => [BypassReason::backendUnavailable(), 'backend_unavailable'],
+    'backend profile unasserted' => [BypassReason::backendProfileUnasserted(), 'backend_profile_unasserted'],
     'operation failed' => [BypassReason::operationFailed(), 'operation_failed'],
 ]);
 

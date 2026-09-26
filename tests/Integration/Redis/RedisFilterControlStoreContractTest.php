@@ -10,6 +10,7 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisControlStateCodec;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Contract\FilterControlStoreContractTestCase;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RespRedisCommandExecutor;
 use PHPUnit\Framework\Attributes\Group;
 use Throwable;
@@ -27,7 +28,7 @@ final class RedisFilterControlStoreContractTest extends FilterControlStoreContra
     {
         parent::setUp();
 
-        $this->prefix = 'lbgcontrol'.bin2hex(random_bytes(8));
+        $this->prefix = RedisTestKeyPrefix::unique('lbgcontrol');
         $this->executor = new RespRedisCommandExecutor(
             (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
             (int) (getenv('REDIS_PORT') ?: 6379),

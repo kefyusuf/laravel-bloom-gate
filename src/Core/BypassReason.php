@@ -54,9 +54,49 @@ final readonly class BypassReason
         return self::fromCode('backend_unavailable');
     }
 
+    public static function backendProfileUnasserted(): self
+    {
+        return self::fromCode('backend_profile_unasserted');
+    }
+
     public static function operationFailed(): self
     {
         return self::fromCode('operation_failed');
+    }
+
+    public static function generationContractUnbound(): self
+    {
+        return self::fromCode('generation_contract_unbound');
+    }
+
+    public static function normalizationMismatch(): self
+    {
+        return self::fromCode('normalization_mismatch');
+    }
+
+    public static function authoritativeSetMismatch(): self
+    {
+        return self::fromCode('authoritative_set_mismatch');
+    }
+
+    public static function consistencyMismatch(): self
+    {
+        return self::fromCode('consistency_mismatch');
+    }
+
+    public static function controlStateChanged(): self
+    {
+        return self::fromCode('control_state_changed');
+    }
+
+    public static function generationStorageUnavailable(): self
+    {
+        return self::fromCode('generation_storage_unavailable');
+    }
+
+    public static function generationStorageCorrupt(): self
+    {
+        return self::fromCode('generation_storage_corrupt');
     }
 
     public function code(): string
