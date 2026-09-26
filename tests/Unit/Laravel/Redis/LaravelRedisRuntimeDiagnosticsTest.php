@@ -107,7 +107,6 @@ it('does not mask programming failures in diagnostics', function (): void {
     }
 });
 
-
 it('maps malformed runtime replies to a dedicated invalid diagnostics failure', function (): void {
     $connection = new RecordingIlluminateRedisDiagnosticsConnection([
         'info:server' => [
