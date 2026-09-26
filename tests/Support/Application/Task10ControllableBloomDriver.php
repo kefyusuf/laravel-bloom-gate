@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Application;
 
+use Closure;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
 use Kefyusuf\BloomGate\Core\BitPositions;
@@ -24,6 +25,8 @@ final class Task10ControllableBloomDriver implements BulkBloomDriver
      * @var list<list<BitPositions>>
      */
     public array $batches = [];
+
+    private ?Closure $afterMightContain = null;
 
     public function __construct(
         private MemoryBloomDriver $inner,
@@ -84,7 +87,18 @@ final class Task10ControllableBloomDriver implements BulkBloomDriver
             );
         }
 
-        return $this->inner->mightContain($name, $version, $positions);
+        $result = $this->inner->mightContain($name, $version, $positions);
+
+        if ($this->afterMightContain !== null) {
+            ($this->afterMightContain)($this->mightContainCalls);
+        }
+
+        return $result;
+    }
+
+    public function afterMightContain(Closure $callback): void
+    {
+        $this->afterMightContain = $callback;
     }
 
     public function destroy(
