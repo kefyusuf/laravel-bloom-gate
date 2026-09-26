@@ -6,10 +6,11 @@ namespace Kefyusuf\BloomGate\Laravel\Redis;
 
 use Illuminate\Contracts\Config\Repository;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
+use Kefyusuf\BloomGate\Drivers\Redis\RedisAuthorizedProbe;
 
 final readonly class RedisTrustedNegativeProfileResolver
 {
-    public const string STANDALONE_PRIMARY_DURABLE_V1 = 'standalone-primary-durable-v1';
+    public const string STANDALONE_PRIMARY_DURABLE_V1 = RedisAuthorizedProbe::TRUSTED_NEGATIVE_PROFILE;
 
     public function __construct(
         private Repository $config,

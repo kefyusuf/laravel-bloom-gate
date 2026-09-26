@@ -329,6 +329,75 @@ it('activates immutable candidate with fresh verification and no reconciliation'
         ->and($environment['driver']->mightContainCalls)->toBe(3);
 });
 
+it('never promotes a replacement candidate that appears after fresh verification', function (): void {
+    $environment = task10Environment(
+        consistency: ConsistencyContract::ImmutableV1,
+        candidateLifecycle: LifecycleState::Verified,
+    );
+
+    $environment['driver']->afterMightContain(
+        function (int $call) use ($environment): void {
+            if ($call !== 3) {
+                return;
+            }
+
+            $current = $environment['control']->read($environment['name']);
+
+            if ($current === null) {
+                throw new LogicException('Expected control state during activation race fixture.');
+            }
+
+            $replacement = FilterVersion::fromInt(3);
+            $generations = [];
+
+            foreach ($current->generations() as $generation) {
+                if ($generation->version()->equals($environment['candidate'])) {
+                    $generations[] = new GenerationControlState(
+                        version: $generation->version(),
+                        lifecycle: LifecycleState::Retired,
+                        health: $generation->health(),
+                    );
+
+                    continue;
+                }
+
+                $generations[] = $generation;
+            }
+
+            $generations[] = new GenerationControlState(
+                version: $replacement,
+                lifecycle: LifecycleState::Verified,
+                health: HealthState::Healthy,
+            );
+
+            $environment['control']->compareAndSwap(
+                $environment['name'],
+                new FilterControlState(
+                    filterName: $environment['name'],
+                    revision: $current->revision()->next(),
+                    lastAllocatedVersion: $replacement,
+                    activeVersion: $environment['active'],
+                    candidateVersion: $replacement,
+                    generations: $generations,
+                ),
+                $current->revision(),
+            );
+        },
+    );
+
+    expect(fn () => $environment['activator']->activate($environment['name']))
+        ->toThrow(
+            InvalidArgumentException::class,
+            'Managed activation candidate changed during reconciliation or verification.',
+        );
+
+    $state = $environment['control']->read($environment['name']);
+
+    expect($state?->activeVersion()?->value())->toBe(1)
+        ->and($state?->candidateVersion()?->value())->toBe(3)
+        ->and($state?->generations()[2]->lifecycle())->toBe(LifecycleState::Verified);
+});
+
 it('requires explicit quiescence before preadd activation mutates or verifies candidate', function (): void {
     $environment = task10Environment(
         consistency: ConsistencyContract::PreAddV1,
