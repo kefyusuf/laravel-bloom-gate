@@ -16,6 +16,7 @@ use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
 use Kefyusuf\BloomGate\Core\RedisDurabilitySettings;
 use Kefyusuf\BloomGate\Core\RedisRuntimeInfo;
 use LogicException;
+use UnexpectedValueException;
 
 final class Task18NoFilterRegistry implements FilterRegistry
 {
@@ -126,6 +127,43 @@ final class Task18UnavailableRedisDiagnostics implements RedisRuntimeDiagnostics
     {
         throw new LogicException(
             'Durability must not run after runtime reachability failed.',
+        );
+    }
+}
+
+
+final class Task18MalformedRuntimeRedisDiagnostics implements RedisRuntimeDiagnostics
+{
+    public function runtime(): RedisRuntimeInfo
+    {
+        throw new UnexpectedValueException(
+            'Redis runtime diagnostic reply is malformed.',
+        );
+    }
+
+    public function durability(): RedisDurabilitySettings
+    {
+        throw new LogicException(
+            'Durability must not run after malformed runtime diagnostics.',
+        );
+    }
+}
+
+final class Task18MalformedDurabilityRedisDiagnostics implements RedisRuntimeDiagnostics
+{
+    public function runtime(): RedisRuntimeInfo
+    {
+        return new RedisRuntimeInfo(
+            version: '8.2.1',
+            mode: 'standalone',
+            role: 'master',
+        );
+    }
+
+    public function durability(): RedisDurabilitySettings
+    {
+        throw new UnexpectedValueException(
+            'Redis durability diagnostic reply is malformed.',
         );
     }
 }
