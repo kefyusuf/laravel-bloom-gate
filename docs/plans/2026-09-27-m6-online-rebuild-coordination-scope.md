@@ -474,21 +474,21 @@ Drain remains blocked. No automatic unsafe expiry. Status/diagnostics must make 
 - INV-M6-001: old M5 preadd-v1 + quiescent activation remains valid.
 - INV-M6-002: no coordination-aware writer protocol means no online-rebuild safety claim.
 - INV-M6-003: writer lease spans authoritative completion.
-- INV-M6-003A: legacy M5 add/addMany cannot silently participate in coordinated-v1; misuse fails loudly.
-- INV-M6-004: candidate is provisioned and semantically bound before publication.
-- INV-M6-005: prior epoch drains before reconciliation baseline.
-- INV-M6-006: every new-epoch writer includes C.
-- INV-M6-007: fresh verification remains mandatory.
-- INV-M6-008: promotion remains pinned to the verified candidate.
-- INV-M6-009: control-v1 remains unchanged.
-- INV-M6-010: coordinated-write uncertainty fails closed.
-- INV-M6-011: M5 query authorization remains the only query safety model.
-- INV-M6-012: writer leases do not auto-expire.
-- INV-M6-013: C is not removed from required write targets before successful promotion.
-- INV-M6-014: Sentinel/Cluster/failover support is not part of M6 scope.
-- INV-M6-015: lease token registration and epoch/target capture are one atomic coordination operation.
-- INV-M6-016: an existing uncoordinated M5 deployment requires an explicit one-time adoption fence before coordinated-v1 safety can be claimed.
-- INV-M6-017: conflicting lifecycle operations cannot bypass an open coordination session.
+- INV-M6-004: legacy M5 add/addMany cannot silently participate in coordinated-v1; misuse fails loudly.
+- INV-M6-005: candidate is provisioned and semantically bound before publication.
+- INV-M6-006: prior epoch drains before reconciliation baseline.
+- INV-M6-007: every new-epoch writer includes C.
+- INV-M6-008: fresh verification remains mandatory.
+- INV-M6-009: promotion remains pinned to the verified candidate.
+- INV-M6-010: control-v1 remains unchanged.
+- INV-M6-011: coordinated-write uncertainty fails closed.
+- INV-M6-012: M5 query authorization remains the only query safety model.
+- INV-M6-013: writer leases do not auto-expire.
+- INV-M6-014: C is not removed from required write targets before successful promotion.
+- INV-M6-015: Sentinel/Cluster/failover support is not part of M6 scope.
+- INV-M6-016: lease token registration and epoch/target capture are one atomic coordination operation.
+- INV-M6-017: an existing uncoordinated M5 deployment requires an explicit one-time adoption fence before coordinated-v1 safety can be claimed.
+- INV-M6-018: conflicting lifecycle operations cannot bypass an open coordination session.
 
 ## 9. Next design blockers
 
@@ -544,7 +544,7 @@ Preserves ADR-0007, ADR-0008, ADR-0009, ADR-0010, ADR-0011, ADR-0021, ADR-0034, 
 
 ### Dependency direction — PASS
 
-Coordination remains framework-neutral. Laravel transaction convenience stays at the adapter edge.
+Coordination remains framework-neutral. Laravel transaction convenience stays at the adapter edge. Lease acquisition must atomically bind token + epoch + targets, and lifecycle operations must respect an open coordination session.
 
 ### Complexity — PASS
 
