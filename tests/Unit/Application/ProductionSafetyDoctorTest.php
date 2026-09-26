@@ -10,6 +10,8 @@ use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
 use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18DurabilityUnavailableRedisDiagnostics;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18HealthyRedisDiagnostics;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18MalformedDurabilityRedisDiagnostics;
+use Kefyusuf\BloomGate\Tests\Support\Application\Task18MalformedRuntimeRedisDiagnostics;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18NoFilterInspector;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18NoFilterRegistry;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18StaticProductionSafetyConfiguration;
@@ -136,4 +138,91 @@ it('classifies an unreachable redis runtime without manufacturing prerequisite p
     ] as $code) {
         expect($report->status($code))->toBe(ProductionSafetyCheckStatus::Fail);
     }
+});
+
+
+it('reports an unrecognized trusted-negative profile with a matching failure message', function (): void {
+    $report = task18Doctor(
+        new ProductionSafetySettings(
+            driver: 'redis',
+            trustedNegativeProfile: 'unsupported-profile',
+            keyspacePrefix: 'lbg',
+            filterNames: [],
+        ),
+        new Task18HealthyRedisDiagnostics,
+    )->inspect();
+
+    $message = null;
+
+    foreach ($report->checks() as $check) {
+        if ($check->code() === 'trusted_negative_profile') {
+            $message = $check->message();
+            break;
+        }
+    }
+
+    expect($report->status('trusted_negative_profile'))
+        ->toBe(ProductionSafetyCheckStatus::Fail)
+        ->and($message)
+        ->toBe('Redis trusted-negative profile declaration is not recognized.');
+});
+
+it('converts malformed redis runtime diagnostics into failed checks and continues filter evaluation', function (): void {
+    $report = task18Doctor(
+        new ProductionSafetySettings(
+            driver: 'redis',
+            trustedNegativeProfile: 'standalone-primary-durable-v1',
+            keyspacePrefix: 'lbg',
+            filterNames: [
+                \Kefyusuf\BloomGate\Core\FilterName::fromString('users.email'),
+            ],
+        ),
+        new Task18MalformedRuntimeRedisDiagnostics,
+    )->inspect();
+
+    foreach ([
+        'redis_reachable',
+        'redis_version',
+        'redis_topology',
+        'redis_primary',
+        'redis_aof',
+        'redis_appendfsync',
+        'redis_maxmemory_policy',
+    ] as $code) {
+        expect($report->status($code))->toBe(ProductionSafetyCheckStatus::Fail);
+    }
+
+    expect($report->status('filter.users.email.definition'))
+        ->toBe(ProductionSafetyCheckStatus::Fail);
+});
+
+it('converts malformed redis durability diagnostics into failed durability checks and continues filter evaluation', function (): void {
+    $report = task18Doctor(
+        new ProductionSafetySettings(
+            driver: 'redis',
+            trustedNegativeProfile: 'standalone-primary-durable-v1',
+            keyspacePrefix: 'lbg',
+            filterNames: [
+                \Kefyusuf\BloomGate\Core\FilterName::fromString('users.email'),
+            ],
+        ),
+        new Task18MalformedDurabilityRedisDiagnostics,
+    )->inspect();
+
+    expect($report->status('redis_reachable'))
+        ->toBe(ProductionSafetyCheckStatus::Pass)
+        ->and($report->status('redis_version'))
+        ->toBe(ProductionSafetyCheckStatus::Pass)
+        ->and($report->status('redis_topology'))
+        ->toBe(ProductionSafetyCheckStatus::Pass)
+        ->and($report->status('redis_primary'))
+        ->toBe(ProductionSafetyCheckStatus::Pass)
+        ->and($report->status('redis_aof'))
+        ->toBe(ProductionSafetyCheckStatus::Fail)
+        ->and($report->status('redis_appendfsync'))
+        ->toBe(ProductionSafetyCheckStatus::Fail)
+        ->and($report->status('redis_maxmemory_policy'))
+        ->toBe(ProductionSafetyCheckStatus::Fail)
+        ->and($report->status('filter.users.email.definition'))
+        ->toBe(ProductionSafetyCheckStatus::Fail);
 });
