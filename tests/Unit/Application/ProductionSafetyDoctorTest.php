@@ -6,6 +6,7 @@ require_once __DIR__.'/../../Support/Application/Task18ProductionSafetyFixtures.
 
 use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
+use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
 use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task18DurabilityUnavailableRedisDiagnostics;
@@ -140,7 +141,6 @@ it('classifies an unreachable redis runtime without manufacturing prerequisite p
     }
 });
 
-
 it('reports an unrecognized trusted-negative profile with a matching failure message', function (): void {
     $report = task18Doctor(
         new ProductionSafetySettings(
@@ -174,7 +174,7 @@ it('converts malformed redis runtime diagnostics into failed checks and continue
             trustedNegativeProfile: 'standalone-primary-durable-v1',
             keyspacePrefix: 'lbg',
             filterNames: [
-                \Kefyusuf\BloomGate\Core\FilterName::fromString('users.email'),
+                FilterName::fromString('users.email'),
             ],
         ),
         new Task18MalformedRuntimeRedisDiagnostics,
@@ -203,7 +203,7 @@ it('converts malformed redis durability diagnostics into failed durability check
             trustedNegativeProfile: 'standalone-primary-durable-v1',
             keyspacePrefix: 'lbg',
             filterNames: [
-                \Kefyusuf\BloomGate\Core\FilterName::fromString('users.email'),
+                FilterName::fromString('users.email'),
             ],
         ),
         new Task18MalformedDurabilityRedisDiagnostics,
