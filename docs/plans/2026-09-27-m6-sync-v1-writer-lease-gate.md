@@ -73,14 +73,15 @@ $prepared = $coordinatedWrites->prepare(
 try {
     // Application-owned authoritative transaction.
     // The package does not begin or commit it.
-    $authoritativeWrite();
-
-    $completion = $prepared->authoritativeCommitted();
+    $authoritativeTransaction();
 } catch (Throwable $failure) {
     $prepared->authoritativeAborted();
 
     throw $failure;
 }
+
+// Reached only after the application knows the authoritative commit completed.
+$completion = $prepared->authoritativeCommitted();
 ~~~
 
 The exact Laravel convenience surface may wrap this later, but the correctness primitive is explicit.
@@ -108,6 +109,37 @@ Only then may the caller make authoritative membership visible.
 If preparation cannot prove those steps, it fails before authoritative commit and the caller must not commit the membership entry.
 
 Partial Bloom writes are acceptable because they create false positives only.
+
+### Failed preparation and explicit abandonment
+
+A failed `prepare(...)` must preserve the caller's original token in its typed failure/result context.
+
+If acquisition may already have succeeded, the package must not invent a new token for retry.
+
+The caller has two correctness-safe choices:
+
+~~~text
+retry prepare with the same token
+or
+explicitly abandon the pre-authoritative attempt
+~~~
+
+Retrying `prepare(...)` with the same ACTIVE token reuses the original epoch/targets and may safely repeat idempotent Bloom pre-add work.
+
+An explicit abandonment operation is allowed only while the caller knows no authoritative membership mutation became visible. It releases the token through the same terminal ACTIVE -> RELEASED transition.
+
+Conceptually:
+
+~~~php
+$coordinatedWrites->abandon(
+    filter: 'users.email',
+    token: $token,
+);
+~~~
+
+If abandonment cleanup is uncertain, the lease remains conservatively active and may block cutover. The package must not treat uncertainty as proof that cleanup happened.
+
+A failed preparation must never auto-release in a destructor or silently rotate to a replacement token.
 
 ## 4. M6-D024 — token exists before the first remote operation
 
@@ -533,6 +565,7 @@ Same-filter Redis hash-tag colocation makes an atomic multi-key Lua solution tec
 - INV-M6-024: the lease token exists before acquisition and is reused under retry ambiguity.
 - INV-M6-025: prepared writes never auto-release from destructors, process shutdown, timeout, or TTL.
 - INV-M6-026: `prepare()` returns only after all lease-bound Bloom targets are pre-added.
+- INV-M6-026A: failed preparation preserves the original token; retry reuses it, while explicit abandonment is permitted only before authoritative visibility.
 - INV-M6-027: acquire atomically binds token + current epoch + exact target set.
 - INV-M6-028: acquire retry for ACTIVE returns the original binding without double-counting.
 - INV-M6-029: RELEASED is terminal and cannot reacquire write authority.
