@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Application;
 
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
@@ -13,7 +14,6 @@ use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
 use Throwable;
-use UnexpectedValueException;
 
 final readonly class ProductionSafetyDoctor
 {
@@ -187,7 +187,7 @@ final readonly class ProductionSafetyDoctor
     {
         try {
             $runtime = $this->redis->runtime();
-        } catch (RedisDiagnosticsUnavailable|UnexpectedValueException) {
+        } catch (RedisDiagnosticsUnavailable|RedisDiagnosticsInvalid) {
             return [
                 $this->check('redis_reachable', ProductionSafetyCheckStatus::Fail, 'Redis runtime diagnostics are unavailable or invalid.'),
                 $this->check('redis_version', ProductionSafetyCheckStatus::Fail, 'Redis version could not be verified.'),
@@ -236,7 +236,7 @@ final readonly class ProductionSafetyDoctor
 
         try {
             $durability = $this->redis->durability();
-        } catch (RedisDiagnosticsUnavailable|UnexpectedValueException) {
+        } catch (RedisDiagnosticsUnavailable|RedisDiagnosticsInvalid) {
             return [
                 ...$checks,
                 $this->check('redis_aof', ProductionSafetyCheckStatus::Fail, 'Redis AOF setting is unavailable, invalid, or not observable with current permissions.'),
