@@ -70,19 +70,25 @@ $prepared = $coordinatedWrites->prepare(
     values: [$email],
 );
 
-try {
-    // Application-owned authoritative transaction.
-    // The package does not begin or commit it.
-    $authoritativeTransaction();
-} catch (Throwable $failure) {
-    $prepared->authoritativeAborted();
+// Application-owned transaction semantics.
+// The package does not begin, commit, or infer this transaction.
+$outcome = $application->performAuthoritativeMutation();
 
-    throw $failure;
-}
+match ($outcome) {
+    AuthoritativeOutcome::Committed =>
+        $prepared->authoritativeCommitted(),
 
-// Reached only after the application knows the authoritative commit completed.
-$completion = $prepared->authoritativeCommitted();
+    AuthoritativeOutcome::RolledBack =>
+        $prepared->authoritativeAborted(),
+
+    AuthoritativeOutcome::Unknown =>
+        throw AuthoritativeOutcomeUncertain::forLease($prepared),
+};
 ~~~
+
+`authoritativeAborted()` is valid only after the application has positively established that rollback/abort completed and the mutation can no longer become authoritative.
+
+A thrown database/client exception by itself is **not** proof of rollback. If commit/rollback outcome is unknown, the writer lease remains ACTIVE and the package reports authoritative-outcome uncertainty. The caller must not replay the authoritative mutation merely because an exception occurred.
 
 The exact Laravel convenience surface may wrap this later, but the correctness primitive is explicit.
 
@@ -178,14 +184,17 @@ A prepared write is not completed by:
 - garbage collection;
 - timeout.
 
-Only an explicit authoritative outcome may close it:
+Only a **known** authoritative outcome may close it:
 
 ~~~text
-authoritativeCommitted()
-authoritativeAborted()
+known committed   -> authoritativeCommitted()
+known rolled back -> authoritativeAborted()
+unknown outcome   -> keep lease ACTIVE
 ~~~
 
-A leaked lease remains visible and may block cutover.
+A transport/driver exception does not by itself establish either committed or rolled-back state.
+
+A leaked or outcome-uncertain lease remains visible and may block cutover.
 
 This is intentional fail-safe behavior.
 
@@ -202,9 +211,27 @@ But caller-facing meaning differs.
 
 ### After authoritative abort/rollback
 
-If release is uncertain, no authoritative membership was committed.
+`authoritativeAborted()` may be called only after rollback/abort is definitively known.
+
+If release is uncertain after a known rollback, no authoritative membership was committed.
 
 The result may report cleanup uncertainty, and the stale active lease may conservatively block future cutover.
+
+### Unknown authoritative outcome
+
+If the application cannot prove whether the authoritative mutation committed or rolled back:
+
+- do not call `authoritativeCommitted()`;
+- do not call `authoritativeAborted()`;
+- do not release the lease;
+- surface the stable lease token and an authoritative-outcome-uncertain result/error;
+- do not automatically retry the authoritative mutation.
+
+The lease remains ACTIVE because the operation may still have made authoritative membership visible.
+
+After the application/operator later establishes the definitive transaction outcome, the same prepared lease may be completed with the corresponding committed or aborted operation.
+
+This state is different from post-commit lease-release uncertainty: here the **authoritative outcome itself** is unknown.
 
 ### After authoritative commit
 
@@ -323,10 +350,11 @@ The order is canonical storage identity, not write priority.
 
 ## 9. M6-D029 — Redis keyspace
 
-M6 v1 reserves three same-filter keys:
+M6 v1 reserves four same-filter keys:
 
 ~~~text
 <prefix>:{<filter-name>}:sync
+<prefix>:{<filter-name>}:sync:staging
 <prefix>:{<filter-name>}:sync:leases
 <prefix>:{<filter-name>}:sync:counts
 ~~~
@@ -344,6 +372,16 @@ Strict Redis HASH containing the current `sync-v1` snapshot.
 Unknown fields are corruption.
 
 No TTL.
+
+### `:sync:staging`
+
+Implementation-only HASH used to materialize a complete replacement synchronization snapshot before `RENAME staging -> sync`.
+
+It is never read as correctness state.
+
+The transition script clears it on entry/failure where possible and never treats it as a valid current synchronization snapshot.
+
+This mirrors the existing `control-v1` durable-replacement discipline and avoids deleting or partially rewriting the durable `:sync` snapshot before a complete replacement exists.
 
 ### `:sync:leases`
 
@@ -459,7 +497,58 @@ Count underflow, malformed lease records, wrong Redis types, or malformed counte
 
 Transport failure remains distinct from storage corruption.
 
-## 12. M6-D032 — drain completion uses the persisted epoch count
+## 12. M6-D032 — epoch rotation is an atomic writer-admission barrier
+
+`SynchronizationStore::acquire()` and synchronization-state `compareAndSwap()` must be **linearizable per filter** against the same current `sync-v1` snapshot.
+
+An epoch-rotating transition is one atomic state replacement:
+
+~~~text
+before:
+  current_epoch = E
+  current_targets = old-targets
+
+atomic transition:
+  current_epoch = E+1
+  current_targets = new-targets
+  draining_epoch = E
+  phase = DRAINING_...
+
+after:
+  no new lease may bind to E
+~~~
+
+Every acquire has exactly one ordering relative to that transition:
+
+~~~text
+acquire linearizes before rotation
+-> lease binds to E
+-> e:E is incremented before rotation completes
+
+acquire linearizes after rotation
+-> lease binds to E+1
+-> E can never gain that lease
+~~~
+
+Therefore, once the epoch-rotation CAS succeeds, the old epoch is admission-closed. Its active count may only stay the same or decrease.
+
+Only after that successful barrier may the coordinator use `e:E == 0` as drain evidence.
+
+### Redis requirement
+
+Redis state transition uses one Lua/EVAL operation touching the durable `:sync` snapshot and `:sync:staging`.
+
+The complete next snapshot is materialized in staging and atomically renamed to `:sync` inside the same script.
+
+Redis serializes that script against the acquire Lua script, which also reads `:sync`. An acquire therefore sees either the complete pre-rotation snapshot or the complete post-rotation snapshot, never an intermediate epoch/target state.
+
+### Memory reference requirement
+
+The Memory implementation must provide the same per-filter linearization semantics, for example through one per-filter critical section shared by acquire and synchronization CAS.
+
+A process-local implementation that separately reads epoch and later registers a lease is invalid.
+
+## 13. M6-D033 — drain completion uses the persisted epoch count
 
 A draining epoch is complete only when:
 
@@ -480,7 +569,7 @@ If count state is unavailable or corrupt, drain is not proven.
 
 The rebuild remains blocked.
 
-## 13. M6-D033 — RELEASED tombstones are not compacted in M6 v1
+## 14. M6-D034 — RELEASED tombstones are not compacted in M6 v1
 
 M6 v1 deliberately keeps released lease records.
 
@@ -501,7 +590,7 @@ That is a future milestone concern.
 
 This is consistent with the already excluded automatic retention/purge scope.
 
-## 14. M6-D034 — lease storage is not the rebuild state machine
+## 15. M6-D035 — lease storage is not the rebuild state machine
 
 Lease registration answers only:
 
@@ -517,7 +606,7 @@ Redis Lua enforces storage atomicity and persisted-shape invariants only.
 
 It must not invent rebuild policy.
 
-## 15. Hard blocker discovered by this gate: control↔sync cross-plane fencing
+## 16. Hard blocker discovered by this gate: control↔sync cross-plane fencing
 
 The current M5 control store and the new synchronization store are separate correctness planes.
 
@@ -559,7 +648,7 @@ The solution must preserve:
 
 Same-filter Redis hash-tag colocation makes an atomic multi-key Lua solution technically possible, but the framework-neutral contract and Memory reference semantics must be designed before code begins.
 
-## 16. Required invariants added by this gate
+## 17. Required invariants added by this gate
 
 - INV-M6-023: the canonical coordinated writer primitive exposes explicit authoritative completion.
 - INV-M6-024: the lease token exists before acquisition and is reused under retry ambiguity.
@@ -570,13 +659,16 @@ Same-filter Redis hash-tag colocation makes an atomic multi-key Lua solution tec
 - INV-M6-028: acquire retry for ACTIVE returns the original binding without double-counting.
 - INV-M6-029: RELEASED is terminal and cannot reacquire write authority.
 - INV-M6-030: release decrements exactly one original epoch count at most once.
-- INV-M6-031: drain is proven only by the persisted active count reaching zero.
-- INV-M6-032: RELEASED tombstones are retained in M6 v1; no compaction may permit stale-token resurrection.
-- INV-M6-033: Redis lease/count/sync keys have no correctness TTL.
-- INV-M6-034: Redis scripts enforce atomic storage semantics, not rebuild policy.
-- INV-M6-035: independent client-side control/sync checks are insufficient for cross-plane lifecycle fencing.
+- INV-M6-031: acquire and sync-state transition are linearizable per filter.
+- INV-M6-032: successful epoch rotation closes admission to the previous epoch before drain observation begins.
+- INV-M6-033: drain is proven only by the persisted active count reaching zero after the admission barrier.
+- INV-M6-034: RELEASED tombstones are retained in M6 v1; no compaction may permit stale-token resurrection.
+- INV-M6-035: Redis lease/count/sync keys have no correctness TTL.
+- INV-M6-036: Redis scripts enforce atomic storage semantics, not rebuild policy.
+- INV-M6-037: independent client-side control/sync checks are insufficient for cross-plane lifecycle fencing.
+- INV-M6-038: unknown authoritative transaction outcome keeps the lease ACTIVE until commit or rollback is definitively established.
 
-## 17. Explicit self-review
+## 18. Explicit self-review
 
 ### Scope alignment — PASS
 
@@ -606,7 +698,8 @@ M6 v1 chooses:
 
 - one explicit prepared-write primitive;
 - one synchronization store;
-- three Redis keys;
+- one durable + one staging synchronization-state key;
+- one lease registry;
 - one active-count mechanism;
 - persistent terminal tombstones.
 
@@ -620,7 +713,9 @@ Brownfield adoption remains a separate explicit fence and is not silently inferr
 
 ### Race safety — INCOMPLETE BY DESIGN
 
-Lease acquire/release atomicity is resolved.
+Lease acquire/release atomicity and epoch admission closure are resolved.
+
+Unknown authoritative outcomes remain conservatively leased.
 
 Control↔sync lifecycle fencing is not.
 
@@ -632,7 +727,7 @@ This is a docs-only design gate.
 
 No runtime capability is claimed.
 
-## 18. Gate result
+## 19. Gate result
 
 **Writer lease + sync-v1 persistence foundation: candidate PASS.**
 
