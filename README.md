@@ -1,6 +1,6 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M5 safe Laravel query integration is implemented and under final documentation/verification.
+> **Status:** pre-release — M5 safe Laravel query integration is complete.
 
 Laravel Bloom Gate is a production-safe probabilistic query gate for Laravel applications.
 
