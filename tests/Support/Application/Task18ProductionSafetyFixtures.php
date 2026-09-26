@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Application;
 
+use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
@@ -16,7 +17,6 @@ use Kefyusuf\BloomGate\Core\ProductionSafetySettings;
 use Kefyusuf\BloomGate\Core\RedisDurabilitySettings;
 use Kefyusuf\BloomGate\Core\RedisRuntimeInfo;
 use LogicException;
-use UnexpectedValueException;
 
 final class Task18NoFilterRegistry implements FilterRegistry
 {
@@ -135,7 +135,7 @@ final class Task18MalformedRuntimeRedisDiagnostics implements RedisRuntimeDiagno
 {
     public function runtime(): RedisRuntimeInfo
     {
-        throw new UnexpectedValueException(
+        throw new RedisDiagnosticsInvalid(
             'Redis runtime diagnostic reply is malformed.',
         );
     }
@@ -161,7 +161,7 @@ final class Task18MalformedDurabilityRedisDiagnostics implements RedisRuntimeDia
 
     public function durability(): RedisDurabilitySettings
     {
-        throw new UnexpectedValueException(
+        throw new RedisDiagnosticsInvalid(
             'Redis durability diagnostic reply is malformed.',
         );
     }
