@@ -398,21 +398,33 @@ Dynamic de-adoption semantics are deferred to the next design gate.
 
 ### M6-D021 — writer lease acquire/release are retry-safe by token
 
-Network ambiguity must not create unbounded duplicate leases or decrement the wrong epoch.
+Network ambiguity must not create unbounded duplicate active leases, decrement the wrong epoch, or resurrect write authority after release.
 
 The caller/package creates a unique stable lease token before acquisition.
 
-Acquire with the same token must be idempotent:
+A token has at least two logical states:
 
-- if the token is new, atomically bind it to the current epoch/targets;
-- if the token already exists, return the original lease binding;
-- never silently rebind the same token to a later epoch.
+~~~text
+ACTIVE
+RELEASED (terminal)
+~~~
 
-Release must also be idempotent for the same completed token.
+Acquire retry semantics:
 
-Token collision with incompatible state is a loud error.
+- if the token is new, atomically bind it to the current epoch/targets as ACTIVE;
+- if the token is already ACTIVE, return the original epoch/target binding;
+- if the token is RELEASED, do **not** return a write-capable lease and do **not** resurrect the old binding;
+- never silently rebind a retained token to a later epoch.
 
-Exact token grammar/storage is a next-gate decision.
+Release semantics:
+
+- ACTIVE -> RELEASED is the only release transition;
+- repeated release of the same RELEASED token is idempotent;
+- RELEASED is terminal from the writer protocol's perspective.
+
+A delayed acquire retry for an already released old-epoch token must therefore never authorize a write using stale targets after that epoch has drained.
+
+The exact persistence/compaction policy for released-token terminal records is a next-gate decision. Any future compaction scheme must preserve the invariant that an old released token cannot resurrect stale write authority. Token collision with incompatible state remains a loud error.
 
 ### M6-D022 — post-commit release uncertainty is not an authoritative-write failure
 
@@ -563,7 +575,7 @@ Drain remains blocked. No automatic unsafe expiry. Status/diagnostics must make 
 - INV-M6-018: conflicting lifecycle operations cannot bypass an open coordination session.
 - INV-M6-019: active and candidate semantic contracts must match for M6 online rebuild; layout may differ.
 - INV-M6-020: an open persisted sync session cannot be disabled by runtime config drift.
-- INV-M6-021: lease acquire/release semantics are token-idempotent under retry ambiguity.
+- INV-M6-021: lease acquire/release semantics are token-idempotent under retry ambiguity; RELEASED tokens are terminal and cannot regain stale write authority.
 - INV-M6-022: post-authoritative-commit release uncertainty cannot be reported as though the authoritative mutation never committed.
 
 ## 9. Next design blockers
@@ -584,7 +596,8 @@ No implementation begins until the next design gate resolves:
 12. token-idempotent acquire/release and ambiguous network outcomes;
 13. post-commit release failure/result semantics;
 14. coordinated-mode enable/disable transitions;
-15. enforcement that online rebuild refuses active/candidate semantic-contract drift.
+15. enforcement that online rebuild refuses active/candidate semantic-contract drift;
+16. released-token terminal-state persistence and safe compaction without stale-binding resurrection.
 
 ## 10. Alternatives rejected
 
@@ -596,9 +609,11 @@ Rejected. It is orthogonal to writer/candidate coordination.
 
 Rejected. Those are future adapters, not the minimum coordination protocol.
 
-### Auto-expire leases
+### Auto-expire active leases
 
 Rejected. Liveness must not weaken correctness.
+
+This does not decide released-token tombstone compaction. Released-token storage may need a separate bounded/compacted representation, but any scheme must preserve terminal replay semantics and must never recreate stale write authority.
 
 ### Reuse control-v1
 
