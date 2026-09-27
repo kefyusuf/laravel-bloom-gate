@@ -153,8 +153,18 @@ malformed record -> corruption
 Both `A` and `P` remain active writers until terminal release, so they both keep
 their original epoch count non-zero.
 
-The operation does not rebind the token and does not consult the current epoch as a
-source of new authority. The original persisted epoch/targets remain authoritative.
+Before A -> P, the atomic storage operation also requires:
+
+- a valid immutable `:sync:owner` marker;
+- a valid strict current `sync-v1` snapshot;
+- the token's original epoch count to remain positive.
+
+The current sync epoch may already have rotated; that does not rebind the token. The
+original persisted epoch/targets remain authoritative.
+
+If owner/sync state is missing, malformed, or unavailable at preparation confirmation,
+the write remains pre-authoritative and the caller must not commit authoritative
+membership. Coordination damage is never interpreted as permission to proceed.
 
 ## 5. M6-D057 — manual lease recovery never means force release
 
@@ -751,7 +761,15 @@ No implementation starts here, but the eventual storage contract must support:
 
 ~~~text
 keys:
+  :sync:owner
+  :sync
   :sync:leases
+  :sync:counts
+
+conditions:
+  valid immutable owner marker
+  valid strict sync-v1
+  A/P token has a positive original epoch count
 
 A -> P
 P -> P
@@ -823,7 +841,7 @@ Retry cannot reopen the legacy path.
 
 - INV-M6-055: durable PREPARED state proves all lease-bound Bloom pre-adds completed before authoritative visibility is permitted.
 - INV-M6-056: lease records use A/P/R semantics; both A and P count as active writers until terminal release.
-- INV-M6-057: markPrepared is token-idempotent and never changes epoch binding or writer count.
+- INV-M6-057: markPrepared is token-idempotent, never changes epoch binding or writer count, and fails closed unless durable coordinated ownership plus valid sync-v1 still exist.
 - INV-M6-058: a known committed outcome can be manually released only from durable P; A is insufficient evidence.
 - INV-M6-059: unknown authoritative outcome is never force-released.
 - INV-M6-060: an adopted published candidate cannot be retired before new writer admission drops C and every old C-targeting lease drains.
