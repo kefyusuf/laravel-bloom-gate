@@ -164,9 +164,11 @@ Operators restoring Redis must restore same-filter correctness keys from one coh
 generation :meta / :bf keys
 ~~~
 
-A complete rollback to a historical snapshot from before the first adoption can be indistinguishable in Redis from a genuinely never-adopted filter. Redis alone cannot prove history that has been erased.
+A complete rollback to a historical snapshot from before the first adoption can be indistinguishable in Redis from a genuinely never-adopted filter. No marker stored only inside that rolled-back Redis history can solve this information-loss problem.
 
-Therefore M6 makes no automatic safety claim after such a historical rollback. Before membership writes or lifecycle mutation resume, the operator/application must run the explicit restore/adoption recovery fence defined by the later brownfield/recovery gate. Coordinated configuration remains enabled during that recovery and blocks ordinary M5 mutation.
+Therefore M6 makes no automatic safety claim after such a historical rollback. The coordinated runtime requirement becomes the surviving conservative witness: before membership writes or lifecycle mutation resume, the operator/application must run the explicit restore/adoption recovery fence defined by the later brownfield/recovery gate. Coordinated configuration remains enabled during that recovery and blocks ordinary M5 mutation.
+
+If an operator also rolls application configuration back to an uncoordinated pre-adoption version, that is a full system history rollback outside M6's automatic detection boundary. Re-entering coordinated operation then requires the same explicit one-time adoption fence as a brownfield deployment.
 
 This is an explicit restore boundary, not implicit de-adoption.
 
@@ -174,9 +176,16 @@ This is an explicit restore boundary, not implicit de-adoption.
 
 Existing read APIs remain valid for query-safety resolution, diagnostics, status, and non-mutating inspection.
 
-Ordinary FilterControlStore::compareAndSwap keeps its M5 semantics only while sync-v1 is absent.
+At the persisted-storage boundary, ordinary FilterControlStore::compareAndSwap keeps its M5 semantics only when both durable coordination records are absent:
 
-Once valid sync-v1 exists, ordinary control CAS must fail loudly with a coordination-fence conflict.
+~~~text
+:sync:owner absent
+:sync absent
+~~~
+
+If :sync:owner exists, if :sync exists, or if the two disagree, ordinary control CAS must fail loudly.
+
+At the Application boundary there is one additional conservative rule: a filter whose runtime definition requires coordinated-v1 must reject ordinary M5 mutation even when both durable coordination records are missing. That missing-storage case is recovery-required, not permission to mutate.
 
 It must not mutate control first and notice sync later, ignore malformed sync storage, allow a local configuration escape hatch, or silently downgrade to M5 semantics.
 
@@ -313,14 +322,15 @@ The pair therefore behaves as a serializable per-filter state machine without re
 
 Application policy does not derive coordinated transitions from independently fetched snapshots.
 
-The coordinated store returns one atomic observation:
+The coordinated store returns one atomic observation containing:
 
 ~~~text
+ownership marker state
 control snapshot or absent
 sync snapshot or absent
 ~~~
 
-This pair is the basis for ownership checks, revision expectations, phase policy, candidate/active relation checks, and recovery decisions.
+This observation is the basis for ownership checks, revision expectations, phase policy, candidate/active relation checks, and recovery decisions.
 
 Redis performs this read in one Lua/EVAL operation over :state, :sync:owner, and :sync and strictly validates the ownership/snapshot relation.
 
@@ -742,6 +752,8 @@ Different filters remain independent.
 
 ### Ordinary M5 control CAS
 
+Storage operation:
+
 ~~~text
 keys:
   :state
@@ -749,14 +761,21 @@ keys:
   :sync:owner
   :sync
 
-condition:
+persisted conditions:
   owner absent
   sync absent
-  runtime must not require coordinated-v1
 
 writes:
   control only
 ~~~
+
+Application prerequisite before invoking the legacy mutation path:
+
+~~~text
+runtime filter must not require coordinated-v1
+~~~
+
+The Redis persistence script does not read Laravel/application configuration. Runtime expectation is enforced before the store call; persisted owner/sync fencing is independently enforced inside the atomic store operation.
 
 ### Coordinated pair read
 
@@ -897,7 +916,8 @@ No source implementation begins from this document alone.
 
 - INV-M6-039: immutable :sync:owner is the durable one-way coordinated lifecycle-ownership marker.
 - INV-M6-039A: missing mutable :sync after ownership claim is damaged/incomplete coordination, never implicit de-adoption.
-- INV-M6-039B: coordinated runtime expectation plus missing owner enters recovery and blocks ordinary M5 mutation.
+- INV-M6-039B: coordinated runtime expectation plus missing owner/sync enters recovery and blocks ordinary M5 mutation.
+- INV-M6-039C: a full rollback that erases both Redis adoption history and coordinated runtime configuration is an external history rollback and requires a new explicit adoption fence before coordinated guarantees are claimed.
 - INV-M6-040: ordinary FilterControlStore CAS is atomically rejected once coordinated ownership exists.
 - INV-M6-041: malformed, missing, or contradictory coordination state never re-enables legacy control mutation.
 - INV-M6-042: coordinated lifecycle decisions derive from one atomic control+sync pair read.
