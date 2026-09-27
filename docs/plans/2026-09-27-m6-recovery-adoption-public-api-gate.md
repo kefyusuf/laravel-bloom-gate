@@ -730,6 +730,9 @@ P -> R
 R -> idempotent already released
 ~~~
 
+An `R` result means only that the token is already terminal; the package does not
+retroactively attest which authoritative outcome originally caused that release.
+
 For `A`, resolution is rejected because durable preparation proof is missing.
 
 ### outcome=aborted
@@ -776,6 +779,15 @@ P -> P
 R -> terminal failure
 count unchanged
 ~~~
+
+### Memory/Redis ordering
+
+`markPrepared` joins the same per-filter mutation order as acquire, release, and sync
+state transitions. Redis obtains that ordering through the atomic script execution;
+Memory must reproduce the same observable serialization.
+
+A concurrent epoch rotation may occur before or after mark-prepared, but never as a
+partially observed sync snapshot.
 
 ### diagnostic active-lease read
 
