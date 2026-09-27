@@ -919,7 +919,7 @@ No source implementation begins from this document alone.
 - INV-M6-039B: coordinated runtime expectation plus missing owner/sync enters recovery and blocks ordinary M5 mutation.
 - INV-M6-039C: a full rollback that erases both Redis adoption history and coordinated runtime configuration is an external history rollback and requires a new explicit adoption fence before coordinated guarantees are claimed.
 - INV-M6-040: ordinary FilterControlStore CAS is atomically rejected once coordinated ownership exists.
-- INV-M6-041: malformed, missing, or contradictory coordination state never re-enables legacy control mutation.
+- INV-M6-041: malformed or contradictory coordination state, or missing coordination evidence where coordinated ownership is required, never re-enables legacy control mutation. When both durable coordination records are absent and the runtime definition does not require coordinated-v1, the ordinary M5 path remains eligible.
 - INV-M6-042: coordinated lifecycle decisions derive from one atomic control+sync pair read.
 - INV-M6-042A: nullable expected revisions mean required durable absence, never an unconstrained opposite plane.
 - INV-M6-042B: staging keys are never lifecycle-ownership or current correctness state.
