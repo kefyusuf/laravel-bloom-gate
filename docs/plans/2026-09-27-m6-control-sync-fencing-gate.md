@@ -67,7 +67,7 @@ The package therefore needs one per-filter serialization boundary covering ordin
 
 ## 3. M6-D036 — valid sync-v1 presence is durable lifecycle ownership
 
-For M6 v1, a valid persisted sync-v1 snapshot is the durable ownership marker for coordinated lifecycle mutation.
+For M6 v1, a valid persisted sync-v1 snapshot in the durable :sync key is the lifecycle-ownership marker for coordinated mutation.
 
 ~~~text
 sync-v1 absent
@@ -82,6 +82,8 @@ sync-v1 present
 This also applies while the phase is STEADY.
 
 A coordinated filter does not temporarily become a legacy M5 filter merely because no rebuild is currently open.
+
+The implementation-only :sync:staging key is never an ownership marker and is never read as current correctness state. An orphan staging key may be cleaned by the next sync persistence operation.
 
 Removing coordinated ownership requires a future explicit de-adoption protocol. M6 v1 defines no implicit de-adoption.
 
@@ -106,6 +108,8 @@ The ordinary Redis control CAS script atomically inspects:
 ~~~
 
 before durable control mutation.
+
+:sync:staging is deliberately not consulted as ownership state because it is transient materialization, not a committed synchronization snapshot.
 
 Outcomes:
 
@@ -165,7 +169,20 @@ The semantic boundary is locked:
 - coordinated control CAS mutates only control and verifies the expected sync revision;
 - coordinated sync CAS mutates only sync and verifies the expected control revision;
 - neither method falls back to ordinary M5 CAS;
-- revision mismatch on either plane is a write conflict requiring reread/re-evaluation.
+- revision mismatch on either plane is a write conflict requiring reread/re-evaluation;
+- a nullable expected revision means "require that durable plane to be absent", never "ignore this plane".
+
+Therefore:
+
+~~~text
+expectedControlRevision = null
+-> require durable control state absent
+
+expectedSyncRevision = null
+-> require durable sync state absent
+~~~
+
+Creation still requires revision 1 on the newly created plane, matching the existing M4 create-CAS discipline.
 
 The port remains framework-neutral.
 
@@ -220,6 +237,8 @@ sync snapshot or absent
 This pair is the basis for ownership checks, revision expectations, phase policy, candidate/active relation checks, and recovery decisions.
 
 Redis performs this read in one Lua/EVAL operation over :state and :sync and strictly validates whichever snapshots exist.
+
+Neither :state:staging nor :sync:staging participates in the pair read.
 
 Memory returns the pair from the same per-filter critical section used by coordinated mutation.
 
@@ -757,6 +776,8 @@ No source implementation begins from this document alone.
 - INV-M6-040: ordinary FilterControlStore CAS is atomically rejected once coordinated ownership exists.
 - INV-M6-041: malformed sync state never re-enables legacy control mutation.
 - INV-M6-042: coordinated lifecycle decisions derive from one atomic control+sync pair read.
+- INV-M6-042A: nullable expected revisions mean required durable absence, never an unconstrained opposite plane.
+- INV-M6-042B: staging keys are never lifecycle-ownership or current correctness state.
 - INV-M6-043: coordinated control CAS checks expected sync revision and mutates control only.
 - INV-M6-044: coordinated sync CAS checks expected control revision and mutates sync only.
 - INV-M6-045: opposite-revision fencing serializes concurrent cross-plane mutations.
