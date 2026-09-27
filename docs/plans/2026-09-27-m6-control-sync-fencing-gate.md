@@ -65,27 +65,110 @@ because control may change before sync publication.
 
 The package therefore needs one per-filter serialization boundary covering ordinary control CAS, coordinated control CAS, sync CAS, and writer acquisition/epoch rotation.
 
-## 3. M6-D036 — valid sync-v1 presence is durable lifecycle ownership
+## 3. M6-D036 — immutable ownership marker fences coordinated adoption
 
-For M6 v1, a valid persisted sync-v1 snapshot in the durable :sync key is the lifecycle-ownership marker for coordinated mutation.
+For M6 v1, lifecycle ownership is not inferred solely from the presence of the mutable sync-v1 snapshot.
+
+A separate durable same-filter marker is introduced:
 
 ~~~text
-sync-v1 absent
--> unadopted M5 lifecycle ownership
--> ordinary FilterControlStore CAS allowed
-
-sync-v1 present
--> coordinated lifecycle ownership
--> ordinary FilterControlStore CAS fenced
+<prefix>:{<filter-name>}:sync:owner
 ~~~
 
-This also applies while the phase is STEADY.
+Its canonical value is:
 
-A coordinated filter does not temporarily become a legacy M5 filter merely because no rebuild is currently open.
+~~~text
+coordinated-v1
+~~~
 
-The implementation-only :sync:staging key is never an ownership marker and is never read as current correctness state. An orphan staging key may be cleaned by the next sync persistence operation.
+Properties:
 
-Removing coordinated ownership requires a future explicit de-adoption protocol. M6 v1 defines no implicit de-adoption.
+- immutable for M6 v1;
+- no TTL;
+- never automatically deleted;
+- never rewritten by rebuild phase transitions;
+- not a semantic generation fingerprint;
+- not stored inside strict control-v1;
+- not a replacement for the mutable :sync snapshot.
+
+The marker means:
+
+> this filter has crossed the one-way M6 adoption fence and ordinary M5 lifecycle mutation must never resume implicitly.
+
+Ownership state is interpreted as:
+
+~~~text
+owner absent + sync absent
+-> never-adopted storage shape
+-> ordinary M5 lifecycle may be eligible
+
+owner present + valid sync
+-> coordinated lifecycle ownership
+
+owner present + sync absent
+-> damaged/incomplete coordination
+-> mutation fails closed
+
+owner absent + sync present
+-> damaged coordination
+-> mutation fails closed
+
+malformed owner or malformed sync
+-> mutation fails closed
+~~~
+
+The implementation-only :sync:staging key is never an ownership marker and is never read as current correctness state.
+
+M6 v1 has no automatic de-adoption and never deletes :sync:owner.
+
+### Runtime coordination expectation
+
+Storage shape is not the only conservative signal.
+
+A filter explicitly configured for coordinated-v1 must also reject ordinary M5 mutation when :sync:owner is absent. This protects a current coordinated deployment from treating a missing marker after a restore as proof of never-adoption.
+
+Persisted ownership outranks local configuration:
+
+~~~text
+owner present + runtime says uncoordinated
+-> coordinated fence still applies
+
+owner absent + runtime requires coordinated
+-> ownership missing / recovery required
+-> ordinary mutation blocked
+~~~
+
+Runtime configuration can make the fence stricter; it cannot erase persisted ownership.
+
+### Restore and deletion contract
+
+The package never intentionally deletes :sync:owner in M6 v1.
+
+The supported Redis profile already requires durable, non-evicting correctness state. :sync:owner is part of that same correctness set.
+
+A partial restore or accidental deletion is handled fail-closed when any surviving evidence disagrees:
+
+- owner present + sync missing;
+- owner absent + sync present;
+- owner/configuration disagreement;
+- malformed coordination state.
+
+Operators restoring Redis must restore same-filter correctness keys from one coherent recovery point, including:
+
+~~~text
+:state
+:sync:owner
+:sync
+:sync:leases
+:sync:counts
+generation :meta / :bf keys
+~~~
+
+A complete rollback to a historical snapshot from before the first adoption can be indistinguishable in Redis from a genuinely never-adopted filter. Redis alone cannot prove history that has been erased.
+
+Therefore M6 makes no automatic safety claim after such a historical rollback. Before membership writes or lifecycle mutation resume, the operator/application must run the explicit restore/adoption recovery fence defined by the later brownfield/recovery gate. Coordinated configuration remains enabled during that recovery and blocks ordinary M5 mutation.
+
+This is an explicit restore boundary, not implicit de-adoption.
 
 ## 4. M6-D037 — ordinary reads remain valid; ordinary control CAS is fenced
 
@@ -104,6 +187,7 @@ The ordinary Redis control CAS script atomically inspects:
 ~~~text
 :state
 :state:staging
+:sync:owner
 :sync
 ~~~
 
@@ -114,15 +198,17 @@ before durable control mutation.
 Outcomes:
 
 ~~~text
-sync key absent
--> existing M5 CAS behavior
+owner absent + sync absent
+-> existing M5 storage path may proceed
 
-valid sync-v1 present
+owner present + valid sync
 -> COORDINATION_FENCED
 
-sync wrong type / malformed
+owner/sync disagree or either is malformed
 -> fail closed as coordination corruption
 ~~~
+
+At the higher Application boundary, a filter configured as coordinated-v1 also refuses ordinary M5 mutation when the owner marker is missing.
 
 Therefore a stale legacy operation that read control before adoption is still stopped if sync ownership was published before its CAS linearizes.
 
@@ -236,26 +322,38 @@ sync snapshot or absent
 
 This pair is the basis for ownership checks, revision expectations, phase policy, candidate/active relation checks, and recovery decisions.
 
-Redis performs this read in one Lua/EVAL operation over :state and :sync and strictly validates whichever snapshots exist.
+Redis performs this read in one Lua/EVAL operation over :state, :sync:owner, and :sync and strictly validates the ownership/snapshot relation.
 
 Neither :state:staging nor :sync:staging participates in the pair read.
 
 Memory returns the pair from the same per-filter critical section used by coordinated mutation.
 
-## 8. M6-D041 — adoption is sync-only creation under a control fence
+## 8. M6-D041 — adoption is a recoverable two-step fence
 
-Adoption does not rewrite control-v1.
+Adoption does not rewrite control-v1 and does not require an unsafe generic two-key durable commit.
 
-Instead:
+It is intentionally split into two interruption-safe operations.
+
+### Step 1 — claim durable ownership
+
+Atomically:
 
 ~~~text
-atomic operation:
-  require sync-v1 absent
-  require control revision still expected
-  create initial sync-v1
+require :sync:owner absent
+require :sync absent
+require control revision still expected
+create :sync:owner = coordinated-v1
 ~~~
 
-Initial coordinated state is conceptually:
+The ownership claim is the linearization point after which ordinary M5 lifecycle CAS is fenced.
+
+If a stale legacy control CAS linearizes first, the control revision changes and ownership claim conflicts.
+
+If ownership claim linearizes first, the stale legacy CAS observes :sync:owner and is fenced.
+
+### Step 2 — initialize sync-v1
+
+Under the same current control revision and an existing valid owner marker, create initial sync-v1:
 
 ~~~text
 phase = STEADY
@@ -270,15 +368,25 @@ current_targets =
 
 Application policy also requires no existing candidate when adoption is finalized.
 
-The already-approved brownfield one-time quiescent migration fence remains mandatory for an existing running M5 deployment. This storage operation does not waive it.
+Between Step 1 and Step 2 the durable state is:
 
-### Adoption race with stale legacy CAS
+~~~text
+owner present
+sync absent
+~~~
 
-If legacy control CAS linearizes first, control revision advances and adoption's expected control revision fails.
+This is an explicit ADOPTION_PENDING recovery shape.
 
-If adoption linearizes first, sync-v1 exists and the legacy CAS is coordination-fenced.
+During ADOPTION_PENDING:
 
-There is no ordering in which both stale operations succeed.
+- ordinary M5 lifecycle mutation is fenced;
+- coordinated writer acquisition is blocked because no valid sync snapshot exists;
+- coordinated rebuild operations are blocked;
+- adoption initialization may be retried idempotently.
+
+A crash cannot reopen the legacy mutation path.
+
+The already-approved brownfield one-time quiescent migration fence remains mandatory for an existing running M5 deployment. This storage protocol does not waive it.
 
 ## 9. M6-D042 — coordinated control mutations are control-only under sync fence
 
@@ -638,10 +746,13 @@ Different filters remain independent.
 keys:
   :state
   :state:staging
+  :sync:owner
   :sync
 
 condition:
-  sync must be absent
+  owner absent
+  sync absent
+  runtime must not require coordinated-v1
 
 writes:
   control only
@@ -652,6 +763,7 @@ writes:
 ~~~text
 keys:
   :state
+  :sync:owner
   :sync
 
 writes:
@@ -664,9 +776,11 @@ writes:
 keys:
   :state
   :state:staging
+  :sync:owner
   :sync
 
 conditions:
+  valid immutable owner marker
   expected control revision
   expected sync revision
 
@@ -678,11 +792,13 @@ writes:
 
 ~~~text
 keys:
+  :sync:owner
   :sync
   :sync:staging
   :state
 
 conditions:
+  valid immutable owner marker
   expected sync revision
   expected control revision / required control absence
 
@@ -694,9 +810,14 @@ writes:
 
 ~~~text
 keys:
+  :sync:owner
   :sync
   :sync:leases
   :sync:counts
+
+conditions:
+  valid immutable owner marker
+  valid sync-v1
 
 writes:
   lease + epoch count
@@ -713,12 +834,14 @@ This remains same-slot-compatible construction, not a Redis Cluster runtime-supp
 ~~~text
 legacy first
 -> control revision changes
--> adoption expected control revision conflicts
+-> ownership claim expected control revision conflicts
 
-adoption first
--> sync exists
+ownership claim first
+-> :sync:owner exists
 -> legacy CAS coordination-fenced
 ~~~
+
+A crash after ownership claim but before sync initialization leaves ADOPTION_PENDING, not a return to M5 ownership.
 
 ### Coordinated control CAS vs sync CAS
 
@@ -772,9 +895,11 @@ No source implementation begins from this document alone.
 
 ## 25. Required invariants added by this gate
 
-- INV-M6-039: valid sync-v1 presence is the durable coordinated lifecycle-ownership marker.
+- INV-M6-039: immutable :sync:owner is the durable one-way coordinated lifecycle-ownership marker.
+- INV-M6-039A: missing mutable :sync after ownership claim is damaged/incomplete coordination, never implicit de-adoption.
+- INV-M6-039B: coordinated runtime expectation plus missing owner enters recovery and blocks ordinary M5 mutation.
 - INV-M6-040: ordinary FilterControlStore CAS is atomically rejected once coordinated ownership exists.
-- INV-M6-041: malformed sync state never re-enables legacy control mutation.
+- INV-M6-041: malformed, missing, or contradictory coordination state never re-enables legacy control mutation.
 - INV-M6-042: coordinated lifecycle decisions derive from one atomic control+sync pair read.
 - INV-M6-042A: nullable expected revisions mean required durable absence, never an unconstrained opposite plane.
 - INV-M6-042B: staging keys are never lifecycle-ownership or current correctness state.
@@ -803,6 +928,8 @@ It does not add topology, retention, CDC, delete semantics, or transaction owner
 
 The design preserves strict control-v1, separate sync-v1, M4 revisioned CAS semantics, M5 query safety, the M6 writer admission barrier, application-owned lifecycle policy, same-filter Redis hash-tag construction, and the no-TTL correctness model.
 
+The new immutable ownership marker is separate from both control-v1 and the mutable sync-v1 snapshot; it exists solely to prevent state loss from being interpreted as de-adoption.
+
 ### Dependency direction — PASS
 
 The coordinated store is framework-neutral.
@@ -818,6 +945,7 @@ The design avoids distributed locks, generic two-plane transactions, control sch
 The primitive set remains:
 
 ~~~text
+immutable ownership claim
 atomic pair read
 guarded control CAS
 guarded sync CAS
