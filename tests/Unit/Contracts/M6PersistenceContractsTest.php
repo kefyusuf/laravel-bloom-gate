@@ -82,7 +82,6 @@ it('defines writer synchronization as dedicated atomic store operations', functi
 
     $expectedMethods = [
         'acquire',
-        'activeLeases',
         'activeWriterCount',
         'markPrepared',
         'read',
@@ -103,7 +102,6 @@ it('defines writer synchronization as dedicated atomic store operations', functi
     $prepare = $contract->getMethod('markPrepared');
     $release = $contract->getMethod('release');
     $count = $contract->getMethod('activeWriterCount');
-    $active = $contract->getMethod('activeLeases');
 
     $readReturn = $read->getReturnType();
 
@@ -127,9 +125,7 @@ it('defines writer synchronization as dedicated atomic store operations', functi
         ->and((string) $release->getReturnType())->toBe(WriterLease::class)
         ->and($count->getNumberOfParameters())->toBe(2)
         ->and(wu01NamedType($count, 1)->getName())->toBe(SynchronizationEpoch::class)
-        ->and((string) $count->getReturnType())->toBe('int')
-        ->and($active->getNumberOfParameters())->toBe(1)
-        ->and((string) $active->getReturnType())->toBe('array');
+        ->and((string) $count->getReturnType())->toBe('int');
 });
 
 it('represents only valid coordinated lifecycle observations', function (): void {
@@ -203,7 +199,6 @@ it('provides backend-neutral reusable lifecycle and writer contract suites', fun
         'test_unknown_token_is_distinct',
         'test_released_token_is_terminal',
         'test_count_underflow_is_corruption',
-        'test_active_lease_diagnostics_exclude_released_tombstones',
     ] as $method) {
         expect($writer->hasMethod($method))->toBeTrue($method);
     }
