@@ -24,9 +24,4 @@ interface WriterSynchronizationStoreContractFixture
         SynchronizationEpoch $epoch,
         int $count,
     ): void;
-
-    public function corruptActiveWriterCount(
-        FilterName $name,
-        SynchronizationEpoch $epoch,
-    ): void;
 }
