@@ -33,7 +33,9 @@ The ownership marker is not stored inside strict `control-v1`.
 
 ### Separate synchronization plane
 
-The logical `sync-v1` snapshot contains at least:
+The logical `sync-v1` snapshot has this exhaustive field set.
+
+Required fields:
 
 ```text
 format = sync-v1
@@ -41,9 +43,16 @@ revision
 phase
 current_epoch
 current_targets
-candidate_version   optional
-draining_epoch      optional
 ```
+
+Optional fields, represented by absence when null:
+
+```text
+candidate_version
+draining_epoch
+```
+
+No additional `sync-v1` fields are permitted in M6 v1. Unknown fields are corruption for both Redis and Memory persistence semantics.
 
 The final M6 v1 synchronization phases are:
 
@@ -105,6 +114,12 @@ guarded single-plane CAS
 This avoids depending on rollback semantics for a multi-key Redis script after a partial durable replacement.
 
 ### Exclusive lifecycle ownership
+
+Ownership claim is the lifecycle fence's linearization point.
+
+Brownfield adoption must complete the ADR-0043 quiescent handoff before that claim.
+
+After the ownership marker exists, ordinary M5 control CAS must fail even when its expected control revision still matches. The ownership-marker check and expected control-revision check are one atomic mutation decision; they cannot be performed as independent client-side checks.
 
 Once adopted, every lifecycle mutation for the filter belongs to the coordinated path.
 
@@ -189,7 +204,12 @@ Properties:
 - `:sync` is strict current `sync-v1` state;
 - `:sync:staging` is implementation-only and never correctness state;
 - `:sync:leases` stores durable A/P/R token bindings;
-- `:sync:counts` stores non-negative per-epoch active-writer counts;
+- `:sync:counts` stores non-negative per-epoch active-writer counts with exactly-once arithmetic:
+  - a new token acquire increments its pinned epoch count exactly once;
+  - retry of an existing active A/P token does not increment again;
+  - A -> P preparation does not change the count;
+  - the first authorized A/P -> R release, including evidence-bound recovery, decrements that token's pinned epoch exactly once;
+  - retry of an R token does not decrement again;
 - correctness keys have no TTL;
 - unknown fields, malformed canonical values, impossible relations, and wrong Redis types are corruption.
 
