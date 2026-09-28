@@ -99,6 +99,10 @@ ADOPTED -> ordinary mutable M5 ownership
 
 A reverse migration would require a separately designed external fence.
 
+If runtime configuration still requires coordinated operation but durable owner/sync evidence is missing, mutation enters recovery and must not infer ordinary M5 ownership.
+
+When both durable coordination records are absent **and** runtime configuration does not require coordinated operation, the ordinary unadopted M5 path remains eligible.
+
 An external restore that erases both durable ownership history and coordinated runtime configuration is outside the protocol; coordinated guarantees require a new explicit adoption handoff afterward.
 
 ### Manual lease recovery is evidence-bound
@@ -193,6 +197,7 @@ Production doctor remains read-only and reports ownership/configuration disagree
 ## Consequences
 
 - brownfield coordinated guarantees begin at an explicit observable handoff instead of an unprovable config switch;
+- brownfield applications remain a first-class adoption path under ADR-0014; the one-time fence is a migration-safety requirement, not reduced product support;
 - a crash during adoption cannot silently return the filter to legacy lifecycle ownership;
 - durable adoption outranks local runtime mode drift;
 - M6 v1 avoids the complexity and risk of reverse de-adoption;
