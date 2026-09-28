@@ -332,7 +332,8 @@ The first concrete execution of those contracts occurs against Memory in WU-02.
 - ordinary M5-compatible absence remains distinguishable from coordinated
   missing-evidence recovery;
 - acquire is not modeled as caller-side read + CAS;
-- A -> P is idempotent and count-neutral;
+- A -> P is idempotent and count-neutral only while immutable coordinated ownership is valid, strict current `sync-v1` exists, and the lease's original epoch has a positive active-writer count;
+- A -> P fails closed without changing lease/count state when coordinated ownership is invalid, strict current `sync-v1` is absent/invalid, or the original epoch count is not positive;
 - first A/P -> R decrements once;
 - R retry is idempotent;
 - count underflow is corruption.
@@ -372,14 +373,17 @@ fixtures for:
 9. acquire new A token;
 10. acquire retry A;
 11. acquire retry P;
-12. A -> P;
-13. P retry;
-14. release A;
-15. release P;
-16. release R retry;
-17. epoch rotation vs acquire;
-18. persisted active count and drain proof;
-19. strict malformed state rejection.
+12. A -> P succeeds only with valid immutable ownership, strict current `sync-v1`, and a positive count for the lease's original epoch;
+13. A -> P rejects invalid coordinated ownership without changing lease/count state;
+14. A -> P rejects absent/invalid strict current `sync-v1` without changing lease/count state;
+15. A -> P rejects a missing/zero/non-positive original-epoch count without changing lease/count state;
+16. P retry is idempotent and count-neutral;
+17. release A;
+18. release P;
+19. release R retry;
+20. epoch rotation vs acquire;
+21. persisted active count and drain proof;
+22. strict malformed state rejection.
 
 ### GREEN
 
@@ -467,8 +471,11 @@ Live Redis tests for:
 
 - acquire and exact binding;
 - acquire retry does not increment twice;
-- A -> P count-neutral;
-- P retry idempotent;
+- A -> P succeeds only with valid immutable ownership, strict current `sync-v1`, and a positive original-epoch count;
+- A -> P rejects invalid coordinated ownership without mutation;
+- A -> P rejects absent/invalid strict current `sync-v1` without mutation;
+- A -> P rejects missing/zero/non-positive original-epoch count without mutation;
+- P retry idempotent and count-neutral;
 - release decrements once;
 - R retry does not decrement;
 - unknown token;
@@ -525,6 +532,9 @@ Compare normalized observable results, not implementation details.
 | P09 | new acquire | A bound to exact epoch/targets, count +1 |
 | P10 | acquire retry A | same binding, no new count |
 | P11 | prepare A -> P | same binding, count unchanged |
+| P11a | prepare with invalid coordinated ownership | rejected, lease/count unchanged |
+| P11b | prepare with absent/invalid strict current sync-v1 | rejected, lease/count unchanged |
+| P11c | prepare with missing/zero/non-positive original-epoch count | rejected, lease/count unchanged |
 | P12 | acquire/prepare retry P | same binding, no new count |
 | P13 | release A | R, original count -1 once |
 | P14 | release P | R, original count -1 once |
@@ -664,7 +674,8 @@ Implement ADR-0043 management workflows before online rebuild orchestration.
 
 #### Fresh filter
 
-- no prior control state may adopt without requiring a brownfield quiescent handoff assertion;
+- a fresh filter with no prior control state may adopt without a brownfield quiescent handoff assertion;
+- raw external writers remain outside package guarantees under ADR-0010;
 - claim owner first;
 - initialize STEADY sync-v1 revision 1 / epoch 1 / empty current targets;
 - retry is idempotent.
