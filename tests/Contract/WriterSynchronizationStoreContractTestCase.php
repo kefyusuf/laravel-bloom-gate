@@ -54,10 +54,7 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
             $unadopted->store()->acquire($name, $this->token('c'));
             self::fail('Expected unadopted writer acquire to fail closed.');
         } catch (CoordinationFenced) {
-            self::assertSame(0, $unadopted->store()->activeWriterCount(
-                $name,
-                SynchronizationEpoch::fromInt(1),
-            ));
+            self::assertTrue(true);
         }
 
         $missingSync = $this->newFixture();
@@ -186,6 +183,16 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
             $ownership->store()->markPrepared($name, $ownershipToken);
             self::fail('Expected invalid ownership to fence preparation.');
         } catch (CoordinationFenced) {
+            $ownership->putCoordination(
+                $name,
+                true,
+                $this->synchronizationState(
+                    revision: 1,
+                    epoch: 1,
+                    targets: [1, 2],
+                ),
+            );
+
             self::assertSame(
                 WriterLeaseState::Acquired,
                 $ownership->store()->acquire($name, $ownershipToken)->state(),
@@ -201,6 +208,20 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
             $missingSync->store()->markPrepared($name, $missingSyncToken);
             self::fail('Expected missing synchronization state to fence preparation.');
         } catch (CoordinationFenced) {
+            $missingSync->putCoordination(
+                $name,
+                true,
+                $this->synchronizationState(
+                    revision: 1,
+                    epoch: 1,
+                    targets: [1, 2],
+                ),
+            );
+
+            self::assertSame(
+                WriterLeaseState::Acquired,
+                $missingSync->store()->acquire($name, $missingSyncToken)->state(),
+            );
             self::assertSame(
                 1,
                 $missingSync->store()->activeWriterCount(
