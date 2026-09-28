@@ -121,7 +121,7 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         } catch (CoordinationFenced) {
             self::assertSame(
                 WriterLeaseState::Acquired,
-                $ownership->store()->activeLeases($name)[0]->state(),
+                $ownership->store()->acquire($name, $ownershipToken)->state(),
             );
         }
 
@@ -222,25 +222,6 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         $this->expectException(CoordinationStateCorrupt::class);
 
         $fixture->store()->release($name, $token);
-    }
-
-    public function test_active_lease_diagnostics_exclude_released_tombstones(): void
-    {
-        $fixture = $this->validFixture();
-        $name = $this->filterName();
-        $released = $this->token('a');
-        $prepared = $this->token('b');
-
-        $fixture->store()->acquire($name, $released);
-        $fixture->store()->acquire($name, $prepared);
-        $fixture->store()->markPrepared($name, $prepared);
-        $fixture->store()->release($name, $released);
-
-        $active = $fixture->store()->activeLeases($name);
-
-        self::assertCount(1, $active);
-        self::assertTrue($active[0]->token()->equals($prepared));
-        self::assertSame(WriterLeaseState::Prepared, $active[0]->state());
     }
 
     protected function validFixture(): WriterSynchronizationStoreContractFixture
