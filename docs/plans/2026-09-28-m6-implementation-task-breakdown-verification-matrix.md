@@ -664,7 +664,7 @@ Implement ADR-0043 management workflows before online rebuild orchestration.
 
 #### Fresh filter
 
-- no control state may adopt without brownfield handoff assertion;
+- no control state may adopt without a brownfield quiescent handoff assertion;
 - claim owner first;
 - initialize STEADY sync-v1 revision 1 / epoch 1 / active target or empty;
 - retry is idempotent.
