@@ -34,8 +34,4 @@ interface WriterSynchronizationStore
         SynchronizationEpoch $epoch,
     ): int;
 
-    /**
-     * @return list<WriterLease>
-     */
-    public function activeLeases(FilterName $name): array;
 }
