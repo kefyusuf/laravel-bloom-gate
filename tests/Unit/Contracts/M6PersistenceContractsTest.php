@@ -185,6 +185,7 @@ it('provides backend-neutral reusable lifecycle and writer contract suites', fun
         'test_claim_ownership_is_one_way_and_requires_sync_absence',
         'test_claim_ownership_conflicts_on_stale_control_relation',
         'test_coordinated_control_cas_is_guarded_by_exact_sync_revision',
+        'test_coordinated_control_cas_treats_null_control_revision_as_required_absence',
         'test_coordinated_sync_cas_treats_null_control_revision_as_required_absence',
         'test_coordinated_sync_cas_treats_null_sync_revision_as_required_absence',
         'test_owner_sync_contradiction_fails_closed',
