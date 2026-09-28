@@ -192,9 +192,12 @@ it('provides backend-neutral reusable lifecycle and writer contract suites', fun
 
     foreach ([
         'test_acquire_binds_current_epoch_and_targets_atomically',
+        'test_acquire_requires_valid_owner_and_sync',
         'test_acquire_retry_preserves_original_binding_and_count',
+        'test_acquire_retry_on_prepared_lease_preserves_original_binding_and_count',
         'test_mark_prepared_is_idempotent_and_count_neutral',
         'test_mark_prepared_requires_valid_owner_sync_and_positive_original_epoch_count',
+        'test_acquired_lease_can_release_once_without_preparation',
         'test_first_release_decrements_once_and_retry_is_idempotent',
         'test_unknown_token_is_distinct',
         'test_released_token_is_terminal',
