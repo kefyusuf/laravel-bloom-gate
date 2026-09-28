@@ -67,6 +67,8 @@ Rules:
 - acquisition atomically binds token + current epoch + exact current targets;
 - retry of an existing A or P token reuses its original binding;
 - A -> P is retry-safe and does not change the active-writer count;
+- A -> P succeeds only while immutable coordinated ownership, strict current `sync-v1`, and a positive count for the lease's original epoch remain valid;
+- missing, malformed, unavailable, or contradictory coordination state leaves the write pre-authoritative and fails closed;
 - P proves every lease-bound Bloom pre-add completed before authoritative visibility was permitted;
 - A and P both remain active writers until terminal release;
 - R is terminal and cannot regain write authority;
