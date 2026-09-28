@@ -24,6 +24,8 @@ M6 adds an explicit opt-in coordinated rebuild protocol for mutable `preadd-v1` 
 
 This protocol does **not** replace or reinterpret `preadd-v1`. M5 quiescent activation remains valid and supported.
 
+Coordination is a synchronization protocol, not a new generation membership semantic. Enabling coordinated rebuild does not by itself change the `preadd-v1` consistency identity/fingerprint.
+
 ### Explicit prepared writer lifetime
 
 A coordinated membership-entry write uses a stable writer token created before the first remote coordination operation.
