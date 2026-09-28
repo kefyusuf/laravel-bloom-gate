@@ -51,9 +51,23 @@ abstract class CoordinatedLifecycleStoreContractTestCase extends TestCase
         self::assertTrue($claimed->ownershipClaimed());
         self::assertNull($claimed->synchronization());
 
-        $this->expectException(CoordinationFenced::class);
+        try {
+            $fixture->store()->claimOwnership($name, null);
+            self::fail('Expected an already-claimed ownership marker to fence a second claim.');
+        } catch (CoordinationFenced) {
+            self::assertTrue($fixture->store()->read($name)->ownershipClaimed());
+        }
 
-        $fixture->store()->claimOwnership($name, null);
+        $syncPresent = $this->newFixture();
+        $syncPresent->putCoordination(
+            $name,
+            false,
+            $this->synchronizationState(1),
+        );
+
+        $this->expectException(CoordinationStateCorrupt::class);
+
+        $syncPresent->store()->claimOwnership($name, null);
     }
 
     public function test_claim_ownership_conflicts_on_stale_control_relation(): void
@@ -98,6 +112,24 @@ abstract class CoordinatedLifecycleStoreContractTestCase extends TestCase
                 $fixture->store()->read($name)->control()?->revision()->value(),
             );
         }
+    }
+
+    public function test_coordinated_control_cas_treats_null_control_revision_as_required_absence(): void
+    {
+        $fixture = $this->newFixture();
+        $name = $this->filterName();
+
+        $fixture->putControl($name, $this->controlState(1));
+        $fixture->putCoordination($name, true, $this->synchronizationState(1));
+
+        $this->expectException(CoordinationWriteConflict::class);
+
+        $fixture->store()->compareAndSwapControl(
+            $name,
+            $this->controlState(2),
+            null,
+            SynchronizationRevision::fromInt(1),
+        );
     }
 
     public function test_coordinated_sync_cas_treats_null_control_revision_as_required_absence(): void
