@@ -33,5 +33,4 @@ interface WriterSynchronizationStore
         FilterName $name,
         SynchronizationEpoch $epoch,
     ): int;
-
 }
