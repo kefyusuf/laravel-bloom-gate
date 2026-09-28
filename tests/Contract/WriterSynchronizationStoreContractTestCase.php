@@ -54,7 +54,7 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
             $unadopted->store()->acquire($name, $this->token('c'));
             self::fail('Expected unadopted writer acquire to fail closed.');
         } catch (CoordinationFenced) {
-            self::assertTrue(true);
+            self::addToAssertionCount(1);
         }
 
         $missingSync = $this->newFixture();
