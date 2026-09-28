@@ -15,8 +15,10 @@ use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
+use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
+use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Tests\Contract\CoordinatedLifecycleStoreContractTestCase;
@@ -146,9 +148,9 @@ it('represents only valid coordinated lifecycle observations', function (): void
         control: null,
         synchronization: new SynchronizationState(
             revision: SynchronizationRevision::fromInt(1),
-            phase: Kefyusuf\BloomGate\Core\SynchronizationPhase::Steady,
+            phase: SynchronizationPhase::Steady,
             currentEpoch: SynchronizationEpoch::fromInt(1),
-            currentTargets: Kefyusuf\BloomGate\Core\SynchronizationTargetSet::fromVersions([]),
+            currentTargets: SynchronizationTargetSet::fromVersions([]),
             candidateVersion: null,
             drainingEpoch: null,
         ),
