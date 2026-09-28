@@ -44,6 +44,30 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         );
     }
 
+    public function test_acquire_requires_valid_owner_and_sync(): void
+    {
+        $name = $this->filterName();
+
+        $unadopted = $this->newFixture();
+
+        try {
+            $unadopted->store()->acquire($name, $this->token('c'));
+            self::fail('Expected unadopted writer acquire to fail closed.');
+        } catch (CoordinationFenced) {
+            self::assertSame(0, $unadopted->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ));
+        }
+
+        $missingSync = $this->newFixture();
+        $missingSync->putCoordination($name, true, null);
+
+        $this->expectException(CoordinationFenced::class);
+
+        $missingSync->store()->acquire($name, $this->token('d'));
+    }
+
     public function test_acquire_retry_preserves_original_binding_and_count(): void
     {
         $fixture = $this->validFixture();
@@ -67,6 +91,49 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         self::assertSame($first->epoch()->value(), $retry->epoch()->value());
         self::assertSame(
             $this->targetValues($first->targets()),
+            $this->targetValues($retry->targets()),
+        );
+        self::assertSame(
+            1,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ),
+        );
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(2),
+            ),
+        );
+    }
+
+    public function test_acquire_retry_on_prepared_lease_preserves_original_binding_and_count(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $token = $this->token('a');
+
+        $original = $fixture->store()->acquire($name, $token);
+        $fixture->store()->markPrepared($name, $token);
+
+        $fixture->putCoordination(
+            $name,
+            true,
+            $this->synchronizationState(
+                revision: 2,
+                epoch: 2,
+                targets: [2],
+            ),
+        );
+
+        $retry = $fixture->store()->acquire($name, $token);
+
+        self::assertSame(WriterLeaseState::Prepared, $retry->state());
+        self::assertSame($original->epoch()->value(), $retry->epoch()->value());
+        self::assertSame(
+            $this->targetValues($original->targets()),
             $this->targetValues($retry->targets()),
         );
         self::assertSame(
@@ -157,6 +224,28 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         $count->store()->markPrepared($name, $countToken);
     }
 
+    public function test_acquired_lease_can_release_once_without_preparation(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $token = $this->token('b');
+
+        $fixture->store()->acquire($name, $token);
+
+        $released = $fixture->store()->release($name, $token);
+        $retry = $fixture->store()->release($name, $token);
+
+        self::assertSame(WriterLeaseState::Released, $released->state());
+        self::assertSame(WriterLeaseState::Released, $retry->state());
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ),
+        );
+    }
+
     public function test_first_release_decrements_once_and_retry_is_idempotent(): void
     {
         $fixture = $this->validFixture();
@@ -183,13 +272,25 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
     public function test_unknown_token_is_distinct(): void
     {
         $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $token = $this->token('7');
+
+        try {
+            $fixture->store()->markPrepared($name, $token);
+            self::fail('Expected unknown prepare token to remain distinct.');
+        } catch (UnknownWriterLease) {
+            self::assertSame(
+                0,
+                $fixture->store()->activeWriterCount(
+                    $name,
+                    SynchronizationEpoch::fromInt(1),
+                ),
+            );
+        }
 
         $this->expectException(UnknownWriterLease::class);
 
-        $fixture->store()->markPrepared(
-            $this->filterName(),
-            $this->token('7'),
-        );
+        $fixture->store()->release($name, $token);
     }
 
     public function test_released_token_is_terminal(): void
@@ -201,9 +302,22 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         $fixture->store()->acquire($name, $token);
         $fixture->store()->release($name, $token);
 
+        try {
+            $fixture->store()->acquire($name, $token);
+            self::fail('Expected released token to remain terminal on acquire.');
+        } catch (WriterLeaseReleased) {
+            self::assertSame(
+                0,
+                $fixture->store()->activeWriterCount(
+                    $name,
+                    SynchronizationEpoch::fromInt(1),
+                ),
+            );
+        }
+
         $this->expectException(WriterLeaseReleased::class);
 
-        $fixture->store()->acquire($name, $token);
+        $fixture->store()->markPrepared($name, $token);
     }
 
     public function test_count_underflow_is_corruption(): void
