@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationWriteConflict;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
@@ -65,6 +66,53 @@ function wu02MemorySynchronizationState(
     );
 }
 
+/**
+ * Execute one Memory mutation inside a Fiber and capture its terminal exception.
+ *
+ * Memory operations intentionally do not suspend inside the shared domain, so
+ * starting fibers in opposite orders exercises the two legal serializations
+ * without sleep-based timing.
+ *
+ * @param  callable(): void  $operation
+ */
+function wu02MemoryFiberResult(callable $operation): ?Throwable
+{
+    $fiber = new Fiber(static function () use ($operation): ?Throwable {
+        try {
+            $operation();
+
+            return null;
+        } catch (Throwable $exception) {
+            return $exception;
+        }
+    });
+
+    $fiber->start();
+
+    return $fiber->getReturn();
+}
+
+function wu02CorruptMemoryDomainEntry(
+    MemoryCoordinationDomain $domain,
+    string $property,
+    string $filterKey,
+    mixed $value,
+): void {
+    $reflection = new ReflectionProperty(
+        MemoryCoordinationDomain::class,
+        $property,
+    );
+    $entries = $reflection->getValue($domain);
+
+    if (! is_array($entries)) {
+        throw new RuntimeException('Expected Memory coordination test storage to be an array.');
+    }
+
+    $entries[$filterKey] = $value;
+
+    $reflection->setValue($domain, $entries);
+}
+
 it('keeps ordinary control CAS valid while coordination has never been adopted', function (): void {
     $domain = new MemoryCoordinationDomain;
     $coordination = new MemoryCoordinatedLifecycleStore($domain);
@@ -82,31 +130,44 @@ it('keeps ordinary control CAS valid while coordination has never been adopted',
         ->and($coordination->read($name)->synchronization())->toBeNull();
 });
 
-it('serializes legacy control CAS and ownership claim in either legal ordering', function (): void {
+it('serializes legacy control CAS and ownership claim in both deterministic Fiber orderings', function (): void {
     $name = FilterName::fromString('users.email');
 
     $legacyDomain = new MemoryCoordinationDomain;
-    $legacyFirst = new MemoryCoordinatedLifecycleStore($legacyDomain);
+    $legacyLifecycle = new MemoryCoordinatedLifecycleStore($legacyDomain);
     $legacyControl = new MemoryFilterControlStore($legacyDomain);
-    $legacyControl->compareAndSwap(
-        $name,
-        wu02MemoryControlState($name, 1),
-        null,
+
+    $legacyFirst = wu02MemoryFiberResult(static function () use ($legacyControl, $name): void {
+        $legacyControl->compareAndSwap(
+            $name,
+            wu02MemoryControlState($name, 1),
+            null,
+        );
+    });
+    $claimSecond = wu02MemoryFiberResult(
+        static fn (): mixed => $legacyLifecycle->claimOwnership($name, null),
     );
 
-    expect(fn () => $legacyFirst->claimOwnership($name, null))
-        ->toThrow(CoordinationWriteConflict::class);
+    expect($legacyFirst)->toBeNull()
+        ->and($claimSecond)->toBeInstanceOf(CoordinationWriteConflict::class);
 
     $ownershipDomain = new MemoryCoordinationDomain;
-    $ownershipFirst = new MemoryCoordinatedLifecycleStore($ownershipDomain);
+    $ownershipLifecycle = new MemoryCoordinatedLifecycleStore($ownershipDomain);
     $ownedControl = new MemoryFilterControlStore($ownershipDomain);
-    $ownershipFirst->claimOwnership($name, null);
 
-    expect(fn () => $ownedControl->compareAndSwap(
-        $name,
-        wu02MemoryControlState($name, 1),
-        null,
-    ))->toThrow(CoordinationFenced::class);
+    $claimFirst = wu02MemoryFiberResult(
+        static fn (): mixed => $ownershipLifecycle->claimOwnership($name, null),
+    );
+    $legacySecond = wu02MemoryFiberResult(static function () use ($ownedControl, $name): void {
+        $ownedControl->compareAndSwap(
+            $name,
+            wu02MemoryControlState($name, 1),
+            null,
+        );
+    });
+
+    expect($claimFirst)->toBeNull()
+        ->and($legacySecond)->toBeInstanceOf(CoordinationFenced::class);
 });
 
 it('keeps adoption pending observable while writer admission fails closed', function (): void {
@@ -179,7 +240,7 @@ it('serializes opposite-plane CAS through revision fencing in both orderings', f
     ))->toThrow(CoordinationWriteConflict::class);
 });
 
-it('orders writer acquire wholly before or wholly after epoch rotation', function (): void {
+it('orders writer acquire wholly before or wholly after epoch rotation without timing sleeps', function (): void {
     $name = FilterName::fromString('users.email');
 
     $acquireFirstDomain = new MemoryCoordinationDomain;
@@ -229,4 +290,59 @@ it('orders writer acquire wholly before or wholly after epoch rotation', functio
     );
 
     expect($newLease->epoch()->value())->toBe(2);
+});
+
+it('fails closed on malformed raw Memory ownership synchronization lease and count state', function (): void {
+    $name = FilterName::fromString('users.email');
+    $filterKey = $name->value();
+
+    $ownerDomain = new MemoryCoordinationDomain;
+    $ownerLifecycle = new MemoryCoordinatedLifecycleStore($ownerDomain);
+    wu02CorruptMemoryDomainEntry($ownerDomain, 'owners', $filterKey, 'invalid-owner');
+
+    expect(fn () => $ownerLifecycle->read($name))
+        ->toThrow(CoordinationStateCorrupt::class);
+
+    $syncDomain = new MemoryCoordinationDomain;
+    $syncLifecycle = new MemoryCoordinatedLifecycleStore($syncDomain);
+    wu02CorruptMemoryDomainEntry($syncDomain, 'owners', $filterKey, true);
+    wu02CorruptMemoryDomainEntry($syncDomain, 'synchronizations', $filterKey, 'invalid-sync');
+
+    expect(fn () => $syncLifecycle->read($name))
+        ->toThrow(CoordinationStateCorrupt::class);
+
+    $leaseDomain = new MemoryCoordinationDomain;
+    $leaseLifecycle = new MemoryCoordinatedLifecycleStore($leaseDomain);
+    $leaseWriter = new MemoryWriterSynchronizationStore($leaseDomain);
+    $leaseLifecycle->claimOwnership($name, null);
+    $leaseLifecycle->compareAndSwapSynchronization(
+        $name,
+        wu02MemorySynchronizationState(1, 1, [1]),
+        null,
+        null,
+    );
+    $leaseToken = WriterLeaseToken::fromString(str_repeat('f', 32));
+    wu02CorruptMemoryDomainEntry(
+        $leaseDomain,
+        'leases',
+        $filterKey,
+        [$leaseToken->value() => 'invalid-lease'],
+    );
+
+    expect(fn () => $leaseWriter->markPrepared($name, $leaseToken))
+        ->toThrow(CoordinationStateCorrupt::class);
+
+    $countDomain = new MemoryCoordinationDomain;
+    $countWriter = new MemoryWriterSynchronizationStore($countDomain);
+    wu02CorruptMemoryDomainEntry(
+        $countDomain,
+        'counts',
+        $filterKey,
+        [1 => -1],
+    );
+
+    expect(fn () => $countWriter->activeWriterCount(
+        $name,
+        SynchronizationEpoch::fromInt(1),
+    ))->toThrow(CoordinationStateCorrupt::class);
 });
