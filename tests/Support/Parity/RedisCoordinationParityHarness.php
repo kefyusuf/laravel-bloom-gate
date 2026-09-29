@@ -276,6 +276,9 @@ final class RedisCoordinationParityHarness implements CoordinationParityHarness
         );
     }
 
+    /**
+     * @param  int|string|array<array-key, mixed>  $result
+     */
     private function assertIntegerResult(
         int|string|array $result,
         string $operation,
