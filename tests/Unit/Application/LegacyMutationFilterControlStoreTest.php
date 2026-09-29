@@ -17,8 +17,8 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
-use PHPUnit\Framework\TestCase;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
+use PHPUnit\Framework\TestCase;
 
 final class LegacyMutationFilterControlStoreTest extends TestCase
 {
