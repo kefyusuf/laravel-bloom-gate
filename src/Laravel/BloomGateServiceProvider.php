@@ -356,9 +356,6 @@ final class BloomGateServiceProvider extends ServiceProvider
         );
     }
 
-    /**
-     * @return FilterControlStore&ActiveGenerationSnapshotReader
-     */
     private static function rawFilterControlStore(
         Application $app,
     ): FilterControlStore&ActiveGenerationSnapshotReader {
