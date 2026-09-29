@@ -71,7 +71,7 @@ final class MemoryCoordinationDomain
             );
         }
 
-        if ($owner || $synchronization !== null) {
+        if ($owner) {
             throw new CoordinationFenced(
                 'Ordinary control mutation is fenced after coordinated ownership begins.',
             );
