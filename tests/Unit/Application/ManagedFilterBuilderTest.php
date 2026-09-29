@@ -5,9 +5,11 @@ declare(strict_types=1);
 require_once __DIR__.'/../../Support/Application/Task9BuildFixtures.php';
 
 use Kefyusuf\BloomGate\Application\BloomSizingUnsupported;
+use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\FilterControlState;
@@ -19,6 +21,8 @@ use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Lifecycle\CandidateAllocator;
 use Kefyusuf\BloomGate\Lifecycle\GenerationHealthUpdater;
 use Kefyusuf\BloomGate\Lifecycle\GenerationLifecycleTransitioner;
@@ -31,6 +35,7 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingGenerationContrac
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingNormalizer;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StaticFilterRegistry;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StreamingAuthoritativeSet;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 
 function task9ActiveOnlyState(): FilterControlState
 {
@@ -101,6 +106,7 @@ function task9BuilderFixture(
     float $falsePositiveRate = 0.01,
     string|int|null $normalizerThrowsOn = null,
     ?int $failOnBatch = null,
+    bool $runtimeCoordinated = false,
 ): array {
     $events = new Task9BuildEventLog;
     $control = new Task9RecordingControlStore($initial);
@@ -138,6 +144,15 @@ function task9BuilderFixture(
         $control,
         new LifecycleTransitionPolicy,
     );
+    $runtime = new Wu05RuntimeCoordinationRequirement(
+        $runtimeCoordinated,
+    );
+    $legacyMutations = new LegacyMutationGuard(
+        coordination: new MemoryCoordinatedLifecycleStore(
+            new MemoryCoordinationDomain,
+        ),
+        runtime: $runtime,
+    );
 
     return [
         'builder' => new ManagedFilterBuilder(
@@ -150,6 +165,7 @@ function task9BuilderFixture(
             generationContracts: $contracts,
             probes: new BloomProbeGenerator,
             fingerprints: new SemanticFingerprintCalculator,
+            legacyMutations: $legacyMutations,
             chunkSize: $chunkSize,
         ),
         'events' => $events,
@@ -177,6 +193,23 @@ function task9Generation(
         $version,
     ));
 }
+
+it('fences legacy managed build when runtime requires coordinated-v1 before data-plane work', function (): void {
+    $fixture = task9BuilderFixture(
+        values: ['a', 'b'],
+        initial: task9ActiveOnlyState(),
+        runtimeCoordinated: true,
+    );
+
+    expect(fn () => $fixture['builder']->build(
+        FilterName::fromString('users.email'),
+    ))->toThrow(CoordinationFenced::class);
+
+    expect($fixture['control']->writes())->toBe([])
+        ->and($fixture['driver']->provisionedVersion)->toBeNull()
+        ->and($fixture['driver']->batches)->toBe([])
+        ->and($fixture['contracts']->bindCalls)->toBe(0);
+});
 
 it('builds the next candidate with ordered lifecycle semantic and streamed bulk work', function (): void {
     $fixture = task9BuilderFixture(

@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 use Illuminate\Support\ServiceProvider;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
+use Kefyusuf\BloomGate\Application\LegacyMutationFilterControlStore;
+use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
 use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
 use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Application\QueryGate;
 use Kefyusuf\BloomGate\Application\QuerySafetyDescriptorResolver;
+use Kefyusuf\BloomGate\Application\UncoordinatedRuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
+use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\FilterControlStore;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
+use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
+use Kefyusuf\BloomGate\Core\FilterName;
+use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Laravel\BloomGateManager;
 use Kefyusuf\BloomGate\Laravel\BloomGateServiceProvider;
 use Kefyusuf\BloomGate\Laravel\Facades\BloomGate as BloomGateFacade;
@@ -45,6 +53,10 @@ it('resolves the complete application and lifecycle service graph with memory dr
         BulkBloomDriver::class,
         FilterControlStore::class,
         ActiveGenerationSnapshotReader::class,
+        CoordinatedLifecycleStore::class,
+        RuntimeCoordinationRequirement::class,
+        LegacyMutationGuard::class,
+        LegacyMutationFilterControlStore::class,
         GenerationContractStore::class,
         AuthorizedProbe::class,
         QuerySafetyDescriptorResolver::class,
@@ -68,7 +80,36 @@ it('resolves the complete application and lifecycle service graph with memory dr
     expect($application->make(BloomDriver::class))
         ->toBe($application->make(BulkBloomDriver::class))
         ->and($application->make(FilterControlStore::class))
-        ->toBe($application->make(ActiveGenerationSnapshotReader::class));
+        ->toBe($application->make(ActiveGenerationSnapshotReader::class))
+        ->and($application->make(FilterControlStore::class))
+        ->toBeInstanceOf(LegacyMutationFilterControlStore::class)
+        ->and($application->make(RuntimeCoordinationRequirement::class))
+        ->toBeInstanceOf(UncoordinatedRuntimeCoordinationRequirement::class);
+});
+
+it('shares memory coordinated ownership with the public legacy control fence', function (): void {
+    $name = FilterName::fromString('wiring.ownership');
+    $allocator = app()->make(CandidateAllocator::class);
+    $allocated = $allocator->allocate($name);
+    $candidate = $allocated->candidateVersion();
+
+    if ($candidate === null) {
+        throw new RuntimeException('Expected wiring fixture candidate.');
+    }
+
+    app()->make(CoordinatedLifecycleStore::class)->claimOwnership(
+        $name,
+        $allocated->revision(),
+    );
+
+    expect(fn () => app()->make(GenerationHealthUpdater::class)->update(
+        $name,
+        $candidate,
+        HealthState::Healthy,
+    ))->toThrow(CoordinationFenced::class);
+
+    expect(app()->make(FilterControlStore::class)->read($name)?->revision()->value())
+        ->toBe($allocated->revision()->value());
 });
 
 it('keeps redis and database infrastructure lazy during package registration', function (): void {

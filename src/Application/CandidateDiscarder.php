@@ -16,10 +16,13 @@ final readonly class CandidateDiscarder
     public function __construct(
         private FilterControlStore $control,
         private GenerationLifecycleTransitioner $transitions,
+        private LegacyMutationGuard $legacyMutations,
     ) {}
 
     public function discard(FilterName $name): FilterControlState
     {
+        $this->legacyMutations->assertAllowed($name);
+
         $state = $this->control->read($name);
 
         if ($state === null) {
