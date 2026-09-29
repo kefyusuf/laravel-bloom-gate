@@ -7,7 +7,6 @@ namespace Kefyusuf\BloomGate\Tests\Unit\Application;
 use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
-use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
 use Kefyusuf\BloomGate\Core\SynchronizationPhase;
@@ -15,6 +14,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryCoordinationFixtureState;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 use PHPUnit\Framework\TestCase;
 
 final class LegacyMutationGuardTest extends TestCase
@@ -85,18 +85,8 @@ final class LegacyMutationGuardTest extends TestCase
 
     private function runtimeRequirement(
         bool $required,
-    ): RuntimeCoordinationRequirement {
-        return new class($required) implements RuntimeCoordinationRequirement
-        {
-            public function __construct(
-                private readonly bool $required,
-            ) {}
-
-            public function requiresCoordinatedV1(FilterName $name): bool
-            {
-                return $this->required;
-            }
-        };
+    ): Wu05RuntimeCoordinationRequirement {
+        return new Wu05RuntimeCoordinationRequirement($required);
     }
 
     private function syncState(): SynchronizationState
