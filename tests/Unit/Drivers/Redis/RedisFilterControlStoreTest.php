@@ -151,6 +151,8 @@ it('creates control state with null expected revision and exact encoded payload'
         'keys' => [
             'lbg:{products.sku}:state',
             'lbg:{products.sku}:state:staging',
+            'lbg:{products.sku}:sync:owner',
+            'lbg:{products.sku}:sync',
         ],
         'arguments' => [
             '',

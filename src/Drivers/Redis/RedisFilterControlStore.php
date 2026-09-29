@@ -6,6 +6,8 @@ namespace Kefyusuf\BloomGate\Drivers\Redis;
 
 use InvalidArgumentException;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlStoreOperationFailed;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlWriteConflict;
@@ -27,6 +29,10 @@ final readonly class RedisFilterControlStore implements ActiveGenerationSnapshot
     private const string STATUS_STORAGE_CORRUPT = '201';
 
     private const string STATUS_INVALID_REVISION = '202';
+
+    private const string STATUS_COORDINATION_FENCED = '203';
+
+    private const string STATUS_COORDINATION_CORRUPT = '204';
 
     public function __construct(
         private RedisStructuredCommandExecutor $executor,
@@ -157,6 +163,8 @@ final readonly class RedisFilterControlStore implements ActiveGenerationSnapshot
             [
                 $this->keyspace->stateKey($name),
                 $this->keyspace->stateStagingKey($name),
+                $this->keyspace->syncOwnerKey($name),
+                $this->keyspace->syncKey($name),
             ],
             [
                 $expectedRevision === null
@@ -180,6 +188,12 @@ final readonly class RedisFilterControlStore implements ActiveGenerationSnapshot
             ),
             self::STATUS_INVALID_REVISION => throw new InvalidArgumentException(
                 'Redis lifecycle control state revision must advance exactly once.',
+            ),
+            self::STATUS_COORDINATION_FENCED => throw new CoordinationFenced(
+                'Redis ordinary lifecycle control mutation is fenced by coordinated ownership.',
+            ),
+            self::STATUS_COORDINATION_CORRUPT => throw new CoordinationStateCorrupt(
+                'Redis coordination state is corrupt or incomplete.',
             ),
             default => throw $this->unexpectedReply('compareAndSwap', $response),
         };

@@ -8,7 +8,7 @@ final class RedisControlScripts
 {
     public static function read(): string
     {
-        return self::validator()."\n".<<<'LUA'
+        return self::controlValidator()."\n".<<<'LUA'
 local keyType = redis.call('TYPE', KEYS[1]).ok
 
 if keyType == 'none' then
@@ -39,7 +39,7 @@ LUA;
 
     public static function compareAndSwap(): string
     {
-        return self::validator()."\n".<<<'LUA'
+        $script = <<<'LUA'
 local WRITE_CHUNK_SIZE = 128
 
 local function writeHashFields(key, fields)
@@ -63,6 +63,16 @@ local function writeHashFields(key, fields)
     end
 
     return true, nil
+end
+
+local coordination = coordinationStatus(KEYS[3], KEYS[4])
+
+if coordination == 'corrupt' then
+    return {'204'}
+end
+
+if coordination == 'fenced' then
+    return {'203'}
 end
 
 local currentType = redis.call('TYPE', KEYS[1]).ok
@@ -137,9 +147,169 @@ end
 
 return {'100'}
 LUA;
+
+        return self::controlValidator()
+            ."\n".self::coordinationValidator()
+            ."\n".$script;
     }
 
-    private static function validator(): string
+    public static function coordinationValidator(): string
+    {
+        return <<<'LUA'
+local function isCanonicalTargetSet(value)
+    if type(value) ~= 'string' then
+        return false
+    end
+
+    if value == '-' then
+        return true
+    end
+
+    local previous = nil
+    local tokens = {}
+
+    for token in string.gmatch(value, '[^,]+') do
+        if not isCanonicalPositiveInteger(token) then
+            return false
+        end
+
+        if previous ~= nil and positiveIntegerLessThanOrEqual(token, previous) then
+            return false
+        end
+
+        tokens[#tokens + 1] = token
+        previous = token
+    end
+
+    return #tokens > 0 and table.concat(tokens, ',') == value
+end
+
+local function isSynchronizationPhase(value)
+    return value == 'STEADY'
+        or value == 'DRAINING_PRE_RECONCILE'
+        or value == 'RECONCILING'
+        or value == 'READY_TO_PROMOTE'
+        or value == 'DRAINING_POST_PROMOTION'
+        or value == 'ABORT_REQUESTED'
+        or value == 'DRAINING_ABORT'
+end
+
+local function validateSynchronizationFields(fields)
+    if #fields % 2 ~= 0 then
+        return false
+    end
+
+    local seen = {}
+    local format = nil
+    local revision = nil
+    local phase = nil
+    local currentEpoch = nil
+    local currentTargets = nil
+    local candidateVersion = nil
+    local drainingEpoch = nil
+
+    for index = 1, #fields, 2 do
+        local field = fields[index]
+        local value = fields[index + 1]
+
+        if type(field) ~= 'string' or type(value) ~= 'string' then
+            return false, nil
+        end
+
+        if seen[field] then
+            return false, nil
+        end
+
+        seen[field] = true
+
+        if field == 'format' then
+            format = value
+        elseif field == 'revision' then
+            revision = value
+        elseif field == 'phase' then
+            phase = value
+        elseif field == 'current_epoch' then
+            currentEpoch = value
+        elseif field == 'current_targets' then
+            currentTargets = value
+        elseif field == 'candidate_version' then
+            candidateVersion = value
+        elseif field == 'draining_epoch' then
+            drainingEpoch = value
+        else
+            return false, nil
+        end
+    end
+
+    if format ~= 'sync-v1' then
+        return false
+    end
+
+    if not isCanonicalPositiveInteger(revision) then
+        return false
+    end
+
+    if not isSynchronizationPhase(phase) then
+        return false
+    end
+
+    if not isCanonicalPositiveInteger(currentEpoch) then
+        return false
+    end
+
+    if not isCanonicalTargetSet(currentTargets) then
+        return false
+    end
+
+    if candidateVersion ~= nil and not isCanonicalPositiveInteger(candidateVersion) then
+        return false
+    end
+
+    if drainingEpoch ~= nil and not isCanonicalPositiveInteger(drainingEpoch) then
+        return false
+    end
+
+    return true, revision
+end
+
+local function coordinationStatus(ownerKey, syncKey)
+    local ownerType = redis.call('TYPE', ownerKey).ok
+    local syncType = redis.call('TYPE', syncKey).ok
+
+    if ownerType ~= 'none' and ownerType ~= 'string' then
+        return 'corrupt'
+    end
+
+    if syncType ~= 'none' and syncType ~= 'hash' then
+        return 'corrupt'
+    end
+
+    if ownerType == 'none' and syncType == 'none' then
+        return 'unadopted'
+    end
+
+    if ownerType == 'none' then
+        return 'corrupt'
+    end
+
+    if redis.call('GET', ownerKey) ~= 'coordinated-v1' then
+        return 'corrupt'
+    end
+
+    if syncType == 'none' then
+        return 'fenced'
+    end
+
+    if not validateSynchronizationFields(redis.call('HGETALL', syncKey)) then
+        return 'corrupt'
+    end
+
+    return 'fenced'
+end
+LUA;
+    }
+
+    public static function controlValidator(): string
     {
         $maximum = (string) PHP_INT_MAX;
 

@@ -43,12 +43,14 @@ it('keeps control reads on the canonical state key without ttl primitives', func
     expect($script)->not->toContain('PSETEX');
 });
 
-it('uses canonical state and same-slot staging keys for cas without ttl primitives', function (): void {
+it('uses same-slot state staging owner and sync keys for cas without ttl primitives', function (): void {
     $script = RedisControlScripts::compareAndSwap();
 
     expect($script)->toContain('KEYS[1]');
     expect($script)->toContain('KEYS[2]');
-    expect($script)->not->toContain('KEYS[3]');
+    expect($script)->toContain('KEYS[3]');
+    expect($script)->toContain('KEYS[4]');
+    expect($script)->not->toContain('KEYS[5]');
     expect($script)->not->toContain('EXPIRE');
     expect($script)->not->toContain('PEXPIRE');
     expect($script)->not->toContain('SETEX');
@@ -64,7 +66,9 @@ it('pins the private structured status tokens inside the scripts', function (): 
         ->toContain("return {'100'}")
         ->toContain("return {'200'}")
         ->toContain("return {'201'}")
-        ->toContain("return {'202'}");
+        ->toContain("return {'202'}")
+        ->toContain("return {'203'}")
+        ->toContain("return {'204'}");
 });
 
 it('validates read key type and strict hash shape before returning fields', function (): void {
@@ -131,6 +135,36 @@ it('bounds hset unpack calls while materializing the staging hash', function ():
     expect($script)->toContain('local WRITE_CHUNK_SIZE = 128');
     expect($script)->toContain("redis.pcall('HSET', key, unpack(chunk, 1, chunkCount))");
     expect($script)->not->toContain('unpack(nextFields)');
+});
+
+it('checks coordination state before legacy control revision semantics', function (): void {
+    $script = RedisControlScripts::compareAndSwap();
+
+    $coordination = redisControlScriptMarker(
+        $script,
+        'local coordination = coordinationStatus(KEYS[3], KEYS[4])',
+    );
+    $coordinationCorruption = redisControlScriptMarker(
+        $script,
+        "if coordination == 'corrupt' then",
+    );
+    $coordinationFence = redisControlScriptMarker(
+        $script,
+        "if coordination == 'fenced' then",
+    );
+    $controlType = redisControlScriptMarker(
+        $script,
+        "local currentType = redis.call('TYPE', KEYS[1]).ok",
+    );
+    $revisionConflict = redisControlScriptMarker(
+        $script,
+        'if currentRevision ~= expectedRevision then',
+    );
+
+    expect($coordination)->toBeLessThan($coordinationCorruption);
+    expect($coordinationCorruption)->toBeLessThan($coordinationFence);
+    expect($coordinationFence)->toBeLessThan($controlType);
+    expect($controlType)->toBeLessThan($revisionConflict);
 });
 
 it('checks storage conflict before proposed revision progression', function (): void {
