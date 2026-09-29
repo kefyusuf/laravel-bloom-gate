@@ -33,6 +33,7 @@ final readonly class ManagedFilterBuilder
         private GenerationContractStore $generationContracts,
         private BloomProbeGenerator $probes,
         private SemanticFingerprintCalculator $fingerprints,
+        private LegacyMutationGuard $legacyMutations,
         private int $chunkSize,
     ) {
         if ($this->chunkSize < 1) {
@@ -50,6 +51,7 @@ final readonly class ManagedFilterBuilder
     public function buildResult(FilterName $name): ManagedFilterBuildResult
     {
         $registered = $this->registry->get($name);
+        $this->legacyMutations->assertAllowed($name);
         $definition = $registered->definition();
 
         $layout = $this->sizing->layout(
