@@ -267,6 +267,45 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         );
     }
 
+    public function test_acquired_lease_releases_against_original_epoch_after_rotation(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $token = $this->token('e');
+
+        $fixture->store()->acquire($name, $token);
+
+        $fixture->putCoordination(
+            $name,
+            true,
+            $this->synchronizationState(
+                revision: 2,
+                epoch: 2,
+                targets: [2],
+            ),
+        );
+
+        $released = $fixture->store()->release($name, $token);
+        $retry = $fixture->store()->release($name, $token);
+
+        self::assertSame(WriterLeaseState::Released, $released->state());
+        self::assertSame(WriterLeaseState::Released, $retry->state());
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ),
+        );
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(2),
+            ),
+        );
+    }
+
     public function test_first_release_decrements_once_and_retry_is_idempotent(): void
     {
         $fixture = $this->validFixture();
