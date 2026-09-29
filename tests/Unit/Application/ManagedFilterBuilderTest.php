@@ -194,7 +194,6 @@ function task9Generation(
     ));
 }
 
-
 it('fences legacy managed build when runtime requires coordinated-v1 before data-plane work', function (): void {
     $fixture = task9BuilderFixture(
         values: ['a', 'b'],
