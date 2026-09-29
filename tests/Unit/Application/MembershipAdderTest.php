@@ -18,7 +18,6 @@ use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\NormalizationFingerprint;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
-use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
@@ -51,7 +50,6 @@ function task14Adder(
         ),
     );
 }
-
 
 it('fences legacy managed membership writes when runtime requires coordinated-v1', function (): void {
     $fixture = task14Fixture();
