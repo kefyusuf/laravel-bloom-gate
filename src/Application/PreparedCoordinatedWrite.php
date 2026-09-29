@@ -61,11 +61,7 @@ final readonly class PreparedCoordinatedWrite
                 $this->filterName,
                 $this->lease->token(),
             );
-        } catch (
-            CoordinationStoreOperationFailed
-            | CoordinationStateCorrupt
-            | UnknownWriterLease
-        ) {
+        } catch (CoordinationStoreOperationFailed|CoordinationStateCorrupt|UnknownWriterLease) {
             return CoordinatedWriterCompletionResult::CleanupUncertain;
         }
 
