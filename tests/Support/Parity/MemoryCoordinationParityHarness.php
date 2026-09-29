@@ -45,6 +45,8 @@ final class MemoryCoordinationParityHarness implements CoordinationParityHarness
         return $this->state->writer;
     }
 
+    public function track(FilterName $name): void {}
+
     public function putControl(
         FilterName $name,
         ?FilterControlState $control,
