@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
+
 namespace Kefyusuf\BloomGate\Tests\Unit\Application;
 
 use Kefyusuf\BloomGate\Application\AuthoritativeOutcomeUncertain;
@@ -16,6 +18,7 @@ use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterVersion;
+use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\ManagedGenerationDescriptor;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
@@ -418,7 +421,7 @@ final class CoordinatedWriterTest extends TestCase
      *     driver: Wu06BloomDriver,
      *     store: Wu06WriterSynchronizationStore,
      *     writer: CoordinatedWriter,
-     *     semantic: \Kefyusuf\BloomGate\Core\GenerationSemanticContract
+     *     semantic: GenerationSemanticContract
      * }
      */
     private function environment(): array
