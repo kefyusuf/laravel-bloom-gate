@@ -44,6 +44,9 @@ function wu02MemoryControlState(
     );
 }
 
+/**
+ * @param  list<int>  $targets
+ */
 function wu02MemorySynchronizationState(
     int $revision,
     int $epoch,
