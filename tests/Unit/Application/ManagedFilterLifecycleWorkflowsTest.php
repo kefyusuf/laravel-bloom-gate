@@ -5,10 +5,13 @@ declare(strict_types=1);
 require_once __DIR__.'/../../Support/Application/Task9BuildFixtures.php';
 
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
+use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
 use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
+use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -27,6 +30,8 @@ use Kefyusuf\BloomGate\Core\NormalizedValue;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryBloomDriver;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerificationEvidenceApplier;
@@ -73,6 +78,7 @@ function task10Environment(
     bool $failMightContain = false,
     bool $noopAddMany = false,
     bool $mismatchSemanticContract = false,
+    bool $runtimeCoordinated = false,
 ): array {
     $name = FilterName::fromString('users.email');
     $active = FilterVersion::fromInt(1);
@@ -184,6 +190,23 @@ function task10Environment(
         failMightContain: $failMightContain,
         noopAddMany: $noopAddMany,
     );
+    $runtime = new class($runtimeCoordinated) implements RuntimeCoordinationRequirement
+    {
+        public function __construct(
+            private readonly bool $required,
+        ) {}
+
+        public function requiresCoordinatedV1(FilterName $name): bool
+        {
+            return $this->required;
+        }
+    };
+    $legacyMutations = new LegacyMutationGuard(
+        coordination: new MemoryCoordinatedLifecycleStore(
+            new MemoryCoordinationDomain,
+        ),
+        runtime: $runtime,
+    );
     $health = new GenerationHealthUpdater($control);
     $transitions = new GenerationLifecycleTransitioner(
         $control,
@@ -197,6 +220,7 @@ function task10Environment(
         evidenceApplier: new ActivationVerificationEvidenceApplier,
         health: $health,
         fingerprints: $fingerprints,
+        legacyMutations: $legacyMutations,
     );
     $activator = new ManagedFilterActivator(
         registry: $registry,
@@ -207,11 +231,13 @@ function task10Environment(
         fingerprints: $fingerprints,
         verifier: $verifier,
         promoter: new CandidatePromoter($control),
+        legacyMutations: $legacyMutations,
         chunkSize: 2,
     );
     $discard = new CandidateDiscarder(
         control: $control,
         transitions: $transitions,
+        legacyMutations: $legacyMutations,
     );
 
     return compact(
@@ -234,6 +260,46 @@ function task10Environment(
         'discard',
     );
 }
+
+
+it('fences legacy managed verification when runtime requires coordinated-v1 before verification reads', function (): void {
+    $environment = task10Environment(runtimeCoordinated: true);
+
+    expect(fn () => $environment['verifier']->verify(
+        $environment['name'],
+    ))->toThrow(CoordinationFenced::class);
+
+    expect($environment['driver']->mightContainCalls)->toBe(0)
+        ->and($environment['control']->read($environment['name'])?->revision()->value())->toBe(1);
+});
+
+it('fences legacy activation before preadd reconciliation writes when runtime requires coordinated-v1', function (): void {
+    $environment = task10Environment(
+        consistency: ConsistencyContract::PreAddV1,
+        populateCandidate: false,
+        runtimeCoordinated: true,
+    );
+
+    expect(fn () => $environment['activator']->activate(
+        $environment['name'],
+        quiescent: true,
+    ))->toThrow(CoordinationFenced::class);
+
+    expect($environment['driver']->addManyCalls)->toBe(0)
+        ->and($environment['driver']->mightContainCalls)->toBe(0)
+        ->and($environment['control']->read($environment['name'])?->revision()->value())->toBe(1);
+});
+
+it('fences legacy candidate discard when runtime requires coordinated-v1', function (): void {
+    $environment = task10Environment(runtimeCoordinated: true);
+
+    expect(fn () => $environment['discard']->discard(
+        $environment['name'],
+    ))->toThrow(CoordinationFenced::class);
+
+    expect($environment['control']->read($environment['name'])?->revision()->value())->toBe(1)
+        ->and($environment['driver']->destroyCalls)->toBe(0);
+});
 
 it('verifies a fresh shadow healthy candidate and applies passed evidence', function (): void {
     $environment = task10Environment();
