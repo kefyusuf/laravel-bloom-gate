@@ -24,6 +24,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Core\WriterLease;
+use Kefyusuf\BloomGate\Core\WriterLeaseState;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Tests\Support\Parity\CoordinationParityHarness;
 use Kefyusuf\BloomGate\Tests\Support\Parity\MemoryCoordinationParityHarness;
@@ -1031,7 +1032,11 @@ final class MemoryRedisCoordinationParityTest extends TestCase
     private function leaseTrace(WriterLease $lease): array
     {
         return [
-            'state' => $lease->state()->value,
+            'state' => match ($lease->state()) {
+                WriterLeaseState::Acquired => 'A',
+                WriterLeaseState::Prepared => 'P',
+                WriterLeaseState::Released => 'R',
+            },
             'epoch' => $lease->epoch()->value(),
             'targets' => $this->targetValues($lease->targets()),
         ];
