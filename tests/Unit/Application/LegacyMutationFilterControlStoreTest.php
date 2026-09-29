@@ -7,7 +7,6 @@ namespace Kefyusuf\BloomGate\Tests\Unit\Application;
 use Kefyusuf\BloomGate\Application\LegacyMutationFilterControlStore;
 use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
-use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
@@ -19,6 +18,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use PHPUnit\Framework\TestCase;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 
 final class LegacyMutationFilterControlStoreTest extends TestCase
 {
@@ -67,17 +67,9 @@ final class LegacyMutationFilterControlStoreTest extends TestCase
     ): array {
         $domain = new MemoryCoordinationDomain;
         $raw = new MemoryFilterControlStore($domain);
-        $requirement = new class($runtimeRequired) implements RuntimeCoordinationRequirement
-        {
-            public function __construct(
-                private readonly bool $required,
-            ) {}
-
-            public function requiresCoordinatedV1(FilterName $name): bool
-            {
-                return $this->required;
-            }
-        };
+        $requirement = new Wu05RuntimeCoordinationRequirement(
+            $runtimeRequired,
+        );
         $guard = new LegacyMutationGuard(
             coordination: new MemoryCoordinatedLifecycleStore($domain),
             runtime: $requirement,
