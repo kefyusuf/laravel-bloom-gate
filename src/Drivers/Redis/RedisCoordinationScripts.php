@@ -24,8 +24,7 @@ end
 return snapshotResponse(ownerPresent, controlFields, syncFields)
 LUA;
 
-        return self::prelude()."
-".$operation;
+        return self::prelude()."\\n".$operation;
     }
 
     public static function claimOwnership(): string
@@ -56,8 +55,7 @@ redis.call('SET', KEYS[2], 'coordinated-v1')
 return snapshotResponse(true, controlFields, {})
 LUA;
 
-        return self::prelude()."
-".$operation;
+        return self::prelude()."\\n".$operation;
     }
 
     public static function compareAndSwapControl(): string
@@ -128,8 +126,7 @@ end
 return snapshotResponse(true, nextFields, syncFields)
 LUA;
 
-        return self::prelude()."
-".$operation;
+        return self::prelude()."\\n".$operation;
     }
 
     public static function compareAndSwapSynchronization(): string
@@ -196,8 +193,7 @@ end
 return snapshotResponse(true, controlFields, nextFields)
 LUA;
 
-        return self::prelude()."
-".$operation;
+        return self::prelude()."\\n".$operation;
     }
 
     private static function prelude(): string
@@ -328,9 +324,7 @@ end
 LUA;
 
         return RedisControlScripts::controlValidator()
-            ."
-".RedisControlScripts::coordinationValidator()
-            ."
-".$helpers;
+            ."\\n".RedisControlScripts::coordinationValidator()
+            ."\\n".$helpers;
     }
 }
