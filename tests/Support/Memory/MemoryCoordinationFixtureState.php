@@ -69,6 +69,7 @@ final class MemoryCoordinationFixtureState
             MemoryCoordinationDomain::class,
             'counts',
         );
+        /** @var array<string, array<int, mixed>> $counts */
         $counts = $property->getValue($this->domain);
         $nameKey = $name->value();
         $epochKey = $epoch->value();
@@ -87,6 +88,7 @@ final class MemoryCoordinationFixtureState
             MemoryCoordinationDomain::class,
             $property,
         );
+        /** @var array<string, mixed> $entries */
         $entries = $reflection->getValue($this->domain);
         $key = $name->value();
 
