@@ -13,8 +13,8 @@ use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
-use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryCoordinationFixtureState;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
+use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryCoordinationFixtureState;
 use PHPUnit\Framework\TestCase;
 
 final class LegacyMutationGuardTest extends TestCase
