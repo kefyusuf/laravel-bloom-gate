@@ -198,6 +198,7 @@ it('provides backend-neutral reusable lifecycle and writer contract suites', fun
         'test_mark_prepared_is_idempotent_and_count_neutral',
         'test_mark_prepared_requires_valid_owner_sync_and_positive_original_epoch_count',
         'test_acquired_lease_can_release_once_without_preparation',
+        'test_acquired_lease_releases_against_original_epoch_after_rotation',
         'test_first_release_decrements_once_and_retry_is_idempotent',
         'test_unknown_token_is_distinct',
         'test_released_token_is_terminal',
