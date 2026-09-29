@@ -87,7 +87,6 @@ it('resolves the complete application and lifecycle service graph with memory dr
         ->toBeInstanceOf(UncoordinatedRuntimeCoordinationRequirement::class);
 });
 
-
 it('shares memory coordinated ownership with the public legacy control fence', function (): void {
     $name = FilterName::fromString('wiring.ownership');
     $allocator = app()->make(CandidateAllocator::class);
