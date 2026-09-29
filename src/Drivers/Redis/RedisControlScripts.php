@@ -8,7 +8,7 @@ final class RedisControlScripts
 {
     public static function read(): string
     {
-        return self::validator()."\n".<<<'LUA'
+        return self::controlValidator()."\n".<<<'LUA'
 local keyType = redis.call('TYPE', KEYS[1]).ok
 
 if keyType == 'none' then
@@ -148,12 +148,12 @@ end
 return {'100'}
 LUA;
 
-        return self::validator()
+        return self::controlValidator()
             ."\n".self::coordinationValidator()
             ."\n".$script;
     }
 
-    private static function coordinationValidator(): string
+    public static function coordinationValidator(): string
     {
         return <<<'LUA'
 local function isCanonicalTargetSet(value)
@@ -173,11 +173,11 @@ local function isCanonicalTargetSet(value)
 
     for token in string.gmatch(value, '[^,]+') do
         if not isCanonicalPositiveInteger(token) then
-            return false
+            return false, nil
         end
 
         if previous ~= nil and positiveIntegerLessThanOrEqual(token, previous) then
-            return false
+            return false, nil
         end
 
         previous = token
@@ -215,11 +215,11 @@ local function validateSynchronizationFields(fields)
         local value = fields[index + 1]
 
         if type(field) ~= 'string' or type(value) ~= 'string' then
-            return false
+            return false, nil
         end
 
         if seen[field] then
-            return false
+            return false, nil
         end
 
         seen[field] = true
@@ -239,7 +239,7 @@ local function validateSynchronizationFields(fields)
         elseif field == 'draining_epoch' then
             drainingEpoch = value
         else
-            return false
+            return false, nil
         end
     end
 
@@ -271,7 +271,7 @@ local function validateSynchronizationFields(fields)
         return false
     end
 
-    return true
+    return true, revision
 end
 
 local function coordinationStatus(ownerKey, syncKey)
@@ -307,7 +307,7 @@ end
 LUA;
     }
 
-    private static function validator(): string
+    public static function controlValidator(): string
     {
         $maximum = (string) PHP_INT_MAX;
 
