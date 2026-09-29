@@ -35,6 +35,7 @@ final readonly class ManagedFilterVerifier
         private ActivationVerificationEvidenceApplier $evidenceApplier,
         private GenerationHealthUpdater $health,
         private SemanticFingerprintCalculator $fingerprints,
+        private LegacyMutationGuard $legacyMutations,
     ) {}
 
     public function verify(FilterName $name): ActivationVerificationResult
@@ -52,6 +53,8 @@ final readonly class ManagedFilterVerifier
         FilterName $name,
         bool $allowAlreadyVerified,
     ): ActivationVerificationResult {
+        $this->legacyMutations->assertAllowed($name);
+
         $current = $this->requireControlState($name);
         $candidateVersion = $this->requireCandidateVersion($current);
         $candidate = $this->requireCandidateGeneration(
