@@ -24,7 +24,7 @@ end
 return snapshotResponse(ownerPresent, controlFields, syncFields)
 LUA;
 
-        return self::prelude()."\\n".$operation;
+        return self::prelude().PHP_EOL.$operation;
     }
 
     public static function claimOwnership(): string
@@ -55,7 +55,7 @@ redis.call('SET', KEYS[2], 'coordinated-v1')
 return snapshotResponse(true, controlFields, {})
 LUA;
 
-        return self::prelude()."\\n".$operation;
+        return self::prelude().PHP_EOL.$operation;
     }
 
     public static function compareAndSwapControl(): string
@@ -126,7 +126,7 @@ end
 return snapshotResponse(true, nextFields, syncFields)
 LUA;
 
-        return self::prelude()."\\n".$operation;
+        return self::prelude().PHP_EOL.$operation;
     }
 
     public static function compareAndSwapSynchronization(): string
@@ -193,7 +193,7 @@ end
 return snapshotResponse(true, controlFields, nextFields)
 LUA;
 
-        return self::prelude()."\\n".$operation;
+        return self::prelude().PHP_EOL.$operation;
     }
 
     private static function prelude(): string
@@ -324,7 +324,7 @@ end
 LUA;
 
         return RedisControlScripts::controlValidator()
-            ."\\n".RedisControlScripts::coordinationValidator()
-            ."\\n".$helpers;
+            .PHP_EOL.RedisControlScripts::coordinationValidator()
+            .PHP_EOL.$helpers;
     }
 }
