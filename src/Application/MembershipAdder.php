@@ -25,6 +25,7 @@ final readonly class MembershipAdder
         private BulkBloomDriver $driver,
         private BloomProbeGenerator $probes,
         private SemanticFingerprintCalculator $fingerprints,
+        private LegacyMutationGuard $legacyMutations,
     ) {}
 
     public function add(
@@ -43,6 +44,7 @@ final readonly class MembershipAdder
     ): void {
         $name = FilterName::fromString($filter);
         $registered = $this->registry->get($name);
+        $this->legacyMutations->assertAllowed($name);
         $snapshot = $this->snapshots->readActive($name);
 
         if ($snapshot === null) {
