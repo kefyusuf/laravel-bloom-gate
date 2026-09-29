@@ -951,6 +951,9 @@ final class MemoryRedisCoordinationParityTest extends TestCase
         $name = FilterName::fromString('parity.'.strtolower($id));
 
         try {
+            $memory->track($name);
+            $redis->track($name);
+
             $memoryTrace = $scenario($memory, $name);
             $redisTrace = $scenario($redis, $name);
 
