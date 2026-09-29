@@ -26,7 +26,6 @@ use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\ManagedGenerationDescriptor;
 use Kefyusuf\BloomGate\Core\NormalizationIdentity;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
-use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
@@ -409,23 +408,4 @@ final class Wu06WriterSynchronizationStore implements WriterSynchronizationStore
             targets: $lease->targets(),
         );
     }
-}
-
-function wu06SemanticContract(
-    Wu06FilterDefinition $definition,
-): GenerationSemanticContract
-{
-    $fingerprints = new SemanticFingerprintCalculator;
-
-    return new GenerationSemanticContract(
-        normalizationFingerprint: $fingerprints->normalization(
-            $definition->normalizer()->identity(),
-        ),
-        authoritativeSetFingerprint: $fingerprints->authoritativeSet(
-            $definition->authoritativeSet()->identity(),
-        ),
-        consistencyFingerprint: $fingerprints->consistency(
-            $definition->consistency(),
-        ),
-    );
 }
