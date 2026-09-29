@@ -17,6 +17,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
+use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
@@ -194,7 +195,7 @@ it('keeps adoption pending observable while writer admission fails closed', func
     ))->toThrow(CoordinationFenced::class);
 });
 
-it('serializes opposite-plane CAS through revision fencing in both orderings', function (): void {
+it('serializes opposite-plane CAS through revision fencing in both deterministic Fiber orderings', function (): void {
     $name = FilterName::fromString('users.email');
 
     $controlFirstDomain = new MemoryCoordinationDomain;
@@ -207,19 +208,25 @@ it('serializes opposite-plane CAS through revision fencing in both orderings', f
         null,
     );
 
-    $controlFirst->compareAndSwapControl(
-        $name,
-        wu02MemoryControlState($name, 1),
-        null,
-        SynchronizationRevision::fromInt(1),
-    );
+    $controlMutationFirst = wu02MemoryFiberResult(static function () use ($controlFirst, $name): void {
+        $controlFirst->compareAndSwapControl(
+            $name,
+            wu02MemoryControlState($name, 1),
+            null,
+            SynchronizationRevision::fromInt(1),
+        );
+    });
+    $staleSyncSecond = wu02MemoryFiberResult(static function () use ($controlFirst, $name): void {
+        $controlFirst->compareAndSwapSynchronization(
+            $name,
+            wu02MemorySynchronizationState(2, 2, [1]),
+            SynchronizationRevision::fromInt(1),
+            null,
+        );
+    });
 
-    expect(fn () => $controlFirst->compareAndSwapSynchronization(
-        $name,
-        wu02MemorySynchronizationState(2, 2, [1]),
-        SynchronizationRevision::fromInt(1),
-        null,
-    ))->toThrow(CoordinationWriteConflict::class);
+    expect($controlMutationFirst)->toBeNull()
+        ->and($staleSyncSecond)->toBeInstanceOf(CoordinationWriteConflict::class);
 
     $syncFirstDomain = new MemoryCoordinationDomain;
     $syncFirst = new MemoryCoordinatedLifecycleStore($syncFirstDomain);
@@ -231,22 +238,27 @@ it('serializes opposite-plane CAS through revision fencing in both orderings', f
         null,
     );
 
-    $syncFirst->compareAndSwapSynchronization(
-        $name,
-        wu02MemorySynchronizationState(2, 2, [1]),
-        SynchronizationRevision::fromInt(1),
-        null,
-    );
+    $syncMutationFirst = wu02MemoryFiberResult(static function () use ($syncFirst, $name): void {
+        $syncFirst->compareAndSwapSynchronization(
+            $name,
+            wu02MemorySynchronizationState(2, 2, [1]),
+            SynchronizationRevision::fromInt(1),
+            null,
+        );
+    });
+    $staleControlSecond = wu02MemoryFiberResult(static function () use ($syncFirst, $name): void {
+        $syncFirst->compareAndSwapControl(
+            $name,
+            wu02MemoryControlState($name, 1),
+            null,
+            SynchronizationRevision::fromInt(1),
+        );
+    });
 
-    expect(fn () => $syncFirst->compareAndSwapControl(
-        $name,
-        wu02MemoryControlState($name, 1),
-        null,
-        SynchronizationRevision::fromInt(1),
-    ))->toThrow(CoordinationWriteConflict::class);
+    expect($syncMutationFirst)->toBeNull()
+        ->and($staleControlSecond)->toBeInstanceOf(CoordinationWriteConflict::class);
 });
-
-it('orders writer acquire wholly before or wholly after epoch rotation without timing sleeps', function (): void {
+it('orders writer acquire wholly before or wholly after epoch rotation in deterministic Fiber orderings', function (): void {
     $name = FilterName::fromString('users.email');
 
     $acquireFirstDomain = new MemoryCoordinationDomain;
@@ -260,18 +272,33 @@ it('orders writer acquire wholly before or wholly after epoch rotation without t
         null,
     );
 
-    $oldLease = $acquireFirstWriter->acquire(
-        $name,
-        WriterLeaseToken::fromString(str_repeat('d', 32)),
+    $oldLease = null;
+    $acquireBeforeRotation = wu02MemoryFiberResult(
+        static function () use ($acquireFirstWriter, $name, &$oldLease): void {
+            $oldLease = $acquireFirstWriter->acquire(
+                $name,
+                WriterLeaseToken::fromString(str_repeat('d', 32)),
+            );
+        },
     );
-    $acquireFirstLifecycle->compareAndSwapSynchronization(
-        $name,
-        wu02MemorySynchronizationState(2, 2, [1]),
-        SynchronizationRevision::fromInt(1),
-        null,
+    $rotationAfterAcquire = wu02MemoryFiberResult(
+        static function () use ($acquireFirstLifecycle, $name): void {
+            $acquireFirstLifecycle->compareAndSwapSynchronization(
+                $name,
+                wu02MemorySynchronizationState(2, 2, [1]),
+                SynchronizationRevision::fromInt(1),
+                null,
+            );
+        },
     );
 
-    expect($oldLease->epoch()->value())->toBe(1);
+    if (! $oldLease instanceof WriterLease) {
+        throw new RuntimeException('Expected acquire-first Fiber to produce a writer lease.');
+    }
+
+    expect($acquireBeforeRotation)->toBeNull()
+        ->and($rotationAfterAcquire)->toBeNull()
+        ->and($oldLease->epoch()->value())->toBe(1);
 
     $rotateFirstDomain = new MemoryCoordinationDomain;
     $rotateFirstLifecycle = new MemoryCoordinatedLifecycleStore($rotateFirstDomain);
@@ -283,21 +310,36 @@ it('orders writer acquire wholly before or wholly after epoch rotation without t
         null,
         null,
     );
-    $rotateFirstLifecycle->compareAndSwapSynchronization(
-        $name,
-        wu02MemorySynchronizationState(2, 2, [1]),
-        SynchronizationRevision::fromInt(1),
-        null,
+
+    $rotationBeforeAcquire = wu02MemoryFiberResult(
+        static function () use ($rotateFirstLifecycle, $name): void {
+            $rotateFirstLifecycle->compareAndSwapSynchronization(
+                $name,
+                wu02MemorySynchronizationState(2, 2, [1]),
+                SynchronizationRevision::fromInt(1),
+                null,
+            );
+        },
     );
 
-    $newLease = $rotateFirstWriter->acquire(
-        $name,
-        WriterLeaseToken::fromString(str_repeat('e', 32)),
+    $newLease = null;
+    $acquireAfterRotation = wu02MemoryFiberResult(
+        static function () use ($rotateFirstWriter, $name, &$newLease): void {
+            $newLease = $rotateFirstWriter->acquire(
+                $name,
+                WriterLeaseToken::fromString(str_repeat('e', 32)),
+            );
+        },
     );
 
-    expect($newLease->epoch()->value())->toBe(2);
+    if (! $newLease instanceof WriterLease) {
+        throw new RuntimeException('Expected rotate-first Fiber to produce a writer lease.');
+    }
+
+    expect($rotationBeforeAcquire)->toBeNull()
+        ->and($acquireAfterRotation)->toBeNull()
+        ->and($newLease->epoch()->value())->toBe(2);
 });
-
 it('fails closed on malformed raw Memory ownership synchronization lease and count state', function (): void {
     $name = FilterName::fromString('users.email');
     $filterKey = $name->value();
