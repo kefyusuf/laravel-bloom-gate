@@ -41,6 +41,51 @@ final readonly class RedisKeyspace
         );
     }
 
+    public function syncOwnerKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:sync:owner',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
+    public function syncKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:sync',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
+    public function syncStagingKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:sync:staging',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
+    public function syncLeasesKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:sync:leases',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
+    public function syncCountsKey(FilterName $name): string
+    {
+        return sprintf(
+            '%s:{%s}:sync:counts',
+            $this->prefix,
+            $name->value(),
+        );
+    }
+
     public function metaKey(
         FilterName $name,
         FilterVersion $version,
