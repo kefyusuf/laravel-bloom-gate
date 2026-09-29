@@ -237,6 +237,65 @@ it('rejects non canonical synchronization numbers and target encodings', functio
     'target trailing separator' => ['current_targets', '1,'],
 ]);
 
+it('rejects odd-length and non-string synchronization hash payloads', function (array $payload): void {
+    expect(fn () => (new RedisCoordinationCodec)->decodeSynchronization($payload))
+        ->toThrow(CoordinationStateCorrupt::class);
+})->with([
+    'odd field value list' => [[
+        'format', 'sync-v1',
+        'revision',
+    ]],
+    'non string field' => [[
+        1, 'sync-v1',
+        'revision', '1',
+        'phase', 'STEADY',
+        'current_epoch', '1',
+        'current_targets', '-',
+    ]],
+    'non string value' => [[
+        'format', 'sync-v1',
+        'revision', 1,
+        'phase', 'STEADY',
+        'current_epoch', '1',
+        'current_targets', '-',
+    ]],
+]);
+
+it('rejects canonical-looking coordination integers outside the platform range', function (): void {
+    $overflow = ((string) PHP_INT_MAX).'0';
+
+    expect(fn () => (new RedisCoordinationCodec)->decodeSynchronization([
+        'format', 'sync-v1',
+        'revision', $overflow,
+        'phase', 'STEADY',
+        'current_epoch', '1',
+        'current_targets', '-',
+    ]))->toThrow(CoordinationStateCorrupt::class)
+        ->and(fn () => (new RedisCoordinationCodec)->decodeCount($overflow))
+        ->toThrow(CoordinationStateCorrupt::class)
+        ->and(fn () => (new RedisCoordinationCodec)->decodeLease(
+            WriterLeaseToken::fromString('0123456789abcdef0123456789abcdef'),
+            sprintf('A|%s|-', $overflow),
+        ))->toThrow(CoordinationStateCorrupt::class);
+});
+
+it('round trips the canonical empty target set inside writer lease records', function (): void {
+    $token = WriterLeaseToken::fromString('0123456789abcdef0123456789abcdef');
+    $lease = new WriterLease(
+        token: $token,
+        state: WriterLeaseState::Acquired,
+        epoch: SynchronizationEpoch::fromInt(1),
+        targets: wu03RedisTargets(),
+    );
+
+    $codec = new RedisCoordinationCodec;
+    $encoded = $codec->encodeLease($lease);
+    $decoded = $codec->decodeLease($token, $encoded);
+
+    expect($encoded)->toBe('A|1|-')
+        ->and($decoded->targets()->isEmpty())->toBeTrue();
+});
+
 it('encodes every durable A-P-R writer lease record canonically', function (
     WriterLeaseState $state,
     string $token,
