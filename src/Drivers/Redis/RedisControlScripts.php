@@ -288,12 +288,16 @@ local function coordinationStatus(ownerKey, syncKey)
         return 'unadopted'
     end
 
-    if ownerType == 'none' or syncType == 'none' then
+    if ownerType == 'none' then
         return 'corrupt'
     end
 
     if redis.call('GET', ownerKey) ~= 'coordinated-v1' then
         return 'corrupt'
+    end
+
+    if syncType == 'none' then
+        return 'fenced'
     end
 
     if not validateSynchronizationFields(redis.call('HGETALL', syncKey)) then
