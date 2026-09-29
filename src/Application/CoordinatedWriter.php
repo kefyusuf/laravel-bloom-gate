@@ -7,6 +7,7 @@ namespace Kefyusuf\BloomGate\Application;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
+use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
 use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
@@ -214,7 +215,7 @@ final readonly class CoordinatedWriter
      */
     private function normalizeValues(
         iterable $values,
-        \Kefyusuf\BloomGate\Contracts\ValueNormalizer $normalizer,
+        ValueNormalizer $normalizer,
     ): array {
         $normalized = [];
 
