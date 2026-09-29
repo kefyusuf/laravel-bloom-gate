@@ -12,6 +12,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisCoordinationCodec;
+use Kefyusuf\BloomGate\Drivers\Redis\RedisControlScripts;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisCoordinationScripts;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RedisTestKeyPrefix;
@@ -55,6 +56,31 @@ final class RedisCoordinationScriptsEvidenceTest extends TestCase
                 ...$codec->encodeSynchronization($sync),
             ],
         ));
+
+        $validatorResponse = $executor->evaluateStructured(
+            RedisControlScripts::controlValidator()
+                .PHP_EOL.RedisControlScripts::coordinationValidator()
+                .PHP_EOL.<<<'LUA'
+local fields = redis.call('HGETALL', KEYS[1])
+local valid, revision = validateSynchronizationFields(fields)
+
+return {
+    valid and '1' or '0',
+    revision or '',
+}
+LUA,
+            [$keyspace->syncKey($name)],
+            [],
+        );
+
+        self::assertSame(
+            ['1', '7'],
+            $validatorResponse,
+            sprintf(
+                'Unexpected raw sync validator response: [%s]',
+                implode(', ', $validatorResponse),
+            ),
+        );
 
         $response = $executor->evaluateStructured(
             RedisCoordinationScripts::read(),
