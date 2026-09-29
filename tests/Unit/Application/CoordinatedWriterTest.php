@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Unit\Application;
 
-require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
-
 use Kefyusuf\BloomGate\Application\AuthoritativeOutcomeUncertain;
 use Kefyusuf\BloomGate\Application\CoordinatedWriter;
 use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
@@ -15,7 +13,6 @@ use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStoreOperationFailed;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
-use Kefyusuf\BloomGate\Core\ConsistencyContract;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterVersion;
 use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
@@ -38,6 +35,8 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 use function Kefyusuf\BloomGate\Tests\Support\Application\wu06SemanticContract;
+
+require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
 
 final class CoordinatedWriterTest extends TestCase
 {
