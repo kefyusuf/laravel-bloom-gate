@@ -11,7 +11,6 @@ use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
-use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
@@ -36,6 +35,7 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingGenerationContrac
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingNormalizer;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StaticFilterRegistry;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StreamingAuthoritativeSet;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 
 function task9ActiveOnlyState(): FilterControlState
 {
@@ -144,17 +144,9 @@ function task9BuilderFixture(
         $control,
         new LifecycleTransitionPolicy,
     );
-    $runtime = new class($runtimeCoordinated) implements RuntimeCoordinationRequirement
-    {
-        public function __construct(
-            private readonly bool $required,
-        ) {}
-
-        public function requiresCoordinatedV1(FilterName $name): bool
-        {
-            return $this->required;
-        }
-    };
+    $runtime = new Wu05RuntimeCoordinationRequirement(
+        $runtimeCoordinated,
+    );
     $legacyMutations = new LegacyMutationGuard(
         coordination: new MemoryCoordinatedLifecycleStore(
             new MemoryCoordinationDomain,
