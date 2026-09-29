@@ -89,7 +89,13 @@ function wu02MemoryFiberResult(callable $operation): ?Throwable
 
     $fiber->start();
 
-    return $fiber->getReturn();
+    $result = $fiber->getReturn();
+
+    if ($result !== null && ! $result instanceof Throwable) {
+        throw new RuntimeException('Expected Memory Fiber operation to return Throwable|null.');
+    }
+
+    return $result;
 }
 
 function wu02CorruptMemoryDomainEntry(
