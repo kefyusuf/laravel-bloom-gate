@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
-
 namespace Kefyusuf\BloomGate\Tests\Unit\Application;
+
+require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
 
 use Kefyusuf\BloomGate\Application\AuthoritativeOutcomeUncertain;
 use Kefyusuf\BloomGate\Application\CoordinatedWriter;
