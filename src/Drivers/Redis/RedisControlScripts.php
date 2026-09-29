@@ -165,25 +165,23 @@ local function isCanonicalTargetSet(value)
         return true
     end
 
-    if string.match(value, '^[1-9][0-9]*(,[1-9][0-9]*)*$') == nil then
-        return false
-    end
-
     local previous = nil
+    local tokens = {}
 
     for token in string.gmatch(value, '[^,]+') do
         if not isCanonicalPositiveInteger(token) then
-            return false, nil
+            return false
         end
 
         if previous ~= nil and positiveIntegerLessThanOrEqual(token, previous) then
-            return false, nil
+            return false
         end
 
+        tokens[#tokens + 1] = token
         previous = token
     end
 
-    return true
+    return #tokens > 0 and table.concat(tokens, ',') == value
 end
 
 local function isSynchronizationPhase(value)
