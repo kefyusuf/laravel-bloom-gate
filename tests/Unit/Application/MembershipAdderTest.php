@@ -9,7 +9,6 @@ use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
-use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -25,6 +24,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task14Fixture;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task14GenerationContractStore;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 
 use function Kefyusuf\BloomGate\Tests\Support\Application\task14Fixture;
 
@@ -32,17 +32,9 @@ function task14Adder(
     Task14Fixture $fixture,
     bool $runtimeCoordinated = false,
 ): MembershipAdder {
-    $runtime = new class($runtimeCoordinated) implements RuntimeCoordinationRequirement
-    {
-        public function __construct(
-            private readonly bool $required,
-        ) {}
-
-        public function requiresCoordinatedV1(FilterName $name): bool
-        {
-            return $this->required;
-        }
-    };
+    $runtime = new Wu05RuntimeCoordinationRequirement(
+        $runtimeCoordinated,
+    );
 
     return new MembershipAdder(
         registry: $fixture->registry,
@@ -223,13 +215,7 @@ it('rejects an unbound active generation rather than silently skipping synchroni
             coordination: new MemoryCoordinatedLifecycleStore(
                 new MemoryCoordinationDomain,
             ),
-            runtime: new class implements RuntimeCoordinationRequirement
-            {
-                public function requiresCoordinatedV1(FilterName $name): bool
-                {
-                    return false;
-                }
-            },
+            runtime: new Wu05RuntimeCoordinationRequirement(false),
         ),
     );
 
