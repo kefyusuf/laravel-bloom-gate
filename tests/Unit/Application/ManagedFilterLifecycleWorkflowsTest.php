@@ -253,7 +253,6 @@ function task10Environment(
     );
 }
 
-
 it('fences legacy managed verification when runtime requires coordinated-v1 before verification reads', function (): void {
     $environment = task10Environment(runtimeCoordinated: true);
 
