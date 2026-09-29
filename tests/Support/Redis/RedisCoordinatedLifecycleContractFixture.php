@@ -73,11 +73,15 @@ final class RedisCoordinatedLifecycleContractFixture implements CoordinatedLifec
         $this->deleteKeys([$ownerKey, $syncKey]);
 
         if ($ownershipClaimed) {
-            self::assertSame(1, $this->executor->evaluate(
+            $result = $this->executor->evaluate(
                 "redis.call('SET', KEYS[1], ARGV[1]); return 1",
                 [$ownerKey],
                 [RedisCoordinationCodec::OWNER_VALUE],
-            ));
+            );
+
+            if ($result !== 1) {
+                throw new \RuntimeException('Expected Redis ownership fixture seed to succeed.');
+            }
         }
 
         if ($synchronization !== null) {
@@ -125,10 +129,14 @@ final class RedisCoordinatedLifecycleContractFixture implements CoordinatedLifec
         string $key,
         array $payload,
     ): void {
-        self::assertSame(1, $this->executor->evaluate(
+        $result = $this->executor->evaluate(
             "redis.call('DEL', KEYS[1]); redis.call('HSET', KEYS[1], unpack(ARGV)); return 1",
             [$key],
             $payload,
-        ));
+        );
+
+        if ($result !== 1) {
+            throw new \RuntimeException('Expected Redis hash fixture seed to succeed.');
+        }
     }
 }
