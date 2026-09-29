@@ -24,8 +24,8 @@ use Kefyusuf\BloomGate\Lifecycle\CandidatePromoter;
 use Kefyusuf\BloomGate\Lifecycle\GenerationHealthUpdater;
 use Kefyusuf\BloomGate\Lifecycle\GenerationLifecycleTransitioner;
 use Kefyusuf\BloomGate\Lifecycle\LifecycleTransitionPolicy;
-use PHPUnit\Framework\TestCase;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
+use PHPUnit\Framework\TestCase;
 
 final class LegacyMutationLifecyclePathsTest extends TestCase
 {
