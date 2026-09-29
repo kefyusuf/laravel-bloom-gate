@@ -23,6 +23,8 @@ interface CoordinationParityHarness
 
     public function writer(): WriterSynchronizationStore;
 
+    public function track(FilterName $name): void;
+
     public function putControl(
         FilterName $name,
         ?FilterControlState $control,
