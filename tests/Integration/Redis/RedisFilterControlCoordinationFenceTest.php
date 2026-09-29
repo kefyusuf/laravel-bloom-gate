@@ -122,12 +122,12 @@ final class RedisFilterControlCoordinationFenceTest extends TestCase
         );
     }
 
-    public function test_owner_without_sync_is_coordination_corruption_for_ordinary_control_cas(): void
+    public function test_owner_without_sync_fences_ordinary_control_cas(): void
     {
         $this->seedControlRevisionOne();
         $this->seedOwner(RedisCoordinationCodec::OWNER_VALUE);
 
-        $this->expectException(CoordinationStateCorrupt::class);
+        $this->expectException(CoordinationFenced::class);
 
         $this->store->compareAndSwap(
             $this->filterName(),
