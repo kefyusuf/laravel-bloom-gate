@@ -258,6 +258,7 @@ it('serializes opposite-plane CAS through revision fencing in both deterministic
     expect($syncMutationFirst)->toBeNull()
         ->and($staleControlSecond)->toBeInstanceOf(CoordinationWriteConflict::class);
 });
+
 it('orders writer acquire wholly before or wholly after epoch rotation in deterministic Fiber orderings', function (): void {
     $name = FilterName::fromString('users.email');
 
@@ -340,6 +341,7 @@ it('orders writer acquire wholly before or wholly after epoch rotation in determ
         ->and($acquireAfterRotation)->toBeNull()
         ->and($newLease->epoch()->value())->toBe(2);
 });
+
 it('fails closed on malformed raw Memory ownership synchronization lease and count state', function (): void {
     $name = FilterName::fromString('users.email');
     $filterKey = $name->value();
