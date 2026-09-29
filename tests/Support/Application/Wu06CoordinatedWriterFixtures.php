@@ -413,7 +413,8 @@ final class Wu06WriterSynchronizationStore implements WriterSynchronizationStore
 
 function wu06SemanticContract(
     Wu06FilterDefinition $definition,
-): GenerationSemanticContract {
+): GenerationSemanticContract
+{
     $fingerprints = new SemanticFingerprintCalculator;
 
     return new GenerationSemanticContract(
