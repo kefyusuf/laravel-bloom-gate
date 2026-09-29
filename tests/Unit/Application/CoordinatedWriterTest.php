@@ -34,8 +34,6 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Wu06WriterSynchronizationStore;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
-use function Kefyusuf\BloomGate\Tests\Support\Application\wu06SemanticContract;
-
 require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.php';
 
 final class CoordinatedWriterTest extends TestCase
@@ -99,7 +97,7 @@ final class CoordinatedWriterTest extends TestCase
             FilterVersion::fromInt(2),
             new ManagedGenerationDescriptor(
                 layout: $this->layout(2),
-                semanticContract: wu06SemanticContract($mismatch),
+                semanticContract: $this->semanticContract($mismatch),
             ),
         );
 
@@ -440,7 +438,7 @@ final class CoordinatedWriterTest extends TestCase
             falsePositiveRate: 0.01,
         );
         $registry = new Wu06FilterRegistry($registered);
-        $semantic = wu06SemanticContract($definition);
+        $semantic = $this->semanticContract($definition);
         $contracts = new Wu06GenerationContractStore($events);
 
         foreach ([1, 2] as $version) {
@@ -517,6 +515,24 @@ final class CoordinatedWriterTest extends TestCase
         return $environment['store']->activeWriterCount(
             $environment['name'],
             SynchronizationEpoch::fromInt(1),
+        );
+    }
+
+    private function semanticContract(
+        Wu06FilterDefinition $definition,
+    ): GenerationSemanticContract {
+        $fingerprints = new SemanticFingerprintCalculator;
+
+        return new GenerationSemanticContract(
+            normalizationFingerprint: $fingerprints->normalization(
+                $definition->normalizer()->identity(),
+            ),
+            authoritativeSetFingerprint: $fingerprints->authoritativeSet(
+                $definition->authoritativeSet()->identity(),
+            ),
+            consistencyFingerprint: $fingerprints->consistency(
+                $definition->consistency(),
+            ),
         );
     }
 
