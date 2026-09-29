@@ -144,9 +144,9 @@ it('serializes legacy control CAS and ownership claim in both deterministic Fibe
             null,
         );
     });
-    $claimSecond = wu02MemoryFiberResult(
-        static fn (): mixed => $legacyLifecycle->claimOwnership($name, null),
-    );
+    $claimSecond = wu02MemoryFiberResult(static function () use ($legacyLifecycle, $name): void {
+        $legacyLifecycle->claimOwnership($name, null);
+    });
 
     expect($legacyFirst)->toBeNull()
         ->and($claimSecond)->toBeInstanceOf(CoordinationWriteConflict::class);
@@ -155,9 +155,9 @@ it('serializes legacy control CAS and ownership claim in both deterministic Fibe
     $ownershipLifecycle = new MemoryCoordinatedLifecycleStore($ownershipDomain);
     $ownedControl = new MemoryFilterControlStore($ownershipDomain);
 
-    $claimFirst = wu02MemoryFiberResult(
-        static fn (): mixed => $ownershipLifecycle->claimOwnership($name, null),
-    );
+    $claimFirst = wu02MemoryFiberResult(static function () use ($ownershipLifecycle, $name): void {
+        $ownershipLifecycle->claimOwnership($name, null);
+    });
     $legacySecond = wu02MemoryFiberResult(static function () use ($ownedControl, $name): void {
         $ownedControl->compareAndSwap(
             $name,
