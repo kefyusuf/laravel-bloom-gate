@@ -15,9 +15,7 @@ use Kefyusuf\BloomGate\Tests\Contract\Support\CoordinatedLifecycleStoreContractF
 use Kefyusuf\BloomGate\Tests\Contract\Support\WriterSynchronizationStoreContractFixture;
 use ReflectionProperty;
 
-final class MemoryCoordinationContractFixture implements
-    CoordinatedLifecycleStoreContractFixture,
-    WriterSynchronizationStoreContractFixture
+final class MemoryCoordinationContractFixture implements CoordinatedLifecycleStoreContractFixture, WriterSynchronizationStoreContractFixture
 {
     private MemoryCoordinationStore $store;
 
