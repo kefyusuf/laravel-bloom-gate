@@ -122,7 +122,7 @@ final readonly class Wu06FilterRegistry implements FilterRegistry
 
     public function get(FilterName $name): RegisteredFilter
     {
-        if (! $name->equals($this->registered->name())) {
+        if ($name->equals($this->registered->name()) === false) {
             throw new LogicException('Unexpected WU-06 filter lookup.');
         }
 
