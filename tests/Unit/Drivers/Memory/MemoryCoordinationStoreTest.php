@@ -17,8 +17,10 @@ use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
-use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryWriterSynchronizationStore;
 
 function wu02MemoryControlState(
     FilterName $name,
@@ -61,8 +63,9 @@ function wu02MemorySynchronizationState(
 }
 
 it('keeps ordinary control CAS valid while coordination has never been adopted', function (): void {
-    $coordination = new MemoryCoordinationStore;
-    $control = new MemoryFilterControlStore($coordination);
+    $domain = new MemoryCoordinationDomain;
+    $coordination = new MemoryCoordinatedLifecycleStore($domain);
+    $control = new MemoryFilterControlStore($domain);
     $name = FilterName::fromString('users.email');
 
     $control->compareAndSwap(
@@ -79,8 +82,9 @@ it('keeps ordinary control CAS valid while coordination has never been adopted',
 it('serializes legacy control CAS and ownership claim in either legal ordering', function (): void {
     $name = FilterName::fromString('users.email');
 
-    $legacyFirst = new MemoryCoordinationStore;
-    $legacyControl = new MemoryFilterControlStore($legacyFirst);
+    $legacyDomain = new MemoryCoordinationDomain;
+    $legacyFirst = new MemoryCoordinatedLifecycleStore($legacyDomain);
+    $legacyControl = new MemoryFilterControlStore($legacyDomain);
     $legacyControl->compareAndSwap(
         $name,
         wu02MemoryControlState($name, 1),
@@ -90,8 +94,9 @@ it('serializes legacy control CAS and ownership claim in either legal ordering',
     expect(fn () => $legacyFirst->claimOwnership($name, null))
         ->toThrow(CoordinationWriteConflict::class);
 
-    $ownershipFirst = new MemoryCoordinationStore;
-    $ownedControl = new MemoryFilterControlStore($ownershipFirst);
+    $ownershipDomain = new MemoryCoordinationDomain;
+    $ownershipFirst = new MemoryCoordinatedLifecycleStore($ownershipDomain);
+    $ownedControl = new MemoryFilterControlStore($ownershipDomain);
     $ownershipFirst->claimOwnership($name, null);
 
     expect(fn () => $ownedControl->compareAndSwap(
@@ -102,7 +107,9 @@ it('serializes legacy control CAS and ownership claim in either legal ordering',
 });
 
 it('keeps adoption pending observable while writer admission fails closed', function (): void {
-    $coordination = new MemoryCoordinationStore;
+    $domain = new MemoryCoordinationDomain;
+    $coordination = new MemoryCoordinatedLifecycleStore($domain);
+    $writer = new MemoryWriterSynchronizationStore($domain);
     $name = FilterName::fromString('users.email');
 
     $snapshot = $coordination->claimOwnership($name, null);
@@ -111,7 +118,7 @@ it('keeps adoption pending observable while writer admission fails closed', func
         ->and($snapshot->control())->toBeNull()
         ->and($snapshot->synchronization())->toBeNull();
 
-    expect(fn () => $coordination->acquire(
+    expect(fn () => $writer->acquire(
         $name,
         WriterLeaseToken::fromString(str_repeat('c', 32)),
     ))->toThrow(CoordinationFenced::class);
@@ -120,7 +127,8 @@ it('keeps adoption pending observable while writer admission fails closed', func
 it('serializes opposite-plane CAS through revision fencing in both orderings', function (): void {
     $name = FilterName::fromString('users.email');
 
-    $controlFirst = new MemoryCoordinationStore;
+    $controlFirstDomain = new MemoryCoordinationDomain;
+    $controlFirst = new MemoryCoordinatedLifecycleStore($controlFirstDomain);
     $controlFirst->claimOwnership($name, null);
     $controlFirst->compareAndSwapSynchronization(
         $name,
@@ -143,7 +151,8 @@ it('serializes opposite-plane CAS through revision fencing in both orderings', f
         null,
     ))->toThrow(CoordinationWriteConflict::class);
 
-    $syncFirst = new MemoryCoordinationStore;
+    $syncFirstDomain = new MemoryCoordinationDomain;
+    $syncFirst = new MemoryCoordinatedLifecycleStore($syncFirstDomain);
     $syncFirst->claimOwnership($name, null);
     $syncFirst->compareAndSwapSynchronization(
         $name,
@@ -170,20 +179,22 @@ it('serializes opposite-plane CAS through revision fencing in both orderings', f
 it('orders writer acquire wholly before or wholly after epoch rotation', function (): void {
     $name = FilterName::fromString('users.email');
 
-    $acquireFirst = new MemoryCoordinationStore;
-    $acquireFirst->claimOwnership($name, null);
-    $acquireFirst->compareAndSwapSynchronization(
+    $acquireFirstDomain = new MemoryCoordinationDomain;
+    $acquireFirstLifecycle = new MemoryCoordinatedLifecycleStore($acquireFirstDomain);
+    $acquireFirstWriter = new MemoryWriterSynchronizationStore($acquireFirstDomain);
+    $acquireFirstLifecycle->claimOwnership($name, null);
+    $acquireFirstLifecycle->compareAndSwapSynchronization(
         $name,
         wu02MemorySynchronizationState(1, 1, [1]),
         null,
         null,
     );
 
-    $oldLease = $acquireFirst->acquire(
+    $oldLease = $acquireFirstWriter->acquire(
         $name,
         WriterLeaseToken::fromString(str_repeat('d', 32)),
     );
-    $acquireFirst->compareAndSwapSynchronization(
+    $acquireFirstLifecycle->compareAndSwapSynchronization(
         $name,
         wu02MemorySynchronizationState(2, 2, [1]),
         SynchronizationRevision::fromInt(1),
@@ -192,22 +203,24 @@ it('orders writer acquire wholly before or wholly after epoch rotation', functio
 
     expect($oldLease->epoch()->value())->toBe(1);
 
-    $rotateFirst = new MemoryCoordinationStore;
-    $rotateFirst->claimOwnership($name, null);
-    $rotateFirst->compareAndSwapSynchronization(
+    $rotateFirstDomain = new MemoryCoordinationDomain;
+    $rotateFirstLifecycle = new MemoryCoordinatedLifecycleStore($rotateFirstDomain);
+    $rotateFirstWriter = new MemoryWriterSynchronizationStore($rotateFirstDomain);
+    $rotateFirstLifecycle->claimOwnership($name, null);
+    $rotateFirstLifecycle->compareAndSwapSynchronization(
         $name,
         wu02MemorySynchronizationState(1, 1, [1]),
         null,
         null,
     );
-    $rotateFirst->compareAndSwapSynchronization(
+    $rotateFirstLifecycle->compareAndSwapSynchronization(
         $name,
         wu02MemorySynchronizationState(2, 2, [1]),
         SynchronizationRevision::fromInt(1),
         null,
     );
 
-    $newLease = $rotateFirst->acquire(
+    $newLease = $rotateFirstWriter->acquire(
         $name,
         WriterLeaseToken::fromString(str_repeat('e', 32)),
     );
