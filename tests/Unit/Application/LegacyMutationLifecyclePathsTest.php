@@ -8,7 +8,6 @@ use Kefyusuf\BloomGate\Application\CandidateDiscarder;
 use Kefyusuf\BloomGate\Application\LegacyMutationFilterControlStore;
 use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
-use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
@@ -26,6 +25,7 @@ use Kefyusuf\BloomGate\Lifecycle\GenerationHealthUpdater;
 use Kefyusuf\BloomGate\Lifecycle\GenerationLifecycleTransitioner;
 use Kefyusuf\BloomGate\Lifecycle\LifecycleTransitionPolicy;
 use PHPUnit\Framework\TestCase;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 
 final class LegacyMutationLifecyclePathsTest extends TestCase
 {
@@ -123,13 +123,7 @@ final class LegacyMutationLifecyclePathsTest extends TestCase
     {
         $domain = new MemoryCoordinationDomain;
         $raw = new MemoryFilterControlStore($domain);
-        $runtime = new class implements RuntimeCoordinationRequirement
-        {
-            public function requiresCoordinatedV1(FilterName $name): bool
-            {
-                return true;
-            }
-        };
+        $runtime = new Wu05RuntimeCoordinationRequirement(true);
         $guard = new LegacyMutationGuard(
             coordination: new MemoryCoordinatedLifecycleStore($domain),
             runtime: $runtime,
