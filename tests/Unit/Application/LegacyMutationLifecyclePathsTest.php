@@ -75,7 +75,7 @@ final class LegacyMutationLifecyclePathsTest extends TestCase
 
     public function test_runtime_requirement_fences_candidate_discard(): void
     {
-        [$raw, $store] = $this->store();
+        [$raw, $store, $guard] = $this->store();
         $name = FilterName::fromString('users.email');
         $this->seed($raw, $this->candidateState($name, LifecycleState::Shadow));
         $transitions = new GenerationLifecycleTransitioner(
@@ -88,6 +88,7 @@ final class LegacyMutationLifecyclePathsTest extends TestCase
         (new CandidateDiscarder(
             control: $store,
             transitions: $transitions,
+            legacyMutations: $guard,
         ))->discard($name);
     }
 
@@ -117,7 +118,7 @@ final class LegacyMutationLifecyclePathsTest extends TestCase
     }
 
     /**
-     * @return array{MemoryFilterControlStore, LegacyMutationFilterControlStore}
+     * @return array{MemoryFilterControlStore, LegacyMutationFilterControlStore, LegacyMutationGuard}
      */
     private function store(): array
     {
@@ -136,6 +137,7 @@ final class LegacyMutationLifecyclePathsTest extends TestCase
                 snapshots: $raw,
                 guard: $guard,
             ),
+            $guard,
         ];
     }
 
