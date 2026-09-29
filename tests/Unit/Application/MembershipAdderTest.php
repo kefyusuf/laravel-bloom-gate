@@ -5,8 +5,11 @@ declare(strict_types=1);
 require_once __DIR__.'/../../Support/Application/Task14MembershipFixtures.php';
 
 use Kefyusuf\BloomGate\Application\ConsistencyContractViolation;
+use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\Exception\InvalidConfiguration;
+use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -16,14 +19,31 @@ use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\NormalizationFingerprint;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
+use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task14Fixture;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task14GenerationContractStore;
 
 use function Kefyusuf\BloomGate\Tests\Support\Application\task14Fixture;
 
-function task14Adder(Task14Fixture $fixture): MembershipAdder
-{
+function task14Adder(
+    Task14Fixture $fixture,
+    bool $runtimeCoordinated = false,
+): MembershipAdder {
+    $runtime = new class($runtimeCoordinated) implements RuntimeCoordinationRequirement
+    {
+        public function __construct(
+            private readonly bool $required,
+        ) {}
+
+        public function requiresCoordinatedV1(FilterName $name): bool
+        {
+            return $this->required;
+        }
+    };
+
     return new MembershipAdder(
         registry: $fixture->registry,
         snapshots: $fixture->snapshots,
@@ -31,8 +51,33 @@ function task14Adder(Task14Fixture $fixture): MembershipAdder
         driver: $fixture->driver,
         probes: new BloomProbeGenerator,
         fingerprints: new SemanticFingerprintCalculator,
+        legacyMutations: new LegacyMutationGuard(
+            coordination: new MemoryCoordinatedLifecycleStore(
+                new MemoryCoordinationDomain,
+            ),
+            runtime: $runtime,
+        ),
     );
 }
+
+
+it('fences legacy managed membership writes when runtime requires coordinated-v1', function (): void {
+    $fixture = task14Fixture();
+
+    expect(fn () => task14Adder(
+        $fixture,
+        runtimeCoordinated: true,
+    )->addMany(
+        'users.email',
+        ['A', 'B'],
+    ))->toThrow(CoordinationFenced::class);
+
+    expect($fixture->registry->getCalls)->toBe(1)
+        ->and($fixture->snapshots->calls)->toBe(0)
+        ->and($fixture->contracts->readCalls)->toBe(0)
+        ->and($fixture->normalizer->calls)->toBe(0)
+        ->and($fixture->driver->addManyCalls)->toBe(0);
+});
 
 it('treats add as a one-item managed bulk write using the active generation layout', function (): void {
     $layout = BloomLayout::create(
@@ -174,6 +219,18 @@ it('rejects an unbound active generation rather than silently skipping synchroni
         driver: $fixture->driver,
         probes: new BloomProbeGenerator,
         fingerprints: new SemanticFingerprintCalculator,
+        legacyMutations: new LegacyMutationGuard(
+            coordination: new MemoryCoordinatedLifecycleStore(
+                new MemoryCoordinationDomain,
+            ),
+            runtime: new class implements RuntimeCoordinationRequirement
+            {
+                public function requiresCoordinatedV1(FilterName $name): bool
+                {
+                    return false;
+                }
+            },
+        ),
     );
 
     expect(fn () => $adder->add(
