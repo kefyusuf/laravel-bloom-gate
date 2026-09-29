@@ -35,6 +35,7 @@ final readonly class ManagedFilterActivator
         private SemanticFingerprintCalculator $fingerprints,
         private ManagedFilterVerifier $verifier,
         private CandidatePromoter $promoter,
+        private LegacyMutationGuard $legacyMutations,
         private int $chunkSize,
     ) {
         if ($this->chunkSize < 1) {
@@ -49,6 +50,7 @@ final readonly class ManagedFilterActivator
         bool $quiescent = false,
     ): FilterControlState {
         $registered = $this->registry->get($name);
+        $this->legacyMutations->assertAllowed($name);
         $definition = $registered->definition();
         $consistency = $definition->consistency();
 
