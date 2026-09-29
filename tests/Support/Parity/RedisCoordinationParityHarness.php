@@ -90,6 +90,11 @@ final class RedisCoordinationParityHarness implements CoordinationParityHarness
         return $this->writer;
     }
 
+    public function track(FilterName $name): void
+    {
+        $this->remember($name);
+    }
+
     public function putControl(
         FilterName $name,
         ?FilterControlState $control,
