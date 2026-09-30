@@ -7,7 +7,6 @@ namespace Kefyusuf\BloomGate\Tests\Support\Application;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
 use Kefyusuf\BloomGate\Contracts\Exception\BloomDriverOperationFailed;
-use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStoreOperationFailed;
 use Kefyusuf\BloomGate\Contracts\Exception\UnknownWriterLease;
 use Kefyusuf\BloomGate\Contracts\Exception\WriterLeaseReleased;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
