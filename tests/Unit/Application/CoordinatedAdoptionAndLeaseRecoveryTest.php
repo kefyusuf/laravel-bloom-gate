@@ -90,6 +90,29 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
         );
     }
 
+    public function test_completed_brownfield_adoption_retry_no_longer_requires_quiescent_handoff(): void
+    {
+        $environment = $this->environment();
+        $environment['control']->compareAndSwap(
+            $environment['name'],
+            $this->controlState($environment['name']),
+            null,
+        );
+
+        self::assertSame(
+            AdoptionResult::Adopted,
+            $environment['adopter']->adopt(
+                $environment['name'],
+                AdoptionHandoff::Quiescent,
+            ),
+        );
+
+        self::assertSame(
+            AdoptionResult::AlreadyAdopted,
+            $environment['adopter']->adopt($environment['name']),
+        );
+    }
+
     public function test_brownfield_candidate_blocks_adoption_before_ownership_claim(): void
     {
         $environment = $this->environment();
