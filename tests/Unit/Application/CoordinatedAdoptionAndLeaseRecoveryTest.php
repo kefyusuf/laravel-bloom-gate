@@ -130,7 +130,7 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
             $environment['control'],
             $second,
         ) implements CoordinatedLifecycleStore
-{
+        {
             private bool $advanced = false;
 
             public function __construct(
