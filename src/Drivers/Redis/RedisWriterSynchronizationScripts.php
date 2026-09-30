@@ -47,6 +47,25 @@ LUA;
         return self::prelude().PHP_EOL.$operation;
     }
 
+    public static function readLease(): string
+    {
+        $operation = <<<'LUA'
+local leaseStatus, _, _, _, encodedLease = loadLease(KEYS[1], ARGV[1])
+
+if leaseStatus == 'missing' then
+    return {'205'}
+end
+
+if leaseStatus ~= 'ok' then
+    return {'204'}
+end
+
+return {'100', encodedLease}
+LUA;
+
+        return self::prelude().PHP_EOL.$operation;
+    }
+
     public static function acquire(): string
     {
         $operation = <<<'LUA'

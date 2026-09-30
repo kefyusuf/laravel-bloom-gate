@@ -263,6 +263,13 @@ final class MemoryCoordinationDomain
         return $synchronization;
     }
 
+    public function readLease(
+        FilterName $name,
+        WriterLeaseToken $token,
+    ): ?WriterLease {
+        return $this->lease($name->value(), $token->value());
+    }
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,

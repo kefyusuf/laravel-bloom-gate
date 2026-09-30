@@ -14,6 +14,11 @@ interface WriterSynchronizationStore
 {
     public function read(FilterName $name): ?SynchronizationState;
 
+    public function readLease(
+        FilterName $name,
+        WriterLeaseToken $token,
+    ): ?WriterLease;
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,

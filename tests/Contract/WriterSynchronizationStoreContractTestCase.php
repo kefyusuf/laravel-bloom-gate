@@ -24,6 +24,38 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
 {
     abstract protected function newFixture(): WriterSynchronizationStoreContractFixture;
 
+    public function test_read_lease_is_exact_read_only_and_preserves_apr_state(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $unknownToken = $this->token('e');
+        $transitionToken = $this->token('f');
+
+        self::assertNull($fixture->store()->readLease($name, $unknownToken));
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ),
+        );
+
+        $fixture->store()->acquire($name, $transitionToken);
+        $acquired = $fixture->store()->readLease($name, $transitionToken);
+        self::assertNotNull($acquired);
+        self::assertSame(WriterLeaseState::Acquired, $acquired->state());
+
+        $fixture->store()->markPrepared($name, $transitionToken);
+        $prepared = $fixture->store()->readLease($name, $transitionToken);
+        self::assertNotNull($prepared);
+        self::assertSame(WriterLeaseState::Prepared, $prepared->state());
+
+        $fixture->store()->release($name, $transitionToken);
+        $released = $fixture->store()->readLease($name, $transitionToken);
+        self::assertNotNull($released);
+        self::assertSame(WriterLeaseState::Released, $released->state());
+    }
+
     public function test_acquire_binds_current_epoch_and_targets_atomically(): void
     {
         $fixture = $this->validFixture();
