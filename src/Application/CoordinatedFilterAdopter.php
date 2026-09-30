@@ -30,6 +30,15 @@ final readonly class CoordinatedFilterAdopter
     ): AdoptionResult {
         $snapshot = $this->lifecycle->read($name);
 
+        if (
+            $snapshot->ownershipClaimed()
+            && $snapshot->synchronization() !== null
+        ) {
+            $this->assertAdoptedRelation($snapshot);
+
+            return AdoptionResult::AlreadyAdopted;
+        }
+
         $this->assertAdoptableControl(
             $snapshot->control(),
             $handoff,
