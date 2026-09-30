@@ -28,9 +28,10 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
     {
         $fixture = $this->validFixture();
         $name = $this->filterName();
-        $token = $this->token('f');
+        $unknownToken = $this->token('e');
+        $transitionToken = $this->token('f');
 
-        self::assertNull($fixture->store()->readLease($name, $token));
+        self::assertNull($fixture->store()->readLease($name, $unknownToken));
         self::assertSame(
             0,
             $fixture->store()->activeWriterCount(
@@ -39,18 +40,18 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
             ),
         );
 
-        $fixture->store()->acquire($name, $token);
-        $acquired = $fixture->store()->readLease($name, $token);
+        $fixture->store()->acquire($name, $transitionToken);
+        $acquired = $fixture->store()->readLease($name, $transitionToken);
         self::assertNotNull($acquired);
         self::assertSame(WriterLeaseState::Acquired, $acquired->state());
 
-        $fixture->store()->markPrepared($name, $token);
-        $prepared = $fixture->store()->readLease($name, $token);
+        $fixture->store()->markPrepared($name, $transitionToken);
+        $prepared = $fixture->store()->readLease($name, $transitionToken);
         self::assertNotNull($prepared);
         self::assertSame(WriterLeaseState::Prepared, $prepared->state());
 
-        $fixture->store()->release($name, $token);
-        $released = $fixture->store()->readLease($name, $token);
+        $fixture->store()->release($name, $transitionToken);
+        $released = $fixture->store()->readLease($name, $transitionToken);
         self::assertNotNull($released);
         self::assertSame(WriterLeaseState::Released, $released->state());
     }

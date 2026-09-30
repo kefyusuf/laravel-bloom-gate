@@ -169,10 +169,14 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
     {
         $environment = $this->environment();
         $environment['adopter']->adopt($environment['name']);
-        $token = $this->token('b');
+        $unknownToken = $this->token('a');
+        $transitionToken = $this->token('b');
 
         self::assertNull(
-            $environment['writer']->readLease($environment['name'], $token),
+            $environment['writer']->readLease(
+                $environment['name'],
+                $unknownToken,
+            ),
         );
         self::assertSame(
             0,
@@ -182,26 +186,32 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
             ),
         );
 
-        $environment['writer']->acquire($environment['name'], $token);
+        $environment['writer']->acquire($environment['name'], $transitionToken);
         $acquired = $environment['writer']->readLease(
             $environment['name'],
-            $token,
+            $transitionToken,
         );
         self::assertNotNull($acquired);
         self::assertSame(WriterLeaseState::Acquired, $acquired->state());
 
-        $environment['writer']->markPrepared($environment['name'], $token);
+        $environment['writer']->markPrepared(
+            $environment['name'],
+            $transitionToken,
+        );
         $prepared = $environment['writer']->readLease(
             $environment['name'],
-            $token,
+            $transitionToken,
         );
         self::assertNotNull($prepared);
         self::assertSame(WriterLeaseState::Prepared, $prepared->state());
 
-        $environment['writer']->release($environment['name'], $token);
+        $environment['writer']->release(
+            $environment['name'],
+            $transitionToken,
+        );
         $released = $environment['writer']->readLease(
             $environment['name'],
-            $token,
+            $transitionToken,
         );
         self::assertNotNull($released);
         self::assertSame(WriterLeaseState::Released, $released->state());
