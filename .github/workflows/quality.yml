@@ -34,12 +34,6 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Diagnose WU-06 Pint diff
-        run: |
-          vendor/bin/pint tests/Support/Application/Wu06CoordinatedWriterFixtures.php
-          git diff -- tests/Support/Application/Wu06CoordinatedWriterFixtures.php
-          git checkout -- tests/Support/Application/Wu06CoordinatedWriterFixtures.php
-
       - name: Run fast quality gate
         run: composer check
 
