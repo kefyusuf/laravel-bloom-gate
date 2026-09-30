@@ -12,6 +12,11 @@ final readonly class WriterLeaseToken
         private string $value,
     ) {}
 
+    public static function generate(): self
+    {
+        return self::fromString(bin2hex(random_bytes(16)));
+    }
+
     public static function fromString(string $value): self
     {
         if (preg_match('/\A[a-f0-9]{32}\z/', $value) !== 1) {
