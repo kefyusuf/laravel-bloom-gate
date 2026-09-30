@@ -12,6 +12,7 @@ use Kefyusuf\BloomGate\Application\CoordinatedLeaseRecovery;
 use Kefyusuf\BloomGate\Application\LeaseResolutionEvidenceInsufficient;
 use Kefyusuf\BloomGate\Application\LeaseResolutionResult;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationWriteConflict;
 use Kefyusuf\BloomGate\Contracts\Exception\UnknownWriterLease;
 use Kefyusuf\BloomGate\Core\AuthoritativeOutcome;
 use Kefyusuf\BloomGate\Core\FilterControlState;
@@ -29,6 +30,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryWriterSynchronizationStore;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu07ControlRaceLifecycleStore;
 use PHPUnit\Framework\TestCase;
 
 final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
@@ -90,6 +92,79 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
         );
     }
 
+    public function test_brownfield_without_active_generation_adopts_empty_targets(): void
+    {
+        $environment = $this->environment();
+        $version = FilterVersion::fromInt(1);
+        $environment['control']->compareAndSwap(
+            $environment['name'],
+            new FilterControlState(
+                filterName: $environment['name'],
+                revision: FilterStateRevision::fromInt(1),
+                lastAllocatedVersion: $version,
+                activeVersion: null,
+                candidateVersion: null,
+                generations: [
+                    new GenerationControlState(
+                        version: $version,
+                        lifecycle: LifecycleState::Retired,
+                        health: HealthState::Healthy,
+                    ),
+                ],
+            ),
+            null,
+        );
+
+        self::assertSame(
+            AdoptionResult::Adopted,
+            $environment['adopter']->adopt(
+                $environment['name'],
+                AdoptionHandoff::Quiescent,
+            ),
+        );
+
+        $synchronization = $environment['lifecycle']
+            ->read($environment['name'])
+            ->synchronization();
+
+        self::assertNotNull($synchronization);
+        self::assertTrue($synchronization->currentTargets()->isEmpty());
+    }
+
+    public function test_adoption_claim_is_pinned_to_observed_control_revision(): void
+    {
+        $environment = $this->environment();
+        $first = $this->controlState($environment['name']);
+        $second = $this->controlState($environment['name'], revision: 2);
+
+        $environment['control']->compareAndSwap(
+            $environment['name'],
+            $first,
+            null,
+        );
+
+        $adopter = new CoordinatedFilterAdopter(
+            new Wu07ControlRaceLifecycleStore(
+                $environment['lifecycle'],
+                $environment['control'],
+                $second,
+            ),
+        );
+
+        try {
+            $adopter->adopt(
+                $environment['name'],
+                AdoptionHandoff::Quiescent,
+            );
+            self::fail('Expected stale observed control revision to block ownership claim.');
+        } catch (CoordinationWriteConflict) {
+            $snapshot = $environment['lifecycle']->read($environment['name']);
+
+            self::assertFalse($snapshot->ownershipClaimed());
+            self::assertSame(2, $snapshot->control()?->revision()->value());
+        }
+    }
+
     public function test_completed_brownfield_adoption_retry_no_longer_requires_quiescent_handoff(): void
     {
         $environment = $this->environment();
@@ -149,6 +224,17 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
         $pending = $environment['lifecycle']->read($environment['name']);
         self::assertTrue($pending->ownershipClaimed());
         self::assertNull($pending->synchronization());
+
+        try {
+            $environment['adopter']->adopt($environment['name']);
+            self::fail('Expected pending brownfield adoption to retain the handoff requirement.');
+        } catch (InvalidArgumentException) {
+            self::assertNull(
+                $environment['lifecycle']
+                    ->read($environment['name'])
+                    ->synchronization(),
+            );
+        }
 
         try {
             $environment['control']->compareAndSwap(
