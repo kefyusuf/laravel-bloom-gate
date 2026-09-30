@@ -259,8 +259,7 @@ final class Wu06WriterSynchronizationStore implements WriterSynchronizationStore
         private Wu06EventLog $events,
         SynchronizationEpoch $epoch,
         SynchronizationTargetSet $targets,
-    )
-    {
+    ) {
         $this->currentEpoch = $epoch;
         $this->currentTargets = $targets;
     }
