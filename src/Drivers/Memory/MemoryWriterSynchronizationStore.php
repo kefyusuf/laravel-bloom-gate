@@ -22,6 +22,13 @@ final readonly class MemoryWriterSynchronizationStore implements WriterSynchroni
         return $this->domain->readSynchronization($name);
     }
 
+    public function readLease(
+        FilterName $name,
+        WriterLeaseToken $token,
+    ): ?WriterLease {
+        return $this->domain->readLease($name, $token);
+    }
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,

@@ -24,6 +24,40 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
 {
     abstract protected function newFixture(): WriterSynchronizationStoreContractFixture;
 
+    public function test_read_lease_is_exact_read_only_and_preserves_apr_state(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $token = $this->token('f');
+
+        self::assertNull($fixture->store()->readLease($name, $token));
+        self::assertSame(
+            0,
+            $fixture->store()->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+            ),
+        );
+
+        $fixture->store()->acquire($name, $token);
+        self::assertSame(
+            WriterLeaseState::Acquired,
+            $fixture->store()->readLease($name, $token)?->state(),
+        );
+
+        $fixture->store()->markPrepared($name, $token);
+        self::assertSame(
+            WriterLeaseState::Prepared,
+            $fixture->store()->readLease($name, $token)?->state(),
+        );
+
+        $fixture->store()->release($name, $token);
+        self::assertSame(
+            WriterLeaseState::Released,
+            $fixture->store()->readLease($name, $token)?->state(),
+        );
+    }
+
     public function test_acquire_binds_current_epoch_and_targets_atomically(): void
     {
         $fixture = $this->validFixture();

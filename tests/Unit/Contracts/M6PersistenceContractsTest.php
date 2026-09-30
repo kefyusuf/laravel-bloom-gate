@@ -85,6 +85,7 @@ it('defines writer synchronization as dedicated atomic store operations', functi
         'activeWriterCount',
         'markPrepared',
         'read',
+        'readLease',
         'release',
     ];
 
@@ -98,21 +99,32 @@ it('defines writer synchronization as dedicated atomic store operations', functi
     expect($methods)->toBe($expectedMethods);
 
     $read = $contract->getMethod('read');
+    $readLease = $contract->getMethod('readLease');
     $acquire = $contract->getMethod('acquire');
     $prepare = $contract->getMethod('markPrepared');
     $release = $contract->getMethod('release');
     $count = $contract->getMethod('activeWriterCount');
 
     $readReturn = $read->getReturnType();
+    $readLeaseReturn = $readLease->getReturnType();
 
     if (! $readReturn instanceof ReflectionNamedType) {
         throw new RuntimeException('Expected synchronization read return type.');
+    }
+
+    if (! $readLeaseReturn instanceof ReflectionNamedType) {
+        throw new RuntimeException('Expected writer lease read return type.');
     }
 
     expect($read->getNumberOfParameters())->toBe(1)
         ->and(wu01NamedType($read, 0)->getName())->toBe(FilterName::class)
         ->and($readReturn->getName())->toBe(SynchronizationState::class)
         ->and($readReturn->allowsNull())->toBeTrue()
+        ->and($readLease->getNumberOfParameters())->toBe(2)
+        ->and(wu01NamedType($readLease, 0)->getName())->toBe(FilterName::class)
+        ->and(wu01NamedType($readLease, 1)->getName())->toBe(WriterLeaseToken::class)
+        ->and($readLeaseReturn->getName())->toBe(WriterLease::class)
+        ->and($readLeaseReturn->allowsNull())->toBeTrue()
         ->and($acquire->getNumberOfParameters())->toBe(2)
         ->and(wu01NamedType($acquire, 0)->getName())->toBe(FilterName::class)
         ->and(wu01NamedType($acquire, 1)->getName())->toBe(WriterLeaseToken::class)
@@ -191,6 +203,7 @@ it('provides backend-neutral reusable lifecycle and writer contract suites', fun
     }
 
     foreach ([
+        'test_read_lease_is_exact_read_only_and_preserves_apr_state',
         'test_acquire_binds_current_epoch_and_targets_atomically',
         'test_acquire_requires_valid_owner_and_sync',
         'test_acquire_retry_preserves_original_binding_and_count',

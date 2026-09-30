@@ -268,6 +268,13 @@ final class Wu06WriterSynchronizationStore implements WriterSynchronizationStore
         return null;
     }
 
+    public function readLease(
+        FilterName $name,
+        WriterLeaseToken $token,
+    ): ?WriterLease {
+        return $this->leases[$token->value()] ?? null;
+    }
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,

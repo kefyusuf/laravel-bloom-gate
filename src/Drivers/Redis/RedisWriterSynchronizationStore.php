@@ -61,6 +61,31 @@ final readonly class RedisWriterSynchronizationStore implements WriterSynchroniz
         );
     }
 
+    public function readLease(
+        FilterName $name,
+        WriterLeaseToken $token,
+    ): ?WriterLease {
+        $response = $this->evaluate(
+            RedisWriterSynchronizationScripts::readLease(),
+            [$this->keyspace->syncLeasesKey($name)],
+            [$token->value()],
+        );
+
+        if (
+            $response === [
+                RedisWriterSynchronizationScripts::STATUS_UNKNOWN_LEASE,
+            ]
+        ) {
+            return null;
+        }
+
+        return $this->leaseFromResponse(
+            'readLease',
+            $token,
+            $response,
+        );
+    }
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,
