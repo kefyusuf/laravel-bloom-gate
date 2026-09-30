@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Kefyusuf\BloomGate\Application;
 
 use Kefyusuf\BloomGate\Contracts\BulkBloomDriver;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStoreOperationFailed;
+use Kefyusuf\BloomGate\Contracts\Exception\UnknownWriterLease;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
 use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
@@ -158,7 +161,7 @@ final readonly class CoordinatedWriter
                 $name,
                 $token,
             );
-        } catch (Throwable) {
+        } catch (CoordinationStoreOperationFailed|CoordinationStateCorrupt|UnknownWriterLease) {
             return CoordinatedWriterCompletionResult::CleanupUncertain;
         }
 
