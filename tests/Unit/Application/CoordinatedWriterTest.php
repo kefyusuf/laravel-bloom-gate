@@ -214,6 +214,40 @@ final class CoordinatedWriterTest extends TestCase
         self::assertLessThan($prepared, $second);
     }
 
+    public function test_uncertain_mark_prepared_acknowledgement_retries_same_token_and_converges_to_p(): void
+    {
+        $environment = $this->environment();
+        $token = $this->token('0');
+        $environment['store']->markPreparedPersistsBeforeFailure = true;
+        $environment['store']->markPreparedFailure = new CoordinationStoreOperationFailed(
+            'prepared acknowledgement unavailable',
+        );
+
+        $this->expectPreparationFailure($environment, $token);
+
+        self::assertSame(
+            WriterLeaseState::Prepared,
+            $environment['store']->lease($token)?->state(),
+        );
+        self::assertSame(2, $environment['driver']->addManyCalls);
+        self::assertSame(1, $environment['store']->countIncrements);
+        self::assertSame(1, $environment['store']->markPreparedCalls);
+
+        $environment['store']->markPreparedFailure = null;
+        $environment['store']->markPreparedPersistsBeforeFailure = false;
+
+        $prepared = $environment['writer']->prepare(
+            $environment['name'],
+            $token,
+            ['value'],
+        );
+
+        self::assertSame(WriterLeaseState::Prepared, $prepared->lease()->state());
+        self::assertSame(2, $environment['driver']->addManyCalls);
+        self::assertSame(1, $environment['store']->countIncrements);
+        self::assertSame(1, $environment['store']->markPreparedCalls);
+    }
+
     public function test_prepared_retry_does_not_repeat_count_or_bloom_work(): void
     {
         $environment = $this->environment();
@@ -386,6 +420,47 @@ final class CoordinatedWriterTest extends TestCase
             $environment['store']->lease($token)?->state(),
         );
         self::assertSame(0, $this->activeCount($environment));
+    }
+
+    public function test_abandonment_cleanup_uncertainty_is_reported_without_claiming_release(): void
+    {
+        $environment = $this->environment();
+        $token = $this->token('b');
+        $environment['store']->acquire($environment['name'], $token);
+        $environment['store']->releaseFailure = new CoordinationStoreOperationFailed(
+            'release unavailable',
+        );
+
+        self::assertSame(
+            CoordinatedWriterCompletionResult::CleanupUncertain,
+            $environment['writer']->abandon(
+                $environment['name'],
+                $token,
+            ),
+        );
+        self::assertSame(
+            WriterLeaseState::Acquired,
+            $environment['store']->lease($token)?->state(),
+        );
+        self::assertSame(1, $this->activeCount($environment));
+    }
+
+    public function test_abandonment_does_not_mask_programming_failures_as_cleanup_uncertainty(): void
+    {
+        $environment = $this->environment();
+        $token = $this->token('c');
+        $environment['store']->acquire($environment['name'], $token);
+        $environment['store']->releaseFailure = new \LogicException(
+            'programming failure',
+        );
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('programming failure');
+
+        $environment['writer']->abandon(
+            $environment['name'],
+            $token,
+        );
     }
 
     public function test_prepared_write_has_no_destructor_ttl_or_implicit_release(): void
