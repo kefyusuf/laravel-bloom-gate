@@ -40,22 +40,19 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         );
 
         $fixture->store()->acquire($name, $token);
-        self::assertSame(
-            WriterLeaseState::Acquired,
-            $fixture->store()->readLease($name, $token)?->state(),
-        );
+        $acquired = $fixture->store()->readLease($name, $token);
+        self::assertNotNull($acquired);
+        self::assertSame(WriterLeaseState::Acquired, $acquired->state());
 
         $fixture->store()->markPrepared($name, $token);
-        self::assertSame(
-            WriterLeaseState::Prepared,
-            $fixture->store()->readLease($name, $token)?->state(),
-        );
+        $prepared = $fixture->store()->readLease($name, $token);
+        self::assertNotNull($prepared);
+        self::assertSame(WriterLeaseState::Prepared, $prepared->state());
 
         $fixture->store()->release($name, $token);
-        self::assertSame(
-            WriterLeaseState::Released,
-            $fixture->store()->readLease($name, $token)?->state(),
-        );
+        $released = $fixture->store()->readLease($name, $token);
+        self::assertNotNull($released);
+        self::assertSame(WriterLeaseState::Released, $released->state());
     }
 
     public function test_acquire_binds_current_epoch_and_targets_atomically(): void

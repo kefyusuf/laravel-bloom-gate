@@ -183,22 +183,28 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
         );
 
         $environment['writer']->acquire($environment['name'], $token);
-        self::assertSame(
-            WriterLeaseState::Acquired,
-            $environment['writer']->readLease($environment['name'], $token)?->state(),
+        $acquired = $environment['writer']->readLease(
+            $environment['name'],
+            $token,
         );
+        self::assertNotNull($acquired);
+        self::assertSame(WriterLeaseState::Acquired, $acquired->state());
 
         $environment['writer']->markPrepared($environment['name'], $token);
-        self::assertSame(
-            WriterLeaseState::Prepared,
-            $environment['writer']->readLease($environment['name'], $token)?->state(),
+        $prepared = $environment['writer']->readLease(
+            $environment['name'],
+            $token,
         );
+        self::assertNotNull($prepared);
+        self::assertSame(WriterLeaseState::Prepared, $prepared->state());
 
         $environment['writer']->release($environment['name'], $token);
-        self::assertSame(
-            WriterLeaseState::Released,
-            $environment['writer']->readLease($environment['name'], $token)?->state(),
+        $released = $environment['writer']->readLease(
+            $environment['name'],
+            $token,
         );
+        self::assertNotNull($released);
+        self::assertSame(WriterLeaseState::Released, $released->state());
     }
 
     public function test_known_committed_prepared_lease_releases(): void
@@ -215,10 +221,12 @@ final class CoordinatedAdoptionAndLeaseRecoveryTest extends TestCase
         );
 
         self::assertSame(LeaseResolutionResult::Released, $result);
-        self::assertSame(
-            WriterLeaseState::Released,
-            $environment['writer']->readLease($environment['name'], $token)?->state(),
+        $released = $environment['writer']->readLease(
+            $environment['name'],
+            $token,
         );
+        self::assertNotNull($released);
+        self::assertSame(WriterLeaseState::Released, $released->state());
         self::assertSame(0, $this->activeCount($environment));
     }
 
