@@ -182,7 +182,8 @@ final readonly class CoordinationStatusReader
             phase: $synchronization->phase(),
             currentEpoch: $synchronization->currentEpoch(),
             currentTargets: $synchronization->currentTargets(),
-            candidateVersion: $synchronization->candidateVersion(),
+            candidateVersion: $synchronization->candidateVersion()
+                ?? $snapshot->control()?->candidateVersion(),
             drainingEpoch: $synchronization->drainingEpoch(),
             drainingActiveWriterCount: $drainingCount,
             blocker: $blocker,
