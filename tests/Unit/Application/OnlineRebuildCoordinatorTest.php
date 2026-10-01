@@ -504,7 +504,6 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
     }
 
-
     public function test_unpublished_candidate_abort_retires_control_only_and_retry_is_complete(): void
     {
         $environment = $this->environment(withActive: true);
