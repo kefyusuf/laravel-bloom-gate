@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Support\Application;
 
-use LogicException;
 use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot;
 use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Core\FilterControlState;
@@ -15,6 +14,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
+use LogicException;
 
 final class Wu09PublicationWinsLifecycleStore implements CoordinatedLifecycleStore
 {
