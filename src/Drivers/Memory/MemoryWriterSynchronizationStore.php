@@ -12,7 +12,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 
-final readonly class MemoryWriterSynchronizationStore implements WriterSynchronizationStore, WriterLeaseInspector
+final readonly class MemoryWriterSynchronizationStore implements WriterLeaseInspector, WriterSynchronizationStore
 {
     public function __construct(
         private MemoryCoordinationDomain $domain,
