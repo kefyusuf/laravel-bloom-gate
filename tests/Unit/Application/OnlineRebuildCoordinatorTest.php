@@ -11,6 +11,7 @@ use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
 use Kefyusuf\BloomGate\Application\OnlineRebuildCoordinator;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Application\RebuildProgress;
+use Kefyusuf\BloomGate\Application\SynchronizationFencedControlStore;
 use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationWriteConflict;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
@@ -41,6 +42,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryWriterSynchronizationStore;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerificationEvidenceApplier;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerifier;
+use Kefyusuf\BloomGate\Lifecycle\CandidatePromoter;
 use Kefyusuf\BloomGate\Lifecycle\LifecycleTransitionPolicy;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9BuildEventLog;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9FilterDefinition;
@@ -745,6 +747,56 @@ final class OnlineRebuildCoordinatorTest extends TestCase
                 2,
                 null,
             );
+        }
+    }
+
+    public function test_abort_winning_same_observation_race_fences_stale_promotion(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::ReadyToPromote,
+        );
+
+        $snapshot = $environment['lifecycle']->read($environment['name']);
+        $synchronization = $snapshot->synchronization();
+        $control = $snapshot->control();
+
+        self::assertNotNull($synchronization);
+        self::assertNotNull($control);
+
+        $candidate = $control->candidateVersion();
+        self::assertNotNull($candidate);
+
+        $stalePromoter = new CandidatePromoter(
+            new SynchronizationFencedControlStore(
+                lifecycle: $environment['lifecycle'],
+                filterName: $environment['name'],
+                expectedSynchronizationRevision: $synchronization->revision(),
+            ),
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+
+        try {
+            $stalePromoter->promote(
+                $environment['name'],
+                $candidate,
+            );
+            self::fail('Expected abort to fence the stale promotion control CAS.');
+        } catch (CoordinationWriteConflict) {
+            $control = $this->control($environment);
+
+            self::assertSame(1, $control->activeVersion()?->value());
+            self::assertSame(2, $control->candidateVersion()?->value());
         }
     }
 
