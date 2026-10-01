@@ -8,6 +8,8 @@ use Kefyusuf\BloomGate\Application\CoordinationBlocker;
 use Kefyusuf\BloomGate\Application\CoordinationOwnership;
 use Kefyusuf\BloomGate\Application\CoordinationRecovery;
 use Kefyusuf\BloomGate\Application\CoordinationStatusReader;
+use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot;
+use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStoreOperationFailed;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
@@ -26,6 +28,7 @@ use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryCoordinationFixtureState;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
