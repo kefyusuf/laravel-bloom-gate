@@ -356,7 +356,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
      *     contracts: MemoryGenerationContractStore,
      *     probes: BloomProbeGenerator,
      *     fingerprints: SemanticFingerprintCalculator
-     * } $environment
+     * }  $environment
      */
     private function coordinator(array $environment): OnlineRebuildCoordinator
     {
@@ -380,7 +380,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function advance(array $environment): RebuildProgress
     {
@@ -390,7 +390,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function advanceUntilShadow(array $environment): void
     {
@@ -406,7 +406,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function advanceUntilPhase(
         array $environment,
@@ -429,7 +429,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function assertCandidate(
         array $environment,
@@ -456,7 +456,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function assertPhase(
         array $environment,
@@ -485,7 +485,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function control(array $environment): FilterControlState
     {
@@ -499,7 +499,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed> $environment
+     * @param  array<string, mixed>  $environment
      */
     private function candidateVersion(array $environment): FilterVersion
     {
