@@ -409,11 +409,14 @@ final class MemoryCoordinationDomain
      */
     public function activeLeases(FilterName $name): array
     {
-        $records = $this->leases[$name->value()] ?? [];
+        $key = $name->value();
+        $records = $this->leases[$key] ?? [];
+        $persistedCounts = $this->counts[$key] ?? [];
 
         ksort($records);
 
         $active = [];
+        $expectedCounts = [];
 
         foreach ($records as $tokenKey => $value) {
             if (! $value instanceof WriterLease) {
@@ -432,7 +435,31 @@ final class MemoryCoordinationDomain
                 continue;
             }
 
+            $epoch = $value->epoch()->value();
+            $expectedCounts[$epoch] = ($expectedCounts[$epoch] ?? 0) + 1;
             $active[] = $value;
+        }
+
+        foreach ($persistedCounts as $epoch => $count) {
+            if (! is_int($count) || $count < 0) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active writer count is invalid.',
+                );
+            }
+
+            if (($expectedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active writer count disagrees with active lease diagnostics.',
+                );
+            }
+        }
+
+        foreach ($expectedCounts as $epoch => $count) {
+            if (($persistedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active lease diagnostics are missing their persisted writer count.',
+                );
+            }
         }
 
         return $active;
