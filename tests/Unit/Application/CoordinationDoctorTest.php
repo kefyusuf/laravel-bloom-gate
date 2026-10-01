@@ -19,6 +19,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\SynchronizationRevision;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
+use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu05RuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryCoordinationFixtureState;
 use PHPUnit\Framework\TestCase;
@@ -145,6 +146,19 @@ final class CoordinationDoctorTest extends TestCase
         $state->putCoordination(
             $name,
             true,
+            $this->steadySync(),
+        );
+        $state->writer->acquire(
+            $name,
+            WriterLeaseToken::fromString(str_repeat('d', 32)),
+        );
+        $state->writer->acquire(
+            $name,
+            WriterLeaseToken::fromString(str_repeat('e', 32)),
+        );
+        $state->putCoordination(
+            $name,
+            true,
             new SynchronizationState(
                 revision: SynchronizationRevision::fromInt(2),
                 phase: SynchronizationPhase::DrainingPreReconcile,
@@ -156,11 +170,6 @@ final class CoordinationDoctorTest extends TestCase
                 candidateVersion: FilterVersion::fromInt(2),
                 drainingEpoch: SynchronizationEpoch::fromInt(1),
             ),
-        );
-        $state->setActiveWriterCount(
-            $name,
-            SynchronizationEpoch::fromInt(1),
-            2,
         );
 
         $report = $this->doctor($state, required: true)->inspect($name);
