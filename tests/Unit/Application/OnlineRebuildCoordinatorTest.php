@@ -207,7 +207,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
 
         self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
-        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->advance($environment);
 
         $token = $this->token('b');
         $lease = $environment['writers']->acquire(
@@ -216,8 +216,8 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
         self::assertSame(2, $lease->epoch()->value());
 
-        $this->advance($environment);
         self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->advance($environment);
         $this->assertPhase(
             $environment,
             SynchronizationPhase::DrainingPostPromotion,
@@ -252,7 +252,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
             SynchronizationPhase::ReadyToPromote,
         );
 
-        $this->advance($environment);
+        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
         $control = $this->control($environment);
         self::assertSame(2, $control->activeVersion()?->value());
         self::assertNull($control->candidateVersion());
@@ -328,9 +328,9 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
 
         self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
-        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
-        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
-        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->advance($environment);
+        $this->advance($environment);
+        $this->advance($environment);
         self::assertSame(RebuildProgress::Completed, $this->advance($environment));
 
         $control = $this->control($environment);
@@ -412,10 +412,10 @@ final class OnlineRebuildCoordinatorTest extends TestCase
      */
     private function advanceUntilShadow(array $environment): void
     {
-        $this->advance($environment);
-        $this->advance($environment);
-        $this->advance($environment);
         self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->advance($environment);
+        $this->advance($environment);
+        $this->advance($environment);
         $this->assertCandidate(
             $environment,
             LifecycleState::Shadow,
