@@ -748,8 +748,7 @@ final readonly class OnlineRebuildCoordinator
 
         usort(
             $versions,
-            static fn (FilterVersion $left, FilterVersion $right): int =>
-                $left->value() <=> $right->value(),
+            static fn (FilterVersion $left, FilterVersion $right): int => $left->value() <=> $right->value(),
         );
 
         return SynchronizationTargetSet::fromVersions(
