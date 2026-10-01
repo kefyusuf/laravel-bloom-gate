@@ -404,6 +404,46 @@ final class MemoryCoordinationDomain
         );
     }
 
+    /**
+     * @return list<WriterLease>
+     */
+    public function activeLeases(FilterName $name): array
+    {
+        $records = $this->leases[$name->value()] ?? [];
+
+        if (! is_array($records)) {
+            throw new CoordinationStateCorrupt(
+                'Memory writer lease registry contains an invalid value.',
+            );
+        }
+
+        ksort($records);
+
+        $active = [];
+
+        foreach ($records as $tokenKey => $value) {
+            if (! is_string($tokenKey) || ! $value instanceof WriterLease) {
+                throw new CoordinationStateCorrupt(
+                    'Memory writer lease registry contains a malformed record.',
+                );
+            }
+
+            if ($value->token()->value() !== $tokenKey) {
+                throw new CoordinationStateCorrupt(
+                    'Memory writer lease token binding is inconsistent.',
+                );
+            }
+
+            if ($value->state() === WriterLeaseState::Released) {
+                continue;
+            }
+
+            $active[] = $value;
+        }
+
+        return $active;
+    }
+
     private function control(string $key): ?FilterControlState
     {
         if (array_key_exists($key, $this->controls) === false) {
