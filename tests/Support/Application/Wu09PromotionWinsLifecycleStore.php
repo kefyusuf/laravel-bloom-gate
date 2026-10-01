@@ -21,7 +21,9 @@ final class Wu09PromotionWinsLifecycleStore implements CoordinatedLifecycleStore
 
     public function __construct(
         private CoordinatedLifecycleStore $inner,
-    ) {}
+    ) {
+        // Explicit WU-09 race-fixture constructor body.
+    }
 
     public function read(FilterName $name): CoordinatedLifecycleSnapshot
     {
