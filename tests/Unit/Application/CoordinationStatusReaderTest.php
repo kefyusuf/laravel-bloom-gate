@@ -94,6 +94,35 @@ final class CoordinationStatusReaderTest extends TestCase
         self::assertSame(CoordinationRecovery::None, $status->recovery());
     }
 
+    public function test_steady_status_exposes_unpublished_control_candidate(): void
+    {
+        $state = new MemoryCoordinationFixtureState;
+        $name = FilterName::fromString('users.email');
+        $state->putControl(
+            $name,
+            $this->candidateControl(
+                $name,
+                LifecycleState::Building,
+            ),
+        );
+        $state->putCoordination(
+            $name,
+            true,
+            $this->sync(
+                phase: SynchronizationPhase::Steady,
+                epoch: 1,
+                targets: [1],
+            ),
+        );
+
+        $status = $this->reader($state, required: true)->read($name);
+
+        self::assertSame(CoordinationOwnership::Adopted, $status->ownership());
+        self::assertSame(2, $status->candidateVersion()?->value());
+        self::assertSame(SynchronizationPhase::Steady, $status->phase());
+        self::assertSame([1], $this->versions($status->currentTargets()));
+    }
+
     public function test_impossible_control_sync_relation_is_invalid_without_mutation(): void
     {
         $state = new MemoryCoordinationFixtureState;
