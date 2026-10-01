@@ -20,7 +20,7 @@ use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use UnexpectedValueException;
 
-final readonly class RedisWriterSynchronizationStore implements WriterSynchronizationStore, WriterLeaseInspector
+final readonly class RedisWriterSynchronizationStore implements WriterLeaseInspector, WriterSynchronizationStore
 {
     public function __construct(
         private RedisStructuredCommandExecutor $executor,
