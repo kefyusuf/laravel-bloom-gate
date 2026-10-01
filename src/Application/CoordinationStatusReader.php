@@ -209,12 +209,14 @@ final readonly class CoordinationStatusReader
                 $control,
                 $synchronization,
                 requireDrain: true,
+                requireHealthy: true,
                 allowedLifecycles: [LifecycleState::Shadow],
             ),
             SynchronizationPhase::Reconciling => $this->publishedCandidateRelation(
                 $control,
                 $synchronization,
                 requireDrain: false,
+                requireHealthy: false,
                 allowedLifecycles: [
                     LifecycleState::Shadow,
                     LifecycleState::Verified,
@@ -232,6 +234,7 @@ final readonly class CoordinationStatusReader
                 $control,
                 $synchronization,
                 requireDrain: true,
+                requireHealthy: true,
                 allowedLifecycles: [
                     LifecycleState::Shadow,
                     LifecycleState::Verified,
@@ -251,6 +254,7 @@ final readonly class CoordinationStatusReader
         ?FilterControlState $control,
         SynchronizationState $synchronization,
         bool $requireDrain,
+        bool $requireHealthy,
         array $allowedLifecycles,
     ): bool {
         if ($control === null || $synchronization->candidateVersion() === null) {
@@ -285,6 +289,10 @@ final readonly class CoordinationStatusReader
                 $candidate->lifecycle(),
                 $allowedLifecycles,
                 true,
+            )
+            && (
+                $requireHealthy === false
+                || $candidate->health() === HealthState::Healthy
             );
     }
 
