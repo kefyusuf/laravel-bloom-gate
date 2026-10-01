@@ -217,6 +217,8 @@ if countsType ~= 'none' and countsType ~= 'hash' then
     return {'204'}
 end
 
+local persistedCounts = {}
+
 if countsType == 'hash' then
     local countFields = redis.call('HGETALL', KEYS[2])
 
@@ -230,37 +232,54 @@ if countsType == 'hash' then
         then
             return {'204'}
         end
+
+        persistedCounts[epoch] = count
     end
 end
 
-if leasesType == 'none' then
-    return {'100'}
-end
-
-local fields = redis.call('HGETALL', KEYS[1])
 local tokens = {}
+local activeCounts = {}
 
-for index = 1, #fields, 2 do
-    local token = fields[index]
+if leasesType == 'hash' then
+    local fields = redis.call('HGETALL', KEYS[1])
 
-    if string.len(token) ~= 32 or string.match(token, '^[a-f0-9]+$') == nil then
-        return {'204'}
-    end
+    for index = 1, #fields, 2 do
+        local token = fields[index]
 
-    local leaseStatus, leaseState, leaseEpoch = loadLease(KEYS[1], token)
-
-    if leaseStatus ~= 'ok' then
-        return {'204'}
-    end
-
-    if leaseState ~= 'R' then
-        local countStatus, count = loadCount(KEYS[2], leaseEpoch)
-
-        if countStatus ~= 'ok' or count == '0' then
+        if string.len(token) ~= 32 or string.match(token, '^[a-f0-9]+$') == nil then
             return {'204'}
         end
 
-        tokens[#tokens + 1] = token
+        local leaseStatus, leaseState, leaseEpoch = loadLease(KEYS[1], token)
+
+        if leaseStatus ~= 'ok' then
+            return {'204'}
+        end
+
+        if leaseState ~= 'R' then
+            local nextCount = incrementNonNegativeInteger(
+                activeCounts[leaseEpoch] or '0'
+            )
+
+            if nextCount == nil then
+                return {'204'}
+            end
+
+            activeCounts[leaseEpoch] = nextCount
+            tokens[#tokens + 1] = token
+        end
+    end
+end
+
+for epoch, count in pairs(activeCounts) do
+    if persistedCounts[epoch] ~= count then
+        return {'204'}
+    end
+end
+
+for epoch, count in pairs(persistedCounts) do
+    if (activeCounts[epoch] or '0') ~= count then
+        return {'204'}
     end
 end
 
