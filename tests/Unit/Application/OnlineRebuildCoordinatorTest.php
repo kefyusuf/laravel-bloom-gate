@@ -11,6 +11,7 @@ use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
 use Kefyusuf\BloomGate\Application\OnlineRebuildCoordinator;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Application\RebuildProgress;
+use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -43,7 +44,6 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Task9FilterDefinition;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingNormalizer;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StaticFilterRegistry;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StreamingAuthoritativeSet;
-use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use PHPUnit\Framework\TestCase;
 
 final class OnlineRebuildCoordinatorTest extends TestCase
