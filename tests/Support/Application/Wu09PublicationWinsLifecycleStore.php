@@ -45,7 +45,7 @@ final class Wu09PublicationWinsLifecycleStore implements CoordinatedLifecycleSto
         ?FilterStateRevision $expectedControlRevision,
         SynchronizationRevision $expectedSyncRevision,
     ): CoordinatedLifecycleSnapshot {
-        if (! $this->published) {
+        if ($this->published === false) {
             $this->published = true;
             $snapshot = $this->inner->read($name);
             $control = $snapshot->control();
