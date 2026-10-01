@@ -839,8 +839,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     private function coordinator(
         array $environment,
         ?CoordinatedLifecycleStore $lifecycle = null,
-    ): OnlineRebuildCoordinator
-    {
+    ): OnlineRebuildCoordinator {
         return new OnlineRebuildCoordinator(
             registry: $environment['registry'],
             sizing: new OptimalBloomSizingV1,
