@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
 use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterVersion;
@@ -43,6 +44,53 @@ final class WriterLeaseDiagnosticsParityTest extends TestCase
             ],
             $memory,
         );
+    }
+
+    public function test_memory_and_redis_reject_count_lease_diagnostic_disagreement(): void
+    {
+        foreach ([
+            new MemoryWriterSynchronizationContractFixture,
+            new RedisWriterSynchronizationContractFixture,
+        ] as $index => $fixture) {
+            $name = FilterName::fromString(
+                'wu10.lease.mismatch.'.($index === 0 ? 'memory' : 'redis'),
+            );
+            $fixture->putCoordination(
+                $name,
+                true,
+                new SynchronizationState(
+                    revision: SynchronizationRevision::fromInt(1),
+                    phase: SynchronizationPhase::Steady,
+                    currentEpoch: SynchronizationEpoch::fromInt(1),
+                    currentTargets: SynchronizationTargetSet::fromVersions([
+                        FilterVersion::fromInt(1),
+                    ]),
+                    candidateVersion: null,
+                    drainingEpoch: null,
+                ),
+            );
+            $fixture->setActiveWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(1),
+                1,
+            );
+
+            $store = $fixture->store();
+            self::assertInstanceOf(WriterLeaseInspector::class, $store);
+
+            try {
+                $store->activeLeases($name);
+                self::fail('Expected diagnostic count/lease disagreement to fail closed.');
+            } catch (CoordinationStateCorrupt) {
+                self::assertSame(
+                    1,
+                    $store->activeWriterCount(
+                        $name,
+                        SynchronizationEpoch::fromInt(1),
+                    ),
+                );
+            }
+        }
     }
 
     /**
