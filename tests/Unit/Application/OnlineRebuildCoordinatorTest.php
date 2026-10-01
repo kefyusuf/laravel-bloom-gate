@@ -572,6 +572,15 @@ final class OnlineRebuildCoordinatorTest extends TestCase
 
         self::assertSame(RebuildProgress::Blocked, $this->abort($environment));
         self::assertSame(RebuildProgress::RecoveryRequired, $this->advance($environment));
+        self::assertSame(RebuildProgress::RecoveryRequired, $this->advance($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::AbortRequested,
+            2,
+            [1, 2],
+            2,
+            1,
+        );
 
         $environment['writers']->release($environment['name'], $token);
 
