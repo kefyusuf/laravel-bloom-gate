@@ -292,6 +292,7 @@ final class CoordinationStatusReaderTest extends TestCase
             MemoryCoordinationDomain::class,
             'synchronizations',
         );
+        /** @var array<string, mixed> $values */
         $values = $property->getValue($state->domain);
         $values[$name->value()] = 'malformed';
         $property->setValue($state->domain, $values);
