@@ -404,6 +404,67 @@ final class MemoryCoordinationDomain
         );
     }
 
+    /**
+     * @return list<WriterLease>
+     */
+    public function activeLeases(FilterName $name): array
+    {
+        $key = $name->value();
+        $records = $this->leases[$key] ?? [];
+        $persistedCounts = $this->counts[$key] ?? [];
+
+        ksort($records);
+
+        $active = [];
+        $expectedCounts = [];
+
+        foreach ($records as $tokenKey => $value) {
+            if (! $value instanceof WriterLease) {
+                throw new CoordinationStateCorrupt(
+                    'Memory writer lease registry contains a malformed record.',
+                );
+            }
+
+            if ($value->token()->value() !== $tokenKey) {
+                throw new CoordinationStateCorrupt(
+                    'Memory writer lease token binding is inconsistent.',
+                );
+            }
+
+            if ($value->state() === WriterLeaseState::Released) {
+                continue;
+            }
+
+            $epoch = $value->epoch()->value();
+            $expectedCounts[$epoch] = ($expectedCounts[$epoch] ?? 0) + 1;
+            $active[] = $value;
+        }
+
+        foreach ($persistedCounts as $epoch => $count) {
+            if (! is_int($count) || $count < 0) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active writer count is invalid.',
+                );
+            }
+
+            if (($expectedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active writer count disagrees with active lease diagnostics.',
+                );
+            }
+        }
+
+        foreach ($expectedCounts as $epoch => $count) {
+            if (($persistedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt(
+                    'Memory active lease diagnostics are missing their persisted writer count.',
+                );
+            }
+        }
+
+        return $active;
+    }
+
     private function control(string $key): ?FilterControlState
     {
         if (array_key_exists($key, $this->controls) === false) {

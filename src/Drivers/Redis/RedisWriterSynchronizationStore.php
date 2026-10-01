@@ -11,6 +11,7 @@ use Kefyusuf\BloomGate\Contracts\Exception\UnknownWriterLease;
 use Kefyusuf\BloomGate\Contracts\Exception\WriterLeaseReleased;
 use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
+use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
 use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
@@ -19,7 +20,7 @@ use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use UnexpectedValueException;
 
-final readonly class RedisWriterSynchronizationStore implements WriterSynchronizationStore
+final readonly class RedisWriterSynchronizationStore implements WriterLeaseInspector, WriterSynchronizationStore
 {
     public function __construct(
         private RedisStructuredCommandExecutor $executor,
@@ -142,6 +143,45 @@ final readonly class RedisWriterSynchronizationStore implements WriterSynchroniz
                 [$token->value()],
             ),
         );
+    }
+
+    public function activeLeases(FilterName $name): array
+    {
+        $response = $this->evaluate(
+            RedisWriterSynchronizationScripts::activeLeases(),
+            [
+                $this->keyspace->syncLeasesKey($name),
+                $this->keyspace->syncCountsKey($name),
+            ],
+            [],
+        );
+
+        $this->throwIfFailure('activeLeases', $response);
+
+        if ((count($response) - 1) % 2 !== 0) {
+            throw $this->unexpectedReply('activeLeases', $response);
+        }
+
+        $leases = [];
+
+        for ($index = 1; $index < count($response); $index += 2) {
+            try {
+                $token = WriterLeaseToken::fromString($response[$index]);
+            } catch (\InvalidArgumentException $failure) {
+                throw new CoordinationStateCorrupt(
+                    'Redis writer lease diagnostics returned a malformed token.',
+                    0,
+                    $failure,
+                );
+            }
+
+            $leases[] = $this->coordinationCodec->decodeLease(
+                $token,
+                $response[$index + 1],
+            );
+        }
+
+        return $leases;
     }
 
     public function activeWriterCount(

@@ -203,6 +203,107 @@ LUA;
         return self::prelude().PHP_EOL.$operation;
     }
 
+    public static function activeLeases(): string
+    {
+        $operation = <<<'LUA'
+local leasesType = redis.call('TYPE', KEYS[1]).ok
+local countsType = redis.call('TYPE', KEYS[2]).ok
+
+if leasesType ~= 'none' and leasesType ~= 'hash' then
+    return {'204'}
+end
+
+if countsType ~= 'none' and countsType ~= 'hash' then
+    return {'204'}
+end
+
+local persistedCounts = {}
+
+if countsType == 'hash' then
+    local countFields = redis.call('HGETALL', KEYS[2])
+
+    for index = 1, #countFields, 2 do
+        local epoch = string.match(countFields[index], '^e:([1-9][0-9]*)$')
+        local count = countFields[index + 1]
+
+        if epoch == nil
+            or not isCanonicalPositiveInteger(epoch)
+            or not isCanonicalNonNegativeInteger(count)
+        then
+            return {'204'}
+        end
+
+        persistedCounts[epoch] = count
+    end
+end
+
+local tokens = {}
+local activeCounts = {}
+
+if leasesType == 'hash' then
+    local fields = redis.call('HGETALL', KEYS[1])
+
+    for index = 1, #fields, 2 do
+        local token = fields[index]
+
+        if string.len(token) ~= 32 or string.match(token, '^[a-f0-9]+$') == nil then
+            return {'204'}
+        end
+
+        local leaseStatus, leaseState, leaseEpoch = loadLease(KEYS[1], token)
+
+        if leaseStatus ~= 'ok' then
+            return {'204'}
+        end
+
+        if leaseState ~= 'R' then
+            local nextCount = incrementNonNegativeInteger(
+                activeCounts[leaseEpoch] or '0'
+            )
+
+            if nextCount == nil then
+                return {'204'}
+            end
+
+            activeCounts[leaseEpoch] = nextCount
+            tokens[#tokens + 1] = token
+        end
+    end
+end
+
+for epoch, count in pairs(activeCounts) do
+    if persistedCounts[epoch] ~= count then
+        return {'204'}
+    end
+end
+
+for epoch, count in pairs(persistedCounts) do
+    if (activeCounts[epoch] or '0') ~= count then
+        return {'204'}
+    end
+end
+
+table.sort(tokens)
+
+local response = {'100'}
+
+for index = 1, #tokens do
+    local leaseStatus, _, _, _, encodedLease = loadLease(KEYS[1], tokens[index])
+
+    if leaseStatus ~= 'ok' then
+        return {'204'}
+    end
+
+    response[#response + 1] = tokens[index]
+    response[#response + 1] = encodedLease
+end
+
+return response
+LUA;
+
+        return self::prelude().PHP_EOL.$operation;
+    }
+
     public static function activeWriterCount(): string
     {
         $operation = <<<'LUA'
