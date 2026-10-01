@@ -27,7 +27,6 @@ use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\NormalizationFingerprint;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
-use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
 use Kefyusuf\BloomGate\Core\SynchronizationPhase;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryBloomDriver;
