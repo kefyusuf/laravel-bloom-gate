@@ -110,6 +110,33 @@ final class CoordinationDoctorTest extends TestCase
         );
     }
 
+    public function test_malformed_lease_count_diagnostics_fail_without_repair(): void
+    {
+        $state = new MemoryCoordinationFixtureState;
+        $name = FilterName::fromString('users.email');
+        $state->putControl($name, $this->activeControl($name));
+        $state->putCoordination($name, true, $this->steadySync());
+        $state->setActiveWriterCount(
+            $name,
+            SynchronizationEpoch::fromInt(9),
+            1,
+        );
+
+        $report = $this->doctor($state, required: true)->inspect($name);
+
+        self::assertSame(
+            ProductionSafetyCheckStatus::Fail,
+            $report->status('coordination.state'),
+        );
+        self::assertSame(
+            1,
+            $state->writer->activeWriterCount(
+                $name,
+                SynchronizationEpoch::fromInt(9),
+            ),
+        );
+    }
+
     public function test_blocked_drain_is_warn_and_never_repaired(): void
     {
         $state = new MemoryCoordinationFixtureState;
