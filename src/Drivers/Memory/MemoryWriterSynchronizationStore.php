@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Drivers\Memory;
 
+use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
 use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
@@ -11,7 +12,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\WriterLease;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 
-final readonly class MemoryWriterSynchronizationStore implements WriterSynchronizationStore
+final readonly class MemoryWriterSynchronizationStore implements WriterSynchronizationStore, WriterLeaseInspector
 {
     public function __construct(
         private MemoryCoordinationDomain $domain,
@@ -55,5 +56,10 @@ final readonly class MemoryWriterSynchronizationStore implements WriterSynchroni
         SynchronizationEpoch $epoch,
     ): int {
         return $this->domain->activeWriterCount($name, $epoch);
+    }
+
+    public function activeLeases(FilterName $name): array
+    {
+        return $this->domain->activeLeases($name);
     }
 }
