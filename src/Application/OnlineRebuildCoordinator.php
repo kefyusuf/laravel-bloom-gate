@@ -112,6 +112,35 @@ final readonly class OnlineRebuildCoordinator
         };
     }
 
+    public function abort(FilterName $name): RebuildProgress
+    {
+        $snapshot = $this->lifecycle->read($name);
+        $synchronization = $snapshot->synchronization();
+
+        if (! $snapshot->ownershipClaimed() || $synchronization === null) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        return match ($synchronization->phase()) {
+            SynchronizationPhase::Steady => $this->abortSteady(
+                $name,
+                $snapshot,
+            ),
+            SynchronizationPhase::DrainingPreReconcile,
+            SynchronizationPhase::Reconciling,
+            SynchronizationPhase::ReadyToPromote,
+            SynchronizationPhase::AbortRequested => $this->abortPublishedCandidate(
+                $name,
+                $snapshot,
+            ),
+            SynchronizationPhase::DrainingAbort => $this->advanceAbortDrain(
+                $name,
+                $snapshot,
+            ),
+            SynchronizationPhase::DrainingPostPromotion => RebuildProgress::RecoveryRequired,
+        };
+    }
+
     private function advanceSteady(
         FilterName $name,
         RegisteredFilter $registered,
@@ -560,6 +589,250 @@ final readonly class OnlineRebuildCoordinator
             ) > 0
         ) {
             return RebuildProgress::Blocked;
+        }
+
+        $next = new SynchronizationState(
+            revision: $synchronization->revision()->next(),
+            phase: SynchronizationPhase::Steady,
+            currentEpoch: $synchronization->currentEpoch(),
+            currentTargets: $synchronization->currentTargets(),
+            candidateVersion: null,
+            drainingEpoch: null,
+        );
+
+        $this->lifecycle->compareAndSwapSynchronization(
+            $name,
+            $next,
+            $synchronization->revision(),
+            $control->revision(),
+        );
+
+        return RebuildProgress::Completed;
+    }
+
+    private function abortSteady(
+        FilterName $name,
+        CoordinatedLifecycleSnapshot $snapshot,
+    ): RebuildProgress {
+        $synchronization = $snapshot->synchronization();
+        $control = $snapshot->control();
+
+        if (
+            $synchronization === null
+            || $synchronization->candidateVersion() !== null
+            || $synchronization->drainingEpoch() !== null
+            || $synchronization->currentTargets()->equals(
+                $this->steadyTargets($control),
+            ) === false
+        ) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        if ($control === null || $control->candidateVersion() === null) {
+            return RebuildProgress::Completed;
+        }
+
+        $candidateVersion = $control->candidateVersion();
+        $candidate = $this->generation(
+            $control,
+            $candidateVersion,
+        );
+
+        if (
+            $candidate === null
+            || $candidate->lifecycle() === LifecycleState::Active
+            || $candidate->lifecycle() === LifecycleState::Retired
+        ) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        (new GenerationLifecycleTransitioner(
+            $this->controlStore(
+                $name,
+                $synchronization,
+            ),
+            $this->lifecyclePolicy,
+        ))->transition(
+            $name,
+            $candidateVersion,
+            LifecycleState::Retired,
+        );
+
+        return RebuildProgress::Advanced;
+    }
+
+    private function abortPublishedCandidate(
+        FilterName $name,
+        CoordinatedLifecycleSnapshot $snapshot,
+    ): RebuildProgress {
+        $synchronization = $snapshot->synchronization();
+        $control = $snapshot->control();
+
+        if (
+            $synchronization === null
+            || $control === null
+            || $synchronization->candidateVersion() === null
+            || $control->candidateVersion() === null
+            || $control->candidateVersion()->equals(
+                $synchronization->candidateVersion(),
+            ) === false
+        ) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        $candidateVersion = $synchronization->candidateVersion();
+        $candidate = $this->generation(
+            $control,
+            $candidateVersion,
+        );
+
+        if (
+            $candidate === null
+            || (
+                $candidate->lifecycle() !== LifecycleState::Shadow
+                && $candidate->lifecycle() !== LifecycleState::Verified
+            )
+            || $synchronization->currentTargets()->equals(
+                $this->publishedTargets(
+                    $control,
+                    $candidateVersion,
+                ),
+            ) === false
+        ) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        if (
+            $synchronization->phase() === SynchronizationPhase::DrainingPreReconcile
+            || $synchronization->phase() === SynchronizationPhase::AbortRequested
+        ) {
+            $drainingEpoch = $synchronization->drainingEpoch();
+
+            if ($drainingEpoch === null) {
+                return RebuildProgress::RecoveryRequired;
+            }
+
+            if (
+                $this->writers->activeWriterCount(
+                    $name,
+                    $drainingEpoch,
+                ) > 0
+            ) {
+                if (
+                    $synchronization->phase()
+                    === SynchronizationPhase::AbortRequested
+                ) {
+                    return RebuildProgress::Blocked;
+                }
+
+                $next = new SynchronizationState(
+                    revision: $synchronization->revision()->next(),
+                    phase: SynchronizationPhase::AbortRequested,
+                    currentEpoch: $synchronization->currentEpoch(),
+                    currentTargets: $synchronization->currentTargets(),
+                    candidateVersion: $candidateVersion,
+                    drainingEpoch: $drainingEpoch,
+                );
+
+                $this->lifecycle->compareAndSwapSynchronization(
+                    $name,
+                    $next,
+                    $synchronization->revision(),
+                    $control->revision(),
+                );
+
+                return RebuildProgress::Advanced;
+            }
+        } elseif ($synchronization->drainingEpoch() !== null) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        $next = new SynchronizationState(
+            revision: $synchronization->revision()->next(),
+            phase: SynchronizationPhase::DrainingAbort,
+            currentEpoch: $synchronization->currentEpoch()->next(),
+            currentTargets: $this->steadyTargets($control),
+            candidateVersion: $candidateVersion,
+            drainingEpoch: $synchronization->currentEpoch(),
+        );
+
+        $this->lifecycle->compareAndSwapSynchronization(
+            $name,
+            $next,
+            $synchronization->revision(),
+            $control->revision(),
+        );
+
+        return RebuildProgress::Advanced;
+    }
+
+    private function advanceAbortDrain(
+        FilterName $name,
+        CoordinatedLifecycleSnapshot $snapshot,
+    ): RebuildProgress {
+        $synchronization = $snapshot->synchronization();
+        $control = $snapshot->control();
+
+        if (
+            $synchronization === null
+            || $control === null
+            || $synchronization->candidateVersion() === null
+            || $synchronization->drainingEpoch() === null
+            || $synchronization->currentTargets()->equals(
+                $this->steadyTargets($control),
+            ) === false
+        ) {
+            return RebuildProgress::RecoveryRequired;
+        }
+
+        $candidateVersion = $synchronization->candidateVersion();
+        $candidate = $this->generation(
+            $control,
+            $candidateVersion,
+        );
+        $controlCandidate = $control->candidateVersion();
+        $activeWriters = $this->writers->activeWriterCount(
+            $name,
+            $synchronization->drainingEpoch(),
+        );
+
+        if ($controlCandidate !== null) {
+            if (
+                $controlCandidate->equals($candidateVersion) === false
+                || $candidate === null
+                || (
+                    $candidate->lifecycle() !== LifecycleState::Shadow
+                    && $candidate->lifecycle() !== LifecycleState::Verified
+                )
+            ) {
+                return RebuildProgress::RecoveryRequired;
+            }
+
+            if ($activeWriters > 0) {
+                return RebuildProgress::Blocked;
+            }
+
+            (new GenerationLifecycleTransitioner(
+                $this->controlStore(
+                    $name,
+                    $synchronization,
+                ),
+                $this->lifecyclePolicy,
+            ))->transition(
+                $name,
+                $candidateVersion,
+                LifecycleState::Retired,
+            );
+
+            return RebuildProgress::Advanced;
+        }
+
+        if (
+            $candidate === null
+            || $candidate->lifecycle() !== LifecycleState::Retired
+            || $activeWriters > 0
+        ) {
+            return RebuildProgress::RecoveryRequired;
         }
 
         $next = new SynchronizationState(
