@@ -29,6 +29,7 @@ use Kefyusuf\BloomGate\Core\NormalizationFingerprint;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Core\SynchronizationPhase;
+use Kefyusuf\BloomGate\Core\SynchronizationState;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
@@ -272,21 +273,174 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
     }
 
-    public function test_publication_requires_active_and_candidate_semantic_equality(): void
+    public function test_publication_requires_each_active_and_candidate_semantic_fingerprint_to_match(): void
     {
-        $mismatched = new GenerationSemanticContract(
-            normalizationFingerprint: NormalizationFingerprint::fromString(
-                'sha256:'.str_repeat('a', 64),
+        $semantic = $this->environmentSemantic();
+        $mismatches = [
+            'normalization' => new GenerationSemanticContract(
+                normalizationFingerprint: NormalizationFingerprint::fromString(
+                    'sha256:'.str_repeat('a', 64),
+                ),
+                authoritativeSetFingerprint: $semantic['authoritative'],
+                consistencyFingerprint: $semantic['consistency'],
             ),
-            authoritativeSetFingerprint: $this->environmentSemantic()['authoritative'],
-            consistencyFingerprint: $this->environmentSemantic()['consistency'],
-        );
-        $environment = $this->environment(
-            withActive: true,
-            activeSemantic: $mismatched,
+            'authoritative set' => new GenerationSemanticContract(
+                normalizationFingerprint: $semantic['normalization'],
+                authoritativeSetFingerprint: AuthoritativeSetFingerprint::fromString(
+                    'sha256:'.str_repeat('b', 64),
+                ),
+                consistencyFingerprint: $semantic['consistency'],
+            ),
+            'consistency' => new GenerationSemanticContract(
+                normalizationFingerprint: $semantic['normalization'],
+                authoritativeSetFingerprint: $semantic['authoritative'],
+                consistencyFingerprint: ConsistencyFingerprint::fromString(
+                    'sha256:'.str_repeat('c', 64),
+                ),
+            ),
+        ];
+
+        foreach ($mismatches as $label => $mismatched) {
+            $environment = $this->environment(
+                withActive: true,
+                activeSemantic: $mismatched,
+            );
+
+            $this->advanceUntilShadow($environment);
+
+            self::assertSame(
+                RebuildProgress::RecoveryRequired,
+                $this->advance($environment),
+                $label,
+            );
+            $this->assertPhase(
+                $environment,
+                SynchronizationPhase::Steady,
+                1,
+                [1],
+                null,
+                null,
+            );
+        }
+    }
+
+    public function test_reconciling_retry_resumes_when_control_verification_committed_before_sync_progress(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::Reconciling,
         );
 
-        $this->advanceUntilShadow($environment);
+        $snapshot = $environment['lifecycle']->read($environment['name']);
+        $control = $snapshot->control();
+        $sync = $snapshot->synchronization();
+
+        self::assertNotNull($control);
+        self::assertNotNull($sync);
+
+        $candidate = $control->candidateVersion();
+        self::assertNotNull($candidate);
+
+        $descriptor = $environment['contracts']->read(
+            $environment['name'],
+            $candidate,
+        );
+        self::assertNotNull($descriptor);
+
+        $definition = $environment['registry']
+            ->get($environment['name'])
+            ->definition();
+        $normalized = [];
+
+        foreach ($definition->authoritativeSet()->values() as $value) {
+            $normalized[] = $definition->normalizer()->normalize($value);
+        }
+
+        $evidence = (new ActivationVerifier(
+            $environment['probes'],
+            $environment['driver'],
+        ))->verify(
+            $environment['name'],
+            $candidate,
+            $descriptor->layout(),
+            $normalized,
+        );
+        $verified = (new ActivationVerificationEvidenceApplier)->apply(
+            $control,
+            $evidence,
+        );
+
+        $environment['lifecycle']->compareAndSwapControl(
+            $environment['name'],
+            $verified,
+            $control->revision(),
+            $sync->revision(),
+        );
+
+        $this->assertCandidate(
+            $environment,
+            LifecycleState::Verified,
+            HealthState::Healthy,
+        );
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::Reconciling,
+            2,
+            [1, 2],
+            2,
+            null,
+        );
+
+        self::assertSame(
+            RebuildProgress::Advanced,
+            $this->advance($environment),
+        );
+        $this->assertCandidate(
+            $environment,
+            LifecycleState::Verified,
+            HealthState::Healthy,
+        );
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::ReadyToPromote,
+            2,
+            [1, 2],
+            2,
+            null,
+        );
+    }
+
+    public function test_abort_requested_is_not_reversed_by_wu08_advance(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::DrainingPreReconcile,
+        );
+
+        $snapshot = $environment['lifecycle']->read($environment['name']);
+        $control = $snapshot->control();
+        $sync = $snapshot->synchronization();
+
+        self::assertNotNull($control);
+        self::assertNotNull($sync);
+
+        $abortRequested = new SynchronizationState(
+            revision: $sync->revision()->next(),
+            phase: SynchronizationPhase::AbortRequested,
+            currentEpoch: $sync->currentEpoch(),
+            currentTargets: $sync->currentTargets(),
+            candidateVersion: $sync->candidateVersion(),
+            drainingEpoch: $sync->drainingEpoch(),
+        );
+
+        $environment['lifecycle']->compareAndSwapSynchronization(
+            $environment['name'],
+            $abortRequested,
+            $sync->revision(),
+            $control->revision(),
+        );
 
         self::assertSame(
             RebuildProgress::RecoveryRequired,
@@ -294,11 +448,11 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
         $this->assertPhase(
             $environment,
-            SynchronizationPhase::Steady,
+            SynchronizationPhase::AbortRequested,
+            2,
+            [1, 2],
+            2,
             1,
-            [1],
-            null,
-            null,
         );
     }
 
@@ -689,6 +843,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
 
     /**
      * @return array{
+     *     normalization: NormalizationFingerprint,
      *     authoritative: AuthoritativeSetFingerprint,
      *     consistency: ConsistencyFingerprint
      * }
@@ -701,6 +856,9 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         $fingerprints = $environment['fingerprints'];
 
         return [
+            'normalization' => $fingerprints->normalization(
+                $definition->normalizer()->identity(),
+            ),
             'authoritative' => $fingerprints->authoritativeSet(
                 $definition->authoritativeSet()->identity(),
             ),
