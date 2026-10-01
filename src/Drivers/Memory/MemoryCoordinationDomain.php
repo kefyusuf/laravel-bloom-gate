@@ -411,18 +411,12 @@ final class MemoryCoordinationDomain
     {
         $records = $this->leases[$name->value()] ?? [];
 
-        if (! is_array($records)) {
-            throw new CoordinationStateCorrupt(
-                'Memory writer lease registry contains an invalid value.',
-            );
-        }
-
         ksort($records);
 
         $active = [];
 
         foreach ($records as $tokenKey => $value) {
-            if (! is_string($tokenKey) || ! $value instanceof WriterLease) {
+            if (! $value instanceof WriterLease) {
                 throw new CoordinationStateCorrupt(
                     'Memory writer lease registry contains a malformed record.',
                 );
