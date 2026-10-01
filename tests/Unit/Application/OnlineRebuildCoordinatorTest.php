@@ -380,7 +380,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function advance(array $environment): RebuildProgress
     {
@@ -390,7 +399,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function advanceUntilShadow(array $environment): void
     {
@@ -406,7 +424,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function advanceUntilPhase(
         array $environment,
@@ -429,7 +456,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function assertCandidate(
         array $environment,
@@ -456,7 +492,17 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
+     * @param  list<int>  $targets
      */
     private function assertPhase(
         array $environment,
@@ -485,7 +531,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function control(array $environment): FilterControlState
     {
@@ -499,7 +554,16 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $environment
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
      */
     private function candidateVersion(array $environment): FilterVersion
     {
