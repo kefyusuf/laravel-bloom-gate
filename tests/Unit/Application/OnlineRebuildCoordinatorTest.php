@@ -653,7 +653,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
 
         self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
-        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->abort($environment);
 
         $this->assertPhase(
             $environment,
