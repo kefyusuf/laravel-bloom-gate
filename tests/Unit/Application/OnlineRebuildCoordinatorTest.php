@@ -11,6 +11,8 @@ use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
 use Kefyusuf\BloomGate\Application\OnlineRebuildCoordinator;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Application\RebuildProgress;
+use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore;
+use Kefyusuf\BloomGate\Contracts\Exception\CoordinationWriteConflict;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
@@ -45,6 +47,8 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Task9FilterDefinition;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9RecordingNormalizer;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StaticFilterRegistry;
 use Kefyusuf\BloomGate\Tests\Support\Application\Task9StreamingAuthoritativeSet;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu09PromotionWinsLifecycleStore;
+use Kefyusuf\BloomGate\Tests\Support\Application\Wu09PublicationWinsLifecycleStore;
 use PHPUnit\Framework\TestCase;
 
 final class OnlineRebuildCoordinatorTest extends TestCase
@@ -500,6 +504,327 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         );
     }
 
+
+    public function test_unpublished_candidate_abort_retires_control_only_and_retry_is_complete(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilShadow($environment);
+
+        $candidate = $this->candidateVersion($environment);
+        $before = $environment['lifecycle']->read($environment['name'])->synchronization();
+
+        self::assertNotNull($before);
+        self::assertSame(SynchronizationPhase::Steady, $before->phase());
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+
+        $control = $this->control($environment);
+        self::assertNull($control->candidateVersion());
+        $this->assertGeneration(
+            $environment,
+            $candidate,
+            LifecycleState::Retired,
+        );
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::Steady,
+            1,
+            [1],
+            null,
+            null,
+        );
+
+        self::assertSame(RebuildProgress::Completed, $this->abort($environment));
+    }
+
+    public function test_abort_requested_waits_for_existing_pre_reconcile_drain_before_rotating_away_from_candidate(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilShadow($environment);
+
+        $token = $this->token('d');
+        $lease = $environment['writers']->acquire(
+            $environment['name'],
+            $token,
+        );
+        self::assertSame(1, $lease->epoch()->value());
+
+        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingPreReconcile,
+            2,
+            [1, 2],
+            2,
+            1,
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::AbortRequested,
+            2,
+            [1, 2],
+            2,
+            1,
+        );
+
+        self::assertSame(RebuildProgress::Blocked, $this->abort($environment));
+        self::assertSame(RebuildProgress::RecoveryRequired, $this->advance($environment));
+
+        $environment['writers']->release($environment['name'], $token);
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+    }
+
+    public function test_draining_abort_blocks_until_every_published_epoch_lease_drains_then_retires_and_finalizes(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::Reconciling,
+        );
+
+        $token = $this->token('e');
+        $lease = $environment['writers']->acquire(
+            $environment['name'],
+            $token,
+        );
+        self::assertSame(2, $lease->epoch()->value());
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+
+        self::assertSame(RebuildProgress::Blocked, $this->abort($environment));
+        self::assertNotNull($this->control($environment)->candidateVersion());
+
+        $environment['writers']->release($environment['name'], $token);
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $control = $this->control($environment);
+        self::assertNull($control->candidateVersion());
+        $this->assertGeneration(
+            $environment,
+            FilterVersion::fromInt(2),
+            LifecycleState::Retired,
+        );
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+
+        self::assertSame(RebuildProgress::Completed, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::Steady,
+            3,
+            [1],
+            null,
+            null,
+        );
+    }
+
+    public function test_draining_abort_recovers_after_candidate_retirement_committed_before_sync_finalization(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::Reconciling,
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+        self::assertNull($this->control($environment)->candidateVersion());
+
+        self::assertSame(
+            RebuildProgress::Completed,
+            $this->coordinator($environment)->abort($environment['name']),
+        );
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::Steady,
+            3,
+            [1],
+            null,
+            null,
+        );
+    }
+
+    public function test_abort_after_control_promotion_is_too_late_and_advance_finishes_promotion_recovery(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::ReadyToPromote,
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+
+        $control = $this->control($environment);
+        self::assertSame(2, $control->activeVersion()?->value());
+        self::assertNull($control->candidateVersion());
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::ReadyToPromote,
+            2,
+            [1, 2],
+            2,
+            null,
+        );
+
+        self::assertSame(
+            RebuildProgress::RecoveryRequired,
+            $this->abort($environment),
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingPostPromotion,
+            3,
+            [2],
+            null,
+            2,
+        );
+    }
+
+    public function test_promotion_winning_same_observation_race_fences_stale_abort(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilPhase(
+            $environment,
+            SynchronizationPhase::ReadyToPromote,
+        );
+
+        $racing = new Wu09PromotionWinsLifecycleStore(
+            $environment['lifecycle'],
+        );
+
+        try {
+            $this->coordinator($environment, $racing)->abort(
+                $environment['name'],
+            );
+            self::fail('Expected promotion to fence the stale abort synchronization CAS.');
+        } catch (CoordinationWriteConflict) {
+            $control = $this->control($environment);
+
+            self::assertSame(2, $control->activeVersion()?->value());
+            self::assertNull($control->candidateVersion());
+            $this->assertPhase(
+                $environment,
+                SynchronizationPhase::ReadyToPromote,
+                2,
+                [1, 2],
+                2,
+                null,
+            );
+        }
+    }
+
+    public function test_publication_winning_same_observation_race_fences_unpublished_control_only_abort(): void
+    {
+        $environment = $this->environment(withActive: true);
+        $this->advanceUntilShadow($environment);
+
+        $racing = new Wu09PublicationWinsLifecycleStore(
+            $environment['lifecycle'],
+        );
+
+        try {
+            $this->coordinator($environment, $racing)->abort(
+                $environment['name'],
+            );
+            self::fail('Expected publication to fence the stale unpublished-candidate retirement.');
+        } catch (CoordinationWriteConflict) {
+            self::assertNotNull($this->control($environment)->candidateVersion());
+            $this->assertPhase(
+                $environment,
+                SynchronizationPhase::DrainingPreReconcile,
+                2,
+                [1, 2],
+                2,
+                1,
+            );
+        }
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [1],
+            2,
+            2,
+        );
+    }
+
+    public function test_first_activation_abort_rotates_to_empty_targets_before_candidate_retirement(): void
+    {
+        $environment = $this->environment(withActive: false);
+        $this->advanceUntilShadow($environment);
+
+        self::assertSame(RebuildProgress::Advanced, $this->advance($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingPreReconcile,
+            2,
+            [1],
+            1,
+            1,
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::DrainingAbort,
+            3,
+            [],
+            1,
+            2,
+        );
+
+        self::assertSame(RebuildProgress::Advanced, $this->abort($environment));
+        self::assertNull($this->control($environment)->candidateVersion());
+
+        self::assertSame(RebuildProgress::Completed, $this->abort($environment));
+        $this->assertPhase(
+            $environment,
+            SynchronizationPhase::Steady,
+            3,
+            [],
+            null,
+            null,
+        );
+    }
+
     /**
      * @param  array{
      *     name: FilterName,
@@ -512,12 +837,15 @@ final class OnlineRebuildCoordinatorTest extends TestCase
      *     fingerprints: SemanticFingerprintCalculator
      * }  $environment
      */
-    private function coordinator(array $environment): OnlineRebuildCoordinator
+    private function coordinator(
+        array $environment,
+        ?CoordinatedLifecycleStore $lifecycle = null,
+    ): OnlineRebuildCoordinator
     {
         return new OnlineRebuildCoordinator(
             registry: $environment['registry'],
             sizing: new OptimalBloomSizingV1,
-            lifecycle: $environment['lifecycle'],
+            lifecycle: $lifecycle ?? $environment['lifecycle'],
             writers: $environment['writers'],
             driver: $environment['driver'],
             generationContracts: $environment['contracts'],
@@ -548,6 +876,25 @@ final class OnlineRebuildCoordinatorTest extends TestCase
     private function advance(array $environment): RebuildProgress
     {
         return $this->coordinator($environment)->advance(
+            $environment['name'],
+        );
+    }
+
+    /**
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
+     */
+    private function abort(array $environment): RebuildProgress
+    {
+        return $this->coordinator($environment)->abort(
             $environment['name'],
         );
     }
@@ -607,6 +954,36 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         }
 
         self::fail('Expected WU-08 phase was not reached.');
+    }
+
+    /**
+     * @param  array{
+     *     name: FilterName,
+     *     registry: Task9StaticFilterRegistry,
+     *     lifecycle: MemoryCoordinatedLifecycleStore,
+     *     writers: MemoryWriterSynchronizationStore,
+     *     driver: MemoryBloomDriver,
+     *     contracts: MemoryGenerationContractStore,
+     *     probes: BloomProbeGenerator,
+     *     fingerprints: SemanticFingerprintCalculator
+     * }  $environment
+     */
+    private function assertGeneration(
+        array $environment,
+        FilterVersion $version,
+        LifecycleState $lifecycle,
+    ): void {
+        foreach ($this->control($environment)->generations() as $generation) {
+            if ($generation->version()->equals($version) === false) {
+                continue;
+            }
+
+            self::assertSame($lifecycle, $generation->lifecycle());
+
+            return;
+        }
+
+        self::fail('Expected tracked generation.');
     }
 
     /**
