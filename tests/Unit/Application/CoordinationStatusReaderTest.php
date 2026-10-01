@@ -453,9 +453,9 @@ final class CoordinationStatusReaderTest extends TestCase
     }
 }
 
-final class Wu10UnavailableLifecycleStore implements \Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleStore
+final class Wu10UnavailableLifecycleStore implements CoordinatedLifecycleStore
 {
-    public function read(FilterName $name): \Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot
+    public function read(FilterName $name): CoordinatedLifecycleSnapshot
     {
         throw new CoordinationStoreOperationFailed('WU-10 simulated diagnostics outage.');
     }
@@ -463,8 +463,8 @@ final class Wu10UnavailableLifecycleStore implements \Kefyusuf\BloomGate\Contrac
     public function claimOwnership(
         FilterName $name,
         ?FilterStateRevision $expectedControlRevision,
-    ): \Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot {
-        throw new \LogicException('WU-10 diagnostics fixture is read-only.');
+    ): CoordinatedLifecycleSnapshot {
+        throw new LogicException('WU-10 diagnostics fixture is read-only.');
     }
 
     public function compareAndSwapControl(
@@ -472,8 +472,8 @@ final class Wu10UnavailableLifecycleStore implements \Kefyusuf\BloomGate\Contrac
         FilterControlState $nextControl,
         ?FilterStateRevision $expectedControlRevision,
         SynchronizationRevision $expectedSyncRevision,
-    ): \Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot {
-        throw new \LogicException('WU-10 diagnostics fixture is read-only.');
+    ): CoordinatedLifecycleSnapshot {
+        throw new LogicException('WU-10 diagnostics fixture is read-only.');
     }
 
     public function compareAndSwapSynchronization(
@@ -481,7 +481,7 @@ final class Wu10UnavailableLifecycleStore implements \Kefyusuf\BloomGate\Contrac
         SynchronizationState $nextSynchronization,
         ?SynchronizationRevision $expectedSyncRevision,
         ?FilterStateRevision $expectedControlRevision,
-    ): \Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot {
-        throw new \LogicException('WU-10 diagnostics fixture is read-only.');
+    ): CoordinatedLifecycleSnapshot {
+        throw new LogicException('WU-10 diagnostics fixture is read-only.');
     }
 }
