@@ -58,7 +58,7 @@ final class Wu09PromotionWinsLifecycleStore implements CoordinatedLifecycleStore
         ?SynchronizationRevision $expectedSyncRevision,
         ?FilterStateRevision $expectedControlRevision,
     ): CoordinatedLifecycleSnapshot {
-        if (! $this->promoted) {
+        if ($this->promoted === false) {
             $this->promoted = true;
             $snapshot = $this->inner->read($name);
             $control = $snapshot->control();
