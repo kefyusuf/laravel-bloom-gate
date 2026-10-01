@@ -443,7 +443,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
         self::assertNotNull($candidate);
 
         foreach ($control->generations() as $generation) {
-            if (! $generation->version()->equals($candidate)) {
+            if ($generation->version()->equals($candidate) === false) {
                 continue;
             }
 
