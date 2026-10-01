@@ -6,13 +6,16 @@ namespace Kefyusuf\BloomGate\Tests\Unit\Application;
 
 require_once __DIR__.'/../../Support/Application/Task9BuildFixtures.php';
 
+use Kefyusuf\BloomGate\Application\AdoptionHandoff;
 use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
 use Kefyusuf\BloomGate\Application\OnlineRebuildCoordinator;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Application\RebuildProgress;
+use Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\ConsistencyContract;
+use Kefyusuf\BloomGate\Core\ConsistencyFingerprint;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
@@ -603,7 +606,7 @@ final class OnlineRebuildCoordinatorTest extends TestCase
 
             (new CoordinatedFilterAdopter($lifecycle))->adopt(
                 $name,
-                \Kefyusuf\BloomGate\Application\AdoptionHandoff::Quiescent,
+                AdoptionHandoff::Quiescent,
             );
         } else {
             (new CoordinatedFilterAdopter($lifecycle))->adopt($name);
@@ -623,8 +626,8 @@ final class OnlineRebuildCoordinatorTest extends TestCase
 
     /**
      * @return array{
-     *     authoritative: \Kefyusuf\BloomGate\Core\AuthoritativeSetFingerprint,
-     *     consistency: \Kefyusuf\BloomGate\Core\ConsistencyFingerprint
+     *     authoritative: AuthoritativeSetFingerprint,
+     *     consistency: ConsistencyFingerprint
      * }
      */
     private function environmentSemantic(): array
