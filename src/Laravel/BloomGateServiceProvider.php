@@ -10,6 +10,10 @@ use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Kefyusuf\BloomGate\Application\CandidateDiscarder;
+use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
+use Kefyusuf\BloomGate\Application\CoordinatedLeaseRecovery;
+use Kefyusuf\BloomGate\Application\CoordinatedWriter;
+use Kefyusuf\BloomGate\Application\CoordinationStatusReader;
 use Kefyusuf\BloomGate\Application\LegacyMutationFilterControlStore;
 use Kefyusuf\BloomGate\Application\LegacyMutationGuard;
 use Kefyusuf\BloomGate\Application\ManagedFilterActivator;
@@ -17,11 +21,11 @@ use Kefyusuf\BloomGate\Application\ManagedFilterBuilder;
 use Kefyusuf\BloomGate\Application\ManagedFilterStatusReader;
 use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
+use Kefyusuf\BloomGate\Application\OnlineRebuildCoordinator;
 use Kefyusuf\BloomGate\Application\OptimalBloomSizingV1;
 use Kefyusuf\BloomGate\Application\ProductionSafetyDoctor;
 use Kefyusuf\BloomGate\Application\QueryGate;
 use Kefyusuf\BloomGate\Application\QuerySafetyDescriptorResolver;
-use Kefyusuf\BloomGate\Application\UncoordinatedRuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
@@ -38,6 +42,8 @@ use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
+use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
+use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryAuthorizedProbe;
@@ -46,6 +52,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
+use Kefyusuf\BloomGate\Drivers\Memory\MemoryWriterSynchronizationStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisAuthorizedProbe;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisControlStateCodec;
@@ -54,10 +61,15 @@ use Kefyusuf\BloomGate\Drivers\Redis\RedisCoordinationCodec;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
+use Kefyusuf\BloomGate\Drivers\Redis\RedisWriterSynchronizationStore;
 use Kefyusuf\BloomGate\Laravel\Console\ActivateCommand;
 use Kefyusuf\BloomGate\Laravel\Console\BuildCommand;
+use Kefyusuf\BloomGate\Laravel\Console\CoordinateAdoptCommand;
 use Kefyusuf\BloomGate\Laravel\Console\DiscardCommand;
 use Kefyusuf\BloomGate\Laravel\Console\DoctorCommand;
+use Kefyusuf\BloomGate\Laravel\Console\LeaseResolveCommand;
+use Kefyusuf\BloomGate\Laravel\Console\RebuildAbortCommand;
+use Kefyusuf\BloomGate\Laravel\Console\RebuildCommand;
 use Kefyusuf\BloomGate\Laravel\Console\StatusCommand;
 use Kefyusuf\BloomGate\Laravel\Console\VerifyCommand;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
@@ -103,6 +115,10 @@ final class BloomGateServiceProvider extends ServiceProvider
             DiscardCommand::class,
             StatusCommand::class,
             DoctorCommand::class,
+            CoordinateAdoptCommand::class,
+            RebuildCommand::class,
+            RebuildAbortCommand::class,
+            LeaseResolveCommand::class,
         ]);
     }
 
@@ -137,6 +153,7 @@ final class BloomGateServiceProvider extends ServiceProvider
             ),
         );
         $this->app->singleton(MemoryCoordinatedLifecycleStore::class);
+        $this->app->singleton(MemoryWriterSynchronizationStore::class);
         $this->app->singleton(
             MemoryGenerationContractStore::class,
             static fn (Application $app): MemoryGenerationContractStore => new MemoryGenerationContractStore(
@@ -210,6 +227,7 @@ final class BloomGateServiceProvider extends ServiceProvider
         $this->app->singleton(RedisBloomDriver::class);
         $this->app->singleton(RedisFilterControlStore::class);
         $this->app->singleton(RedisCoordinatedLifecycleStore::class);
+        $this->app->singleton(RedisWriterSynchronizationStore::class);
         $this->app->singleton(RedisGenerationContractStore::class);
         $this->app->singleton(
             RedisAuthorizedProbe::class,
@@ -240,8 +258,16 @@ final class BloomGateServiceProvider extends ServiceProvider
         );
         $this->app->singleton(
             RuntimeCoordinationRequirement::class,
-            UncoordinatedRuntimeCoordinationRequirement::class,
+            ConfigRuntimeCoordinationRequirement::class,
         );
+        $this->app->singleton(
+            WriterSynchronizationStore::class,
+            static fn (Application $app): WriterSynchronizationStore&WriterLeaseInspector => match (self::driverName($app)) {
+                'memory' => $app->make(MemoryWriterSynchronizationStore::class),
+                'redis' => $app->make(RedisWriterSynchronizationStore::class),
+            },
+        );
+        $this->app->alias(WriterSynchronizationStore::class, WriterLeaseInspector::class);
         $this->app->singleton(LegacyMutationGuard::class);
         $this->app->singleton(
             LegacyMutationFilterControlStore::class,
@@ -318,9 +344,38 @@ final class BloomGateServiceProvider extends ServiceProvider
             ProductionSafetyDoctor::class,
             CandidateDiscarder::class,
             BloomGateManager::class,
+            CoordinatedFilterAdopter::class,
+            CoordinatedLeaseRecovery::class,
+            CoordinatedWriter::class,
+            CoordinationStatusReader::class,
         ] as $service) {
             $this->app->singleton($service);
         }
+
+        $this->app->singleton(OnlineRebuildCoordinator::class,
+            static fn (Application $app): OnlineRebuildCoordinator => new OnlineRebuildCoordinator(
+                registry: $app->make(FilterRegistry::class),
+                sizing: $app->make(OptimalBloomSizingV1::class),
+                lifecycle: $app->make(CoordinatedLifecycleStore::class),
+                writers: $app->make(WriterSynchronizationStore::class),
+                driver: $app->make(BulkBloomDriver::class),
+                generationContracts: $app->make(GenerationContractStore::class),
+                probes: $app->make(BloomProbeGenerator::class),
+                fingerprints: $app->make(SemanticFingerprintCalculator::class),
+                lifecyclePolicy: $app->make(LifecycleTransitionPolicy::class),
+                verificationEvidence: $app->make(ActivationVerificationEvidenceApplier::class),
+                activationVerifier: $app->make(ActivationVerifier::class),
+                chunkSize: self::buildChunkSize($app),
+            ));
+
+        $this->app->singleton(ProductionSafetyDoctor::class,
+            static fn (Application $app): ProductionSafetyDoctor => new ProductionSafetyDoctor(
+                configuration: $app->make(ProductionSafetyConfiguration::class),
+                registry: $app->make(FilterRegistry::class),
+                filters: $app->make(ProductionFilterInspector::class),
+                redis: $app->make(RedisRuntimeDiagnostics::class),
+                coordination: static fn (): CoordinationStatusReader => $app->make(CoordinationStatusReader::class),
+            ));
 
         $this->app->singleton(
             ManagedFilterBuilder::class,

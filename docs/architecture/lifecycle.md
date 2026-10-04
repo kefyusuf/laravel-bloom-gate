@@ -200,4 +200,14 @@ M5 managed replacement always uses a new generation version.
 
 The raw M3 `destroy -> provision` primitive remains available to low-level driver users, but it is not the managed rebuild workflow.
 
-M5 does not implement online dual-write rebuild or automatic candidate rollover. Those are deferred.
+M6 adds explicit coordinated online rebuild for adopted `preadd-v1` filters.
+Candidate publication, epoch drain, reconciliation, fresh verification, promotion,
+target contraction and the final drain are durable Application transitions.
+`bloom:rebuild` resumes those transitions; `bloom:rebuild:abort` persists abort
+progress and waits for candidate-bound writers before retirement. A promoted
+candidate cannot be reversed by abort. Automatic candidate rollover remains deferred.
+
+An old-epoch zero count authorizes drain progress only after admission has closed.
+Lease enumeration is diagnostic evidence and does not authorize a drain. Missing,
+corrupt or unavailable coordination state fails closed for lifecycle mutation.
+See [coordinated operation and recovery](laravel-coordination.md).

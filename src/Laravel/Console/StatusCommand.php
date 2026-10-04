@@ -7,6 +7,9 @@ namespace Kefyusuf\BloomGate\Laravel\Console;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
 use InvalidArgumentException;
+use Kefyusuf\BloomGate\Application\CoordinationStatus;
+use Kefyusuf\BloomGate\Application\CoordinationStatusReader;
+use Kefyusuf\BloomGate\Application\CoordinationStatusState;
 use Kefyusuf\BloomGate\Application\ManagedFilterStatus;
 use Kefyusuf\BloomGate\Application\ManagedFilterStatusReader;
 use Kefyusuf\BloomGate\Application\ManagedGenerationStatus;
@@ -15,7 +18,7 @@ use Throwable;
 
 final class StatusCommand extends Command
 {
-    protected $signature = 'bloom:status {filter? : Bloom Gate filter name}';
+    protected $signature = 'bloom:status {filter? : Bloom Gate filter name} {--leases : Include active acquired/prepared writer lease diagnostics}';
 
     protected $description = 'Show Bloom Gate filter lifecycle and semantic-binding status.';
 
@@ -31,9 +34,21 @@ final class StatusCommand extends Command
             }
 
             foreach ($filters as $name) {
-                $this->renderStatus(
-                    app(ManagedFilterStatusReader::class)->read($name),
-                );
+                try {
+                    $status = app(ManagedFilterStatusReader::class)->read($name, includeLeases: (bool) $this->option('leases'));
+                } catch (Throwable $failure) {
+                    try {
+                        $coordination = app(CoordinationStatusReader::class)->read($name, includeLeases: (bool) $this->option('leases'));
+                    } catch (Throwable) {
+                        $coordination = new CoordinationStatus(CoordinationStatusState::Unavailable, null,
+                            issue: 'diagnostics_unavailable');
+                    }
+                    $this->line('filter='.$name->value());
+                    $this->renderCoordination($coordination);
+
+                    throw $failure;
+                }
+                $this->renderStatus($status);
             }
 
             return self::SUCCESS;
@@ -104,6 +119,38 @@ final class StatusCommand extends Command
 
         if (! $rendered) {
             $this->line('state=uninitialized');
+        }
+        if ($status->coordination() !== null) {
+            $this->renderCoordination($status->coordination());
+        }
+    }
+
+    private function renderCoordination(CoordinationStatus $status): void
+    {
+        $label = match ($status->state()) {
+            CoordinationStatusState::Unadopted => 'UNADOPTED',
+            CoordinationStatusState::AdoptionPending => 'ADOPTION_PENDING',
+            CoordinationStatusState::Adopted => 'ADOPTED',
+            CoordinationStatusState::Invalid => 'INVALID',
+            CoordinationStatusState::Unavailable => 'UNAVAILABLE',
+        };
+        $sync = $status->synchronization();
+        $targets = [];
+        foreach ($sync?->currentTargets()->versions() ?? [] as $version) {
+            $targets[] = (string) $version->value();
+        }
+        $this->line(sprintf('coordination=%s revision=%s phase=%s epoch=%s targets=[%s] candidate=%s draining-epoch=%s draining-writers=%s issue=%s',
+            $label, $sync?->revision()->value() ?? 'n/a', $sync?->phase()->name ?? 'n/a',
+            $sync?->currentEpoch()->value() ?? 'n/a', implode(',', $targets),
+            $sync?->candidateVersion()?->value() ?? 'n/a', $sync?->drainingEpoch()?->value() ?? 'n/a',
+            $status->drainingActiveWriterCount() ?? 'n/a', $status->issue() ?? 'none'));
+        foreach ($status->leases() as $lease) {
+            $versions = [];
+            foreach ($lease->targets()->versions() as $version) {
+                $versions[] = (string) $version->value();
+            }
+            $this->line(sprintf('lease=%s state=%s epoch=%d targets=[%s]', $lease->token()->value(),
+                $lease->state()->name, $lease->epoch()->value(), implode(',', $versions)));
         }
     }
 

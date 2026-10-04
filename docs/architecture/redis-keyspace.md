@@ -209,4 +209,34 @@ That is not the M5 managed rebuild model.
 
 A managed replacement uses a new generation version.
 
-Online dual-write rebuild and automated old-generation retention/purge are deferred beyond M5.
+M6 implements coordinated online rebuild using a separate synchronization plane;
+automated old-generation retention/purge remains deferred.
+
+## M6 coordination keys
+
+All coordination keys share the logical filter's existing hash tag:
+
+```text
+<prefix>:{<filter-name>}:sync:owner
+<prefix>:{<filter-name>}:sync
+<prefix>:{<filter-name>}:sync:staging
+<prefix>:{<filter-name>}:sync:leases
+<prefix>:{<filter-name>}:sync:counts
+```
+
+The immutable owner STRING is `coordinated-v1`. Its presence permanently fences
+ordinary control mutation. The `sync-v1` HASH has required fields `format`,
+`revision`, `phase`, `current_epoch`, and `current_targets`; `candidate_version`
+and `draining_epoch` are absent when null. Unknown fields are corruption.
+Strict `control-v1` remains unchanged.
+
+Leases and per-epoch counts are separate HASHes. Lease bindings retain their
+original token/epoch/targets; terminal released tombstones are retained. Both
+acquired and prepared leases count until release. Correctness keys have no TTL.
+Staging residue is never current correctness state.
+
+Atomic scripts fence each control mutation on both revisions, and each sync
+mutation on both revisions or required control absence. Acquire linearizes with
+epoch rotation; retries preserve bindings and never increment twice. Drivers
+validate representation and atomicity; Application owns phase legality.
+Same-slot key design continues to make no Redis Cluster runtime-support claim.

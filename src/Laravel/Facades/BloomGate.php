@@ -6,6 +6,7 @@ namespace Kefyusuf\BloomGate\Laravel\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Kefyusuf\BloomGate\Application\ExistenceResult;
+use Kefyusuf\BloomGate\Application\PreparedCoordinatedWrite;
 use Kefyusuf\BloomGate\Laravel\BloomGateManager;
 
 /**
@@ -13,6 +14,7 @@ use Kefyusuf\BloomGate\Laravel\BloomGateManager;
  * @method static ExistenceResult existsResult(string $filter, string|int $value)
  * @method static void add(string $filter, string|int $value)
  * @method static void addMany(string $filter, iterable<string|int> $values)
+ * @method static PreparedCoordinatedWrite prepare(string $filter, string $token, iterable<string|int> $values)
  *
  * @see BloomGateManager
  */

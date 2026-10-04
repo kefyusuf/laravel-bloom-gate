@@ -270,6 +270,22 @@ final class MemoryCoordinationDomain
         return $this->lease($name->value(), $token->value());
     }
 
+    /** @return list<WriterLease> */
+    public function readActiveLeases(FilterName $name): array
+    {
+        $leases = [];
+        $key = $name->value();
+        foreach (array_keys($this->leases[$key] ?? []) as $token) {
+            $lease = $this->lease($key, $token);
+            if ($lease !== null && $lease->state() !== WriterLeaseState::Released) {
+                $leases[] = $lease;
+            }
+        }
+        usort($leases, static fn (WriterLease $left, WriterLease $right): int => strcmp($left->token()->value(), $right->token()->value()));
+
+        return $leases;
+    }
+
     public function acquire(
         FilterName $name,
         WriterLeaseToken $token,

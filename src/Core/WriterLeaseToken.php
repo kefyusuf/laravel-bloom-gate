@@ -14,7 +14,10 @@ final readonly class WriterLeaseToken
 
     public static function generate(): self
     {
-        return self::fromString(bin2hex(random_bytes(16)));
+        /** @var non-empty-string $bytes */
+        $bytes = random_bytes(16);
+
+        return self::fromString(bin2hex($bytes));
     }
 
     public static function fromString(string $value): self

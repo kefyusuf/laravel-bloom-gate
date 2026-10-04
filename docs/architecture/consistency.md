@@ -121,13 +121,24 @@ That includes:
 
 Bypass means the authoritative source is queried.
 
+## Coordinated mutable writes
+
+M6 preserves the `preadd-v1` identity and adds an opt-in synchronization protocol.
+After explicit adoption, `BloomGate::prepare()` acquires one epoch/target binding,
+pre-adds every target and durably prepares the token before authoritative writes
+are allowed. All membership-entry writers must participate. A known committed or
+aborted outcome permits terminal release; an unknown outcome keeps the lease and
+blocks relevant drains. Transport errors alone do not prove rollback.
+
+M5 quiescent operation remains supported for genuinely unadopted filters.
+Adopted filters cannot return to legacy mutation through configuration changes.
+See [Laravel coordinated operation](laravel-coordination.md).
+
 ## Deferred consistency mechanisms
 
-M5 does not claim:
+The package does not claim:
 
 - CDC/outbox synchronization;
-- online dual-write rebuild;
-- writer barriers;
 - cross-service membership coordination;
 - background reconciliation workers;
 - observer-only trusted-negative authority.

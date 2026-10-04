@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Application;
 
+use Closure;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsInvalid;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\Exception\RedisDiagnosticsUnavailable;
 use Kefyusuf\BloomGate\Contracts\Diagnostics\RedisRuntimeDiagnostics;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
+use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Core\LifecycleState;
 use Kefyusuf\BloomGate\Core\ProductionSafetyCheckStatus;
@@ -19,11 +21,13 @@ final readonly class ProductionSafetyDoctor
 {
     private const string REDIS_PROFILE = 'standalone-primary-durable-v1';
 
+    /** @param CoordinationStatusReader|Closure(): CoordinationStatusReader|null $coordination */
     public function __construct(
         private ProductionSafetyConfiguration $configuration,
         private FilterRegistry $registry,
         private ProductionFilterInspector $filters,
         private RedisRuntimeDiagnostics $redis,
+        private CoordinationStatusReader|Closure|null $coordination = null,
     ) {
         // Dependencies are framework-neutral and side-effect free until inspect().
     }
@@ -90,6 +94,23 @@ final readonly class ProductionSafetyDoctor
 
         foreach ($settings->filterNames() as $name) {
             $prefix = 'filter.'.$name->value();
+
+            if ($this->coordination !== null) {
+                $status = $this->coordinationStatus($name);
+                $checks[] = $this->check(
+                    $prefix.'.coordination',
+                    match ($status->state()) {
+                        CoordinationStatusState::Unadopted => ProductionSafetyCheckStatus::NotEnabled,
+                        CoordinationStatusState::AdoptionPending => ProductionSafetyCheckStatus::Warn,
+                        CoordinationStatusState::Invalid, CoordinationStatusState::Unavailable => ProductionSafetyCheckStatus::Fail,
+                        CoordinationStatusState::Adopted => $status->issue() === null
+                            ? ProductionSafetyCheckStatus::Pass : ProductionSafetyCheckStatus::Warn,
+                    },
+                    $status->issue() === null
+                        ? 'Coordination diagnostics: '.$status->state()->name.'.'
+                        : 'Coordination diagnostics require attention: '.$status->issue().'.',
+                );
+            }
 
             try {
                 $this->registry->get($name);
@@ -275,6 +296,18 @@ final readonly class ProductionSafetyDoctor
                     : 'Redis maxmemory policy is not noeviction.',
             ),
         ];
+    }
+
+    private function coordinationStatus(FilterName $name): CoordinationStatus
+    {
+        try {
+            $reader = $this->coordination instanceof Closure ? ($this->coordination)() : $this->coordination;
+
+            return $reader?->read($name) ?? new CoordinationStatus(CoordinationStatusState::Unavailable, null,
+                issue: 'diagnostics_unavailable');
+        } catch (Throwable) {
+            return new CoordinationStatus(CoordinationStatusState::Unavailable, null, issue: 'diagnostics_unavailable');
+        }
     }
 
     private function check(

@@ -66,6 +66,38 @@ LUA;
         return self::prelude().PHP_EOL.$operation;
     }
 
+    public static function readActiveLeases(): string
+    {
+        $operation = <<<'LUA'
+local keyType = redis.call('TYPE', KEYS[1]).ok
+if keyType == 'none' then
+    return {'100'}
+end
+if keyType ~= 'hash' then
+    return {'204'}
+end
+local tokens = redis.call('HKEYS', KEYS[1])
+table.sort(tokens)
+local response = {'100'}
+for _, token in ipairs(tokens) do
+    if #token ~= 32 or string.match(token, '^[0-9a-f]+$') == nil then
+        return {'204'}
+    end
+    local status, state, _, _, encoded = loadLease(KEYS[1], token)
+    if status ~= 'ok' then
+        return {'204'}
+    end
+    if state ~= 'R' then
+        response[#response + 1] = token
+        response[#response + 1] = encoded
+    end
+end
+return response
+LUA;
+
+        return self::prelude().PHP_EOL.$operation;
+    }
+
     public static function acquire(): string
     {
         $operation = <<<'LUA'

@@ -17,6 +17,7 @@ final readonly class ManagedFilterStatus
         private ?ConsistencyContract $consistency,
         private ?ManagedGenerationStatus $active,
         private ?ManagedGenerationStatus $candidate,
+        private ?CoordinationStatus $coordination = null,
     ) {}
 
     public function name(): FilterName
@@ -52,5 +53,10 @@ final readonly class ManagedFilterStatus
     public function candidate(): ?ManagedGenerationStatus
     {
         return $this->candidate;
+    }
+
+    public function coordination(): ?CoordinationStatus
+    {
+        return $this->coordination;
     }
 }
