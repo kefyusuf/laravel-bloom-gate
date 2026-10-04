@@ -1,15 +1,14 @@
-# Project handoff — 2026-10-02
+# Project handoff — 2026-10-04
 
 ## Verify before continuing
 
 Workspace: `E:\projects\laravel-bloom-gate`.
-Integration branch: `feat/m6-coordination-completion`.
-Base HEAD: `d2f95878f43af1dca5f7e61acf6d1fdb1afd9954` (WU-09 baseline).
-M6 WU-10 through WU-13 and compatibility changes are committed on this
-branch for pull-request review. Test commit: `2145e32`; implementation commit:
-`c0027e6`. Later documentation commits may advance the tip.
-Read the branch tip and its diff against the
-base rather than assuming that the base contains the completion.
+Delivered branch: `main`.
+M6 completion HEAD: `e89c44cf5d97a178256210a708e046e585e0d09d` (PR #67).
+WU-10 through WU-13, compatibility fixes, final diagnostic corrections and atomic
+count/lease reconciliation are merged. Earlier feature commits are historical
+evidence; do not assume they remain separate commits after the squash merge.
+Later documentation or implementation commits may advance `main`.
 
 Before relying on this record, verify the directory, branch, HEAD, and status:
 
@@ -50,6 +49,7 @@ publication is included.
 - [Final review and post-fix verification](verification/2026-10-02-m6-final-review.md)
 - [Integration preparation and PR draft](plans/2026-10-04-m6-integration.md)
 - [PR reconciliation evidence](verification/2026-10-04-m6-pr-reconciliation.md)
+- [Production-only consumer installation](verification/2026-10-04-consumer-installation.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
 - [M6 work-unit plan](plans/2026-09-28-m6-implementation-task-breakdown-verification-matrix.md)
@@ -112,32 +112,23 @@ a relevant source/dependency change or unresolved risk.
 
 ## Current continuation boundary
 
-Independent final code review is complete. Both diagnostic findings were fixed
-and re-reviewed with no new substantive regression found. Five regression tests
-were added; quality checks and the full suite passed in all seven dependency sets.
-M6 implementation and local verification are complete. The next integration or
-release step requires an explicit scope; preserve the uncommitted result meanwhile.
-On 2026-10-04, continuation verified the same HEAD and uncommitted scope and
-prepared a local PR description against the existing template. No implementation
-or test source changed in this preparation step. Existing CI path filters cover
-the combined M6 change; no workflow changes were needed.
-The subsequent synchronized-source check passed quality and 1,055 full tests
-on PHP 8.4/Laravel 13 using the separate Redis fixture described above. The first
-full run's environment mismatch and the passing rerun are recorded in the
-integration note. Implementation and test source remain unchanged.
-Remote inspection also found open PR #66 on
-`feat/m6-wu10-coordination-diagnostics`, an alternative WU-10 implementation with
-incompatible status/inspection APIs. That branch and PR are preserved. The M6
-completion PR retains the documented #67 API and incorporates #66's additional
-atomic count/lease integrity validation, backed by new RED/GREEN parity tests.
-No other mandatory safety difference was found in independent comparison.
+M6 is merged through [#67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67).
+PR #66 is closed as superseded; its remote branch and `e390811` history remain.
+The retained API matches the complete M6 operator/Laravel documentation and adds
+the alternative branch's atomic count/lease integrity behavior.
 
-Completion PR: [#67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67),
-initially opened as a draft, then made ready for review. The overlap is resolved
-in favor of the complete M6 API with the additional integrity validation. Four
-GitHub Actions checks passed on `4dcaf7f`; inspect the latest
-head results before integration. CodeRabbit skipped review and Qodo reviews are
-paused; do not treat their status as independent approval. Independent focused
-review approved the reconciliation. PR #66 has different doctor/state APIs; close
-it as superseded only after #67 is merged, preserving its branch/history. Check
-the PR state for the current merge/supersession result before continuing.
+Independent review approved the reconciliation. Current-head Quality,
+Compatibility (two anchors), and Redis Integration checks passed before merge;
+the post-merge main Quality check also passed. The merged source tree matched
+the verified PR head. Post-merge full verification passed 1,064 tests / 8,304
+assertions. PHP 8.3/Laravel 12 minimum dependencies passed the same full suite;
+the earlier seven-set matrix remains separate historical evidence.
+
+CodeRabbit skipped review and Qodo reviews were paused; their status was not
+treated as independent approval. The package remains pre-release, with no tag
+or publication created. No M7 feature scope is defined in the accepted roadmap.
+
+A separate production-only PHP 8.4/Laravel 13 consumer check passed package
+auto-discovery, service resolution and command execution without Testbench or
+PHPUnit. This verifies a minimal Memory-backed consumer, not every deployment
+profile or a published Composer distribution. See its verification report.
