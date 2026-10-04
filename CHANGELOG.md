@@ -6,6 +6,16 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ## [Unreleased]
 
+### Added
+
+- Manual production-dependency RC pilot with live Redis, SQLite authoritative
+  queries, prepared SQL commit/rollback acknowledgement and coordinated rebuild.
+
+### Fixed
+
+- Standalone consumer verification failures now return nonzero after Laravel
+  bootstrap instead of relying on its uncaught exception handler.
+
 ## [0.1.0-rc.1] - 2026-10-05
 
 ### Fixed
