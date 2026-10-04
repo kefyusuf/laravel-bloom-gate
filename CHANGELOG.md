@@ -18,6 +18,9 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Added
 
+- GitHub commit ZIP verification through Composer dist, with installed commit
+  identity, distribution contents and production-only Laravel consumer checks.
+
 - Deep Release Gate live-Redis full-suite verification and package discovery
   across all seven dependency targets, including minimum-dependency auditing.
 

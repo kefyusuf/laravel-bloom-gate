@@ -34,6 +34,7 @@ jobs:
         with:
           php-version: '8.4'
           coverage: none
+          extensions: zip
           tools: composer:v2
 
       - name: Build and inspect source distribution
@@ -52,3 +53,27 @@ jobs:
       - name: Verify Laravel discovery and execution
         working-directory: .build/distribution/consumer
         run: php smoke.php
+
+      - name: Download and inspect GitHub commit ZIP
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          ARCHIVE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        run: |
+          mkdir -p .build/provider-archive .build/dist-consumer
+          curl --fail --location --retry 3 --output .build/provider.zip "https://github.com/${ARCHIVE_REPOSITORY}/archive/${COMMIT_SHA}.zip"
+          unzip -q .build/provider.zip -d .build/provider-archive
+          php tests/Distribution/verify.php .build/provider-archive/*
+          php tests/Distribution/prepare-dist.php .build/provider-archive/*/composer.json .build/dist-consumer "file://${PWD}/.build/provider.zip" "$COMMIT_SHA"
+          cp tests/Distribution/smoke.php .build/dist-consumer/
+
+      - name: Install production dependencies through Composer dist
+        working-directory: .build/dist-consumer
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+      - name: Verify commit ZIP installation and Laravel execution
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          php tests/Distribution/verify-dist.php .build/dist-consumer "$COMMIT_SHA"
+          php tests/Distribution/verify.php .build/dist-consumer/vendor/kefyusuf/laravel-bloom-gate
+          php .build/dist-consumer/smoke.php
