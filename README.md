@@ -2,6 +2,10 @@
 
 > **Status:** pre-release — M6 online rebuild/write coordination is implementation-complete.
 
+The proposed first evaluation candidate is documented in the
+[release readiness record](docs/verification/2026-10-05-release-readiness.md).
+Its [draft notes](docs/releases/0.1.0-rc.1.md) do not indicate a published version.
+
 M6 includes coordinated persistence, prepared writers, explicit adoption/recovery,
 online rebuild/abort, coordination diagnostics, and Laravel adapters/commands.
 See the [final verification report](docs/verification/2026-10-02-m6-wu13.md),
