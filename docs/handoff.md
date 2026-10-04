@@ -59,6 +59,7 @@ separate explicit user approval; see the publication record for its exact scope.
 - [GitHub ZIP / Composer dist consumer](verification/2026-10-04-provider-dist-consumer.md)
 - [First release candidate readiness](verification/2026-10-05-release-readiness.md)
 - [Published evaluation candidate](verification/2026-10-05-published-candidate.md)
+- [Isolated Redis/SQLite RC application pilot](verification/2026-10-05-rc-redis-sqlite-pilot.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -173,3 +174,10 @@ First-release preparation completed through PR #73. After explicit user approval
 revision. Its seven-target Release Gate, Distribution and Quality passed before
 publication. No Packagist submission was performed. This does not certify an
 unobserved production deployment or authorize M7 feature expansion.
+
+RC evaluation now has an isolated Laravel/Redis/SQLite consumer pilot installed
+from the immutable published tag. It verifies actual SQL lookup paths and known
+commit/rollback writer outcomes, not a business deployment or performance target.
+The manual RC Pilot workflow records this bounded scope. Verification fixtures
+explicitly return failure after Laravel bootstrap; consult the pilot report and
+current workflow result before continuing. No second release is introduced.
