@@ -18,6 +18,9 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Added
 
+- Deep Release Gate live-Redis full-suite verification and package discovery
+  across all seven dependency targets, including minimum-dependency auditing.
+
 - Source distribution export exclusions and an isolated archive-backed Laravel
   production consumer CI check for package discovery and command execution.
 

@@ -51,6 +51,7 @@ publication is included.
 - [PR reconciliation evidence](verification/2026-10-04-m6-pr-reconciliation.md)
 - [Production-only consumer installation](verification/2026-10-04-consumer-installation.md)
 - [Source distribution consumer](verification/2026-10-04-distribution-consumer.md)
+- [Deep release gate](verification/2026-10-04-release-gate.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -147,3 +148,8 @@ Distribution PR check. The archive-backed production-only consumer remains
 limited to PHP 8.4/Laravel 13 and Memory bootstrap; consult the verification
 report and current PR checks. No runtime behavior, release version, tag or
 publication is introduced by this increment.
+
+The manual Release Gate now includes full live-Redis tests, dependency audits and
+Laravel package discovery across all six PHP/Laravel combinations and the minimum
+dependency set. Its candidate-commit CI results must be inspected before relying
+on the new workflow as release evidence; consult the deep release gate report.
