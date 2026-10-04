@@ -10,6 +10,17 @@ jobs:
   compatibility:
     runs-on: ubuntu-latest
 
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     strategy:
       fail-fast: false
       matrix:
@@ -40,6 +51,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
+          extensions: redis
           tools: composer:v2
 
       - name: Pin compatibility target
@@ -59,8 +71,25 @@ jobs:
       - name: Verify package
         run: composer check
 
+      - name: Run full tests including live Redis
+        run: composer test:all
+
+      - name: Verify Laravel package discovery
+        run: vendor/bin/testbench package:discover
+
   prefer-lowest:
     runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
 
     steps:
       - uses: actions/checkout@v7
@@ -69,6 +98,7 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
+          extensions: redis
           tools: composer:v2
 
       - name: Pin Laravel 12
@@ -84,3 +114,12 @@ jobs:
 
       - name: Verify minimum dependency set
         run: composer check
+
+      - name: Audit minimum dependencies
+        run: composer audit
+
+      - name: Run full tests including live Redis
+        run: composer test:all
+
+      - name: Verify Laravel package discovery
+        run: vendor/bin/testbench package:discover
