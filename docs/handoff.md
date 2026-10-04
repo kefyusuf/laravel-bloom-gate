@@ -50,6 +50,7 @@ publication is included.
 - [Integration preparation and PR draft](plans/2026-10-04-m6-integration.md)
 - [PR reconciliation evidence](verification/2026-10-04-m6-pr-reconciliation.md)
 - [Production-only consumer installation](verification/2026-10-04-consumer-installation.md)
+- [Source distribution consumer](verification/2026-10-04-distribution-consumer.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -140,3 +141,9 @@ force pushes and main deletion are disabled. There is no external approval quoru
 Metadata/topics and private vulnerability reporting are configured. Automatic
 branch deletion stays disabled. Read the administration report and live PR state
 for its functional merge verification; refresh settings before relying on them.
+
+First-release preparation adds source-archive export exclusions and a dedicated
+Distribution PR check. The archive-backed production-only consumer remains
+limited to PHP 8.4/Laravel 13 and Memory bootstrap; consult the verification
+report and current PR checks. No runtime behavior, release version, tag or
+publication is introduced by this increment.

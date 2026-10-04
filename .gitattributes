@@ -1,0 +1,11 @@
+/tests export-ignore
+/.github export-ignore
+/.build export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/.editorconfig export-ignore
+/composer.lock export-ignore
+/testbench.yaml export-ignore
+/phpunit.xml.dist export-ignore
+/phpstan.neon.dist export-ignore
+/pint.json export-ignore

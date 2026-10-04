@@ -1,0 +1,25 @@
+{
+    "name": "local/bloom-gate-distribution-consumer",
+    "description": "Isolated verification fixture for the source distribution.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^13.0",
+        "kefyusuf/laravel-bloom-gate": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../package",
+            "options": {
+                "symlink": false,
+                "versions": {
+                    "kefyusuf/laravel-bloom-gate": "dev-main"
+                }
+            }
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
