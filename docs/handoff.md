@@ -5,8 +5,10 @@
 Workspace: `E:\projects\laravel-bloom-gate`.
 Integration branch: `feat/m6-coordination-completion`.
 Base HEAD: `d2f95878f43af1dca5f7e61acf6d1fdb1afd9954` (WU-09 baseline).
-M6 WU-10 through WU-13 and compatibility changes are being committed on this
-branch for pull-request review. Read the branch tip and its diff against the
+M6 WU-10 through WU-13 and compatibility changes are committed on this
+branch for pull-request review. Test commit: `2145e32`; implementation commit:
+`c0027e6`. Later documentation commits may advance the tip.
+Read the branch tip and its diff against the
 base rather than assuming that the base contains the completion.
 
 Before relying on this record, verify the directory, branch, HEAD, and status:
@@ -127,3 +129,10 @@ Remote inspection also found open PR #66 on
 incompatible status/inspection APIs. That branch and PR are preserved. The M6
 completion PR must disclose this overlap; do not merge both implementations
 without reconciling their public contracts and diagnostic behavior.
+
+Completion PR: [#67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67),
+opened as a draft while the overlap is unresolved. CI was dispatched on the
+completion head; inspect its latest check results before integration. Independent
+comparison found no new violation of the local declared contract. PR #66 has
+additional atomic count/lease parity diagnostics and different doctor/state APIs;
+it has not been overwritten or closed.

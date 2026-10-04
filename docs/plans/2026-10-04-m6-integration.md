@@ -2,9 +2,9 @@
 
 ## Verified source boundary
 
-The checkout remains on `main` at
+The integration branch is `feat/m6-coordination-completion`, based on
 `d2f95878f43af1dca5f7e61acf6d1fdb1afd9954` (WU-09). WU-10 through WU-13,
-compatibility fixes and final-review fixes are still in the working tree.
+compatibility fixes and final-review fixes are committed for review in #67.
 No new milestone is defined in the current roadmap.
 
 Include both tracked modifications and untracked source, tests and documentation
@@ -98,9 +98,10 @@ Release Gate is manually dispatched and tests six compatibility combinations plu
 minimum dependencies; its `composer check` excludes live Redis. Redis Integration
 provides the separate live-Redis job. No workflow change is needed for this scope.
 
-Remote integration has not been performed. Branch creation, committing, opening a
-pull request and release preparation remain subsequent actions, not results of
-this document.
+The tests were committed as `2145e32`, followed by implementation/documentation
+as `c0027e6`. [PR #67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67) is open
+as a draft pending the overlapping PR #66 API decision. Remote CI is running;
+merge and release have not been performed.
 
 ## Final synchronized-source check
 
