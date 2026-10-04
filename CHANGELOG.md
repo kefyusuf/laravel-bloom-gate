@@ -18,6 +18,9 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Added
 
+- Source distribution export exclusions and an isolated archive-backed Laravel
+  production consumer CI check for package discovery and command execution.
+
 - Local release-matrix evidence for PHP 8.3/8.4/8.5 with Laravel 12/13,
   plus the Laravel 12 minimum-dependency set, including live-Redis regression.
 

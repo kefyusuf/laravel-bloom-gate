@@ -1,0 +1,54 @@
+name: Distribution
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'config/**'
+      - 'composer.json'
+      - 'LICENSE'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'SECURITY.md'
+      - 'docs/**'
+      - '.gitattributes'
+      - 'tests/Distribution/**'
+      - '.github/workflows/distribution.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: distribution-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consumer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Build and inspect source distribution
+        run: |
+          mkdir -p .build/distribution/package .build/distribution/consumer
+          git archive HEAD | tar -x -C .build/distribution/package
+          php tests/Distribution/verify.php .build/distribution/package
+
+      - name: Prepare isolated consumer
+        run: cp tests/Distribution/composer.json tests/Distribution/smoke.php .build/distribution/consumer/
+
+      - name: Install production dependencies from extracted archive
+        working-directory: .build/distribution/consumer
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+      - name: Verify Laravel discovery and execution
+        working-directory: .build/distribution/consumer
+        run: php smoke.php
