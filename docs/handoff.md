@@ -131,8 +131,10 @@ completion PR must disclose this overlap; do not merge both implementations
 without reconciling their public contracts and diagnostic behavior.
 
 Completion PR: [#67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67),
-opened as a draft while the overlap is unresolved. CI was dispatched on the
-completion head; inspect its latest check results before integration. Independent
+initially opened as a draft, then made ready for review. The overlap remains
+unresolved. Four GitHub Actions checks passed on `4dcaf7f`; inspect the latest
+head results before integration. CodeRabbit skipped review and Qodo reviews are
+paused; do not treat their status as independent approval. Independent
 comparison found no new violation of the local declared contract. PR #66 has
 additional atomic count/lease parity diagnostics and different doctor/state APIs;
 it has not been overwritten or closed.

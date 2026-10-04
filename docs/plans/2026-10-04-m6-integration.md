@@ -100,7 +100,11 @@ provides the separate live-Redis job. No workflow change is needed for this scop
 
 The tests were committed as `2145e32`, followed by implementation/documentation
 as `c0027e6`. [PR #67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67) is open
-as a draft pending the overlapping PR #66 API decision. Remote CI is running;
+for review, with the overlapping PR #66 API decision still outstanding. Quality,
+Redis integration and both compatibility anchors passed on `4dcaf7f`. CodeRabbit
+skipped its review because this repository requires a manual trigger; its success
+status is not a completed review. Qodo reported that reviews are paused.
+Independent local review is complete. Check the latest head results before merge;
 merge and release have not been performed.
 
 ## Final synchronized-source check
