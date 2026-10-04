@@ -1,10 +1,11 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M6 online rebuild/write coordination is implementation-complete.
+> **Status:** evaluation prerelease — [v0.1.0-rc.1](https://github.com/kefyusuf/laravel-bloom-gate/releases/tag/v0.1.0-rc.1) is published; M6 is implementation-complete.
 
-The proposed first evaluation candidate is documented in the
+The first evaluation candidate's preparation is documented in the
 [release readiness record](docs/verification/2026-10-05-release-readiness.md).
-Its [draft notes](docs/releases/0.1.0-rc.1.md) do not indicate a published version.
+See the [publication record](docs/verification/2026-10-05-published-candidate.md)
+for the immutable tag and verified source revision.
 
 M6 includes coordinated persistence, prepared writers, explicit adoption/recovery,
 online rebuild/abort, coordination diagnostics, and Laravel adapters/commands.

@@ -1,5 +1,8 @@
 # First release candidate readiness — 2026-10-05
 
+The gate below was subsequently completed and the candidate published with
+explicit user approval. See the [publication record](2026-10-05-published-candidate.md).
+
 ## Proposed outcome
 
 Prepare `v0.1.0-rc.1` as the initial evaluation release candidate. The proposed
