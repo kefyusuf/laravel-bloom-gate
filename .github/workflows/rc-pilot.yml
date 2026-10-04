@@ -34,7 +34,7 @@ jobs:
           actual=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${RC_TAG}^{}" | cut -f1)
           test "$actual" = "$RC_SHA"
           mkdir -p .build/rc-archive .build/rc-consumer
-          curl --fail --location --retry 3 --output .build/rc.zip "https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${RC_TAG}.zip"
+          curl --fail --location --retry 3 --output .build/rc.zip "https://github.com/${GITHUB_REPOSITORY}/archive/${RC_SHA}.zip"
           unzip -q .build/rc.zip -d .build/rc-archive
           php tests/Distribution/verify.php .build/rc-archive/*
           php tests/Distribution/prepare-dist.php .build/rc-archive/*/composer.json .build/rc-consumer "file://${PWD}/.build/rc.zip" "$RC_SHA" 0.1.0-rc.1

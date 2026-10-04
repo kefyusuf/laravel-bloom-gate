@@ -44,7 +44,8 @@ published package runtime or immutable tag.
 ## Reproduction and limits
 
 The manually dispatched `.github/workflows/rc-pilot.yml` pins the published
-candidate and its peeled SHA, installs an isolated consumer, starts its own Redis
+candidate and its peeled SHA, downloads by immutable SHA after tag readback,
+installs an isolated consumer, starts its own Redis
 with the declared AOF profile, executes negative/positive checks and removes
 that CI-only container afterward. It also runs on PRs changing its workflow or
 direct consumer fixtures; it does not become a required gate for every PR.
