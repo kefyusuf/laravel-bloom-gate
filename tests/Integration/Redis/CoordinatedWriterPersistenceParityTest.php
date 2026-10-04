@@ -6,6 +6,7 @@ namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
 use Kefyusuf\BloomGate\Application\CoordinatedWriter;
 use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
+use Kefyusuf\BloomGate\Application\CoordinatedWriterPreparationFailed;
 use Kefyusuf\BloomGate\Contracts\RegisteredFilter;
 use Kefyusuf\BloomGate\Core\BloomLayout;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
@@ -23,6 +24,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Core\WriterLeaseState;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Tests\Contract\Support\WriterSynchronizationStoreContractFixture;
+use Kefyusuf\BloomGate\Tests\Support\Application\InterruptingWriterSynchronizationStore;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu06AuthoritativeSet;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu06BloomDriver;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu06EventLog;
@@ -32,6 +34,7 @@ use Kefyusuf\BloomGate\Tests\Support\Application\Wu06GenerationContractStore;
 use Kefyusuf\BloomGate\Tests\Support\Application\Wu06Normalizer;
 use Kefyusuf\BloomGate\Tests\Support\Memory\MemoryWriterSynchronizationContractFixture;
 use Kefyusuf\BloomGate\Tests\Support\Redis\RedisWriterSynchronizationContractFixture;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -40,6 +43,28 @@ require_once __DIR__.'/../../Support/Application/Wu06CoordinatedWriterFixtures.p
 #[Group('redis')]
 final class CoordinatedWriterPersistenceParityTest extends TestCase
 {
+    /** @return iterable<string, array{string}> */
+    public static function interruptionPoints(): iterable
+    {
+        foreach (['acquire', 'partial_bloom', 'prepare', 'unknown_outcome', 'release'] as $point) {
+            yield $point => [$point];
+        }
+    }
+
+    #[DataProvider('interruptionPoints')]
+    public function test_crash_recovery_preserves_binding_and_count_on_both_backends(string $point): void
+    {
+        $memory = $this->runScenario(new MemoryWriterSynchronizationContractFixture, 'memory', 'd', $point);
+        $redis = $this->runScenario(new RedisWriterSynchronizationContractFixture, 'redis', 'e', $point);
+
+        self::assertSame($memory, $redis);
+        self::assertSame('P', $memory['prepared_state']);
+        self::assertSame([1, 2], $memory['targets']);
+        self::assertSame(1, $memory['count_before_completion']);
+        self::assertSame('released', $memory['completion']);
+        self::assertSame(0, $memory['count_after_completion']);
+    }
+
     public function test_same_service_completes_prepared_lifetime_against_memory_and_redis_persistence(): void
     {
         $memory = $this->runScenario(
@@ -83,6 +108,7 @@ final class CoordinatedWriterPersistenceParityTest extends TestCase
         WriterSynchronizationStoreContractFixture $fixture,
         string $suffix,
         string $tokenCharacter,
+        ?string $interruption = null,
     ): array {
         $name = FilterName::fromString('wu06.persistence.'.$suffix);
         $epoch = SynchronizationEpoch::fromInt(1);
@@ -133,9 +159,13 @@ final class CoordinatedWriterPersistenceParityTest extends TestCase
         }
 
         $driver = new Wu06BloomDriver($events);
+        $synchronization = new InterruptingWriterSynchronizationStore(
+            $fixture->store(),
+            in_array($interruption, ['acquire', 'prepare', 'release'], true) ? $interruption : null,
+        );
         $writer = new CoordinatedWriter(
             registry: new Wu06FilterRegistry($registered),
-            synchronization: $fixture->store(),
+            synchronization: $synchronization,
             contracts: $contracts,
             driver: $driver,
             probes: new BloomProbeGenerator,
@@ -144,6 +174,26 @@ final class CoordinatedWriterPersistenceParityTest extends TestCase
         $token = WriterLeaseToken::fromString(
             str_repeat($tokenCharacter, 32),
         );
+
+        if ($interruption === 'partial_bloom') {
+            $driver->failVersion = 2;
+        }
+
+        if (in_array($interruption, ['acquire', 'partial_bloom', 'prepare'], true)) {
+            try {
+                $writer->prepare($name, $token, ['A', 'B']);
+                self::fail('Expected interrupted preparation.');
+            } catch (CoordinatedWriterPreparationFailed $failure) {
+                self::assertTrue($failure->token()->equals($token));
+                $durable = $fixture->store()->readLease($name, $token);
+                self::assertNotNull($durable);
+                self::assertSame($interruption === 'prepare' ? WriterLeaseState::Prepared : WriterLeaseState::Acquired, $durable->state());
+                self::assertSame(1, $fixture->store()->activeWriterCount($name, $epoch));
+                self::assertSame([1, 2], array_map(static fn (FilterVersion $version): int => $version->value(), $durable->targets()->versions()));
+                self::assertSame($interruption === 'acquire' ? [] : [1, 2], $driver->versions);
+            }
+            $driver->failVersion = null;
+        }
 
         $prepared = $writer->prepare(
             $name,
@@ -155,11 +205,23 @@ final class CoordinatedWriterPersistenceParityTest extends TestCase
             $token,
             ['A', 'B'],
         );
+        if ($interruption === 'unknown_outcome') {
+            unset($retry);
+            self::assertSame(WriterLeaseState::Prepared, $fixture->store()->readLease($name, $token)?->state());
+            self::assertSame(1, $fixture->store()->activeWriterCount($name, $epoch));
+            $retry = $writer->prepare($name, $token, ['A', 'B']);
+        }
         $countBeforeCompletion = $fixture->store()->activeWriterCount(
             $name,
             $epoch,
         );
         $completion = $prepared->authoritativeCommitted();
+        if ($interruption === 'release') {
+            self::assertSame(CoordinatedWriterCompletionResult::CleanupUncertain, $completion);
+            self::assertSame(WriterLeaseState::Released, $fixture->store()->readLease($name, $token)?->state());
+            self::assertSame(0, $fixture->store()->activeWriterCount($name, $epoch));
+            $completion = $prepared->authoritativeCommitted();
+        }
         $countAfterCompletion = $fixture->store()->activeWriterCount(
             $name,
             $epoch,
