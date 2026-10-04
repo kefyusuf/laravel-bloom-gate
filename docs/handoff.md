@@ -49,6 +49,7 @@ publication is included.
 - [Full local release matrix](verification/2026-10-02-release-matrix.md)
 - [Final review and post-fix verification](verification/2026-10-02-m6-final-review.md)
 - [Integration preparation and PR draft](plans/2026-10-04-m6-integration.md)
+- [PR reconciliation evidence](verification/2026-10-04-m6-pr-reconciliation.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
 - [M6 work-unit plan](plans/2026-09-28-m6-implementation-task-breakdown-verification-matrix.md)
@@ -127,14 +128,16 @@ integration note. Implementation and test source remain unchanged.
 Remote inspection also found open PR #66 on
 `feat/m6-wu10-coordination-diagnostics`, an alternative WU-10 implementation with
 incompatible status/inspection APIs. That branch and PR are preserved. The M6
-completion PR must disclose this overlap; do not merge both implementations
-without reconciling their public contracts and diagnostic behavior.
+completion PR retains the documented #67 API and incorporates #66's additional
+atomic count/lease integrity validation, backed by new RED/GREEN parity tests.
+No other mandatory safety difference was found in independent comparison.
 
 Completion PR: [#67](https://github.com/kefyusuf/laravel-bloom-gate/pull/67),
-initially opened as a draft, then made ready for review. The overlap remains
-unresolved. Four GitHub Actions checks passed on `4dcaf7f`; inspect the latest
+initially opened as a draft, then made ready for review. The overlap is resolved
+in favor of the complete M6 API with the additional integrity validation. Four
+GitHub Actions checks passed on `4dcaf7f`; inspect the latest
 head results before integration. CodeRabbit skipped review and Qodo reviews are
-paused; do not treat their status as independent approval. Independent
-comparison found no new violation of the local declared contract. PR #66 has
-additional atomic count/lease parity diagnostics and different doctor/state APIs;
-it has not been overwritten or closed.
+paused; do not treat their status as independent approval. Independent focused
+review approved the reconciliation. PR #66 has different doctor/state APIs; close
+it as superseded only after #67 is merged, preserving its branch/history. Check
+the PR state for the current merge/supersession result before continuing.

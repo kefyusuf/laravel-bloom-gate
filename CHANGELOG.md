@@ -8,6 +8,8 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Fixed
 
+- Opt-in lease diagnostics now atomically reject count/lease disagreement in
+  Memory and Redis, including malformed count storage, without repairing state.
 - Coordination diagnostics distinguish invalid configuration from unavailable
   infrastructure. Status retains coordination evidence and its failure exit when
   control or generation status cannot be read.

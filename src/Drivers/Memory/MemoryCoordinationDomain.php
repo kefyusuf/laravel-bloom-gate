@@ -274,11 +274,25 @@ final class MemoryCoordinationDomain
     public function readActiveLeases(FilterName $name): array
     {
         $leases = [];
+        $expectedCounts = [];
         $key = $name->value();
         foreach (array_keys($this->leases[$key] ?? []) as $token) {
             $lease = $this->lease($key, $token);
             if ($lease !== null && $lease->state() !== WriterLeaseState::Released) {
                 $leases[] = $lease;
+                $epoch = $lease->epoch()->value();
+                $expectedCounts[$epoch] = ($expectedCounts[$epoch] ?? 0) + 1;
+            }
+        }
+        $persistedCounts = $this->counts[$key] ?? [];
+        foreach ($persistedCounts as $epoch => $count) {
+            if (! is_int($count) || $count < 0 || ($expectedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt('Active writer counts disagree with diagnostic leases.');
+            }
+        }
+        foreach ($expectedCounts as $epoch => $count) {
+            if (($persistedCounts[$epoch] ?? 0) !== $count) {
+                throw new CoordinationStateCorrupt('Diagnostic leases are missing their active writer count.');
             }
         }
         usort($leases, static fn (WriterLease $left, WriterLease $right): int => strcmp($left->token()->value(), $right->token()->value()));

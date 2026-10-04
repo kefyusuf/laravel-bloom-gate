@@ -13,6 +13,9 @@ interface WriterLeaseInspector
     /**
      * @return list<WriterLease> Active A/P records, ordered by token.
      *
+     * Enumeration checks persisted epoch counts against active records in the
+     * same atomic observation; disagreement is corruption, never repair.
+     *
      * @phpstan-impure
      */
     public function readActiveLeases(FilterName $name): array;

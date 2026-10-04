@@ -137,3 +137,17 @@ implementation on `feat/m6-wu10-coordination-diagnostics`. It is preserved rathe
 than overwritten. Its inspection/status API differs from this completed M6
 surface. Disclose the overlap in the completion PR and resolve it before merging
 both branches; do not force-push or discard its history.
+
+## Overlap resolution
+
+Retain the complete M6 API in #67, which matches the canonical operation docs and
+Laravel integration. Incorporate #66's additional atomic count/lease integrity
+validation into the opt-in inspector, with tests first and no storage repair.
+Normal status/doctor enumeration remains opt-in; alternate doctor vocabulary and
+pending-state severity are not required by the accepted protocol.
+
+Independent comparison and focused code review accepted this choice. See the
+[reconciliation evidence](../verification/2026-10-04-m6-pr-reconciliation.md).
+After current-head CI passes, integrate #67 and mark #66 superseded while
+preserving its branch and commits. The alternative implementations must not both
+be merged unmodified.

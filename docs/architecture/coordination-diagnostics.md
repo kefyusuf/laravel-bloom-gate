@@ -48,6 +48,11 @@ implementations return active A/P records ordered by token, retaining each lease
 original epoch and targets. Released tombstones are excluded. Enumeration is
 requested explicitly with `read($name, includeLeases: true)` and requires an
 inspector; it is not performed on ordinary status or doctor reads.
+Within enumeration, persisted epoch counts are compared atomically against the
+active A/P records. Redis reads both same-filter keys in one Lua call; Memory
+uses one uninterrupted observation. Missing/excess counts or malformed count
+storage cause corruption, with no repair. This internal integrity check does not
+make the separately observed status drain count a workflow authorization.
 
 `ManagedFilterStatusReader` accepts an optional coordination reader and exposes
 its result through `ManagedFilterStatus::coordination()`. `ProductionSafetyDoctor`

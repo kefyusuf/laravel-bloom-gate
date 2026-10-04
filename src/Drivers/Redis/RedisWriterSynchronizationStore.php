@@ -90,7 +90,7 @@ final readonly class RedisWriterSynchronizationStore implements WriterLeaseInspe
     public function readActiveLeases(FilterName $name): array
     {
         $response = $this->evaluate(RedisWriterSynchronizationScripts::readActiveLeases(),
-            [$this->keyspace->syncLeasesKey($name)], []);
+            [$this->keyspace->syncLeasesKey($name), $this->keyspace->syncCountsKey($name)], []);
         $this->throwIfFailure('readActiveLeases', $response);
         if ((count($response) - 1) % 2 !== 0) {
             throw $this->unexpectedReply('readActiveLeases', $response);
