@@ -53,6 +53,7 @@ publication is included.
 - [Source distribution consumer](verification/2026-10-04-distribution-consumer.md)
 - [Deep release gate](verification/2026-10-04-release-gate.md)
 - [GitHub ZIP / Composer dist consumer](verification/2026-10-04-provider-dist-consumer.md)
+- [First release candidate readiness](verification/2026-10-05-release-readiness.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -160,3 +161,10 @@ through Composer dist and checks its installed commit/type, file exclusions and
 production-only Laravel consumer. The ZIP is downloaded first and consumed as a
 local file. This does not prove Packagist indexing or Composer remote transport;
 the consumer remains PHP 8.4/Laravel 13 with Memory bootstrap.
+
+First-release preparation now has reviewed-text candidates for `v0.1.0-rc.1`
+and a concrete publication gate. This is a proposed evaluation prerelease;
+no version tag or publication is authorized or created. Finish preparation PR
+checks/review, then verify the selected main revision with Release Gate and
+Distribution before seeking explicit publication approval. Do not expand this
+boundary into M7 features or certification of an unobserved deployment.
