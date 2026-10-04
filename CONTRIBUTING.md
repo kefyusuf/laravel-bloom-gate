@@ -12,6 +12,12 @@ Laravel Bloom Gate is developed with explicit architectural boundaries and evide
 6. Open a pull request and complete the architecture/risk sections.
 7. Merge after checking CI and review results, including any overlapping work.
 
+`main` is protected: integrate through a pull request with the successful
+GitHub Actions `quality` check, keeping the branch up to date. The protection
+also applies to administrators; force pushes and main deletion are blocked.
+The single-maintainer baseline requires no external approval quorum. Use squash
+merge by preference and preserve branches until their history is no longer needed.
+
 For behavior changes, follow TDD: establish a failing regression, implement the
 smallest correction, and verify the result before committing and opening the PR.
 Preserve existing red/green evidence when integrating work already completed;

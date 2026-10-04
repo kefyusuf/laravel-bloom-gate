@@ -50,6 +50,7 @@ publication is included.
 - [Integration preparation and PR draft](plans/2026-10-04-m6-integration.md)
 - [PR reconciliation evidence](verification/2026-10-04-m6-pr-reconciliation.md)
 - [Production-only consumer installation](verification/2026-10-04-consumer-installation.md)
+- [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
 - [M6 work-unit plan](plans/2026-09-28-m6-implementation-task-breakdown-verification-matrix.md)
@@ -132,3 +133,10 @@ A separate production-only PHP 8.4/Laravel 13 consumer check passed package
 auto-discovery, service resolution and command execution without Testbench or
 PHPUnit. This verifies a minimal Memory-backed consumer, not every deployment
 profile or a published Composer distribution. See its verification report.
+
+Issue #2's repository administration baseline has been applied and read back:
+main requires PRs and the GitHub Actions `quality` check, including administrators;
+force pushes and main deletion are disabled. There is no external approval quorum.
+Metadata/topics and private vulnerability reporting are configured. Automatic
+branch deletion stays disabled. Read the administration report and live PR state
+for its functional merge verification; refresh settings before relying on them.
