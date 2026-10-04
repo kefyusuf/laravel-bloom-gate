@@ -10,6 +10,10 @@ count/lease reconciliation are merged. Earlier feature commits are historical
 evidence; do not assume they remain separate commits after the squash merge.
 Later documentation or implementation commits may advance `main`.
 
+Published evaluation candidate: `v0.1.0-rc.1`, targeting
+`77401a64b76ea7ceb47a6254fd1f38b3a0d09aca`. The tag is immutable; later release
+record updates on `main` do not move it. Consult the publication record below.
+
 Before relying on this record, verify the directory, branch, HEAD, and status:
 
 ```powershell
@@ -36,10 +40,10 @@ Do not reset the checkout to reproduce this handoff.
 - Compatibility fixes preserve the token generator's native non-empty-string
   result and remove version-sensitive Mockery typing from drain polling evidence.
 
-The package remains pre-release. Earlier verification steps did not commit or
-publish the result; the current authorized workflow is tests, branch/commit,
-pull-request checks, then merge according to the results. No tag or package
-publication is included.
+The package remains an evaluation prerelease. Earlier verification steps did not
+publish the result. Development uses tests, branch/commit, pull-request checks,
+then merge according to the results. The first candidate publication received
+separate explicit user approval; see the publication record for its exact scope.
 
 ## Verification and architecture references
 
@@ -54,6 +58,7 @@ publication is included.
 - [Deep release gate](verification/2026-10-04-release-gate.md)
 - [GitHub ZIP / Composer dist consumer](verification/2026-10-04-provider-dist-consumer.md)
 - [First release candidate readiness](verification/2026-10-05-release-readiness.md)
+- [Published evaluation candidate](verification/2026-10-05-published-candidate.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -130,8 +135,9 @@ assertions. PHP 8.3/Laravel 12 minimum dependencies passed the same full suite;
 the earlier seven-set matrix remains separate historical evidence.
 
 CodeRabbit skipped review and Qodo reviews were paused; their status was not
-treated as independent approval. The package remains pre-release, with no tag
-or publication created. No M7 feature scope is defined in the accepted roadmap.
+treated as independent approval. The package remains an evaluation prerelease;
+the later publication record documents its first candidate tag. No M7 feature
+scope is defined in the accepted roadmap.
 
 A separate production-only PHP 8.4/Laravel 13 consumer check passed package
 auto-discovery, service resolution and command execution without Testbench or
@@ -162,9 +168,8 @@ production-only Laravel consumer. The ZIP is downloaded first and consumed as a
 local file. This does not prove Packagist indexing or Composer remote transport;
 the consumer remains PHP 8.4/Laravel 13 with Memory bootstrap.
 
-First-release preparation now has reviewed-text candidates for `v0.1.0-rc.1`
-and a concrete publication gate. This is a proposed evaluation prerelease;
-no version tag or publication is authorized or created. Finish preparation PR
-checks/review, then verify the selected main revision with Release Gate and
-Distribution before seeking explicit publication approval. Do not expand this
-boundary into M7 features or certification of an unobserved deployment.
+First-release preparation completed through PR #73. After explicit user approval,
+`v0.1.0-rc.1` was published as a GitHub prerelease on the exact selected main
+revision. Its seven-target Release Gate, Distribution and Quality passed before
+publication. No Packagist submission was performed. This does not certify an
+unobserved production deployment or authorize M7 feature expansion.

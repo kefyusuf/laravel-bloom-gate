@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-10-05
+
 ### Fixed
 
 - Opt-in lease diagnostics now atomically reject count/lease disagreement in
