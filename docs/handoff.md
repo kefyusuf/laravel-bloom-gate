@@ -52,6 +52,7 @@ publication is included.
 - [Production-only consumer installation](verification/2026-10-04-consumer-installation.md)
 - [Source distribution consumer](verification/2026-10-04-distribution-consumer.md)
 - [Deep release gate](verification/2026-10-04-release-gate.md)
+- [GitHub ZIP / Composer dist consumer](verification/2026-10-04-provider-dist-consumer.md)
 - [Repository administration baseline](verification/2026-10-04-repository-administration.md)
 - [Laravel coordination and recovery](architecture/laravel-coordination.md)
 - [Coordination diagnostics](architecture/coordination-diagnostics.md)
@@ -153,3 +154,9 @@ The manual Release Gate now includes full live-Redis tests, dependency audits an
 Laravel package discovery across all six PHP/Laravel combinations and the minimum
 dependency set. Its candidate-commit CI results must be inspected before relying
 on the new workflow as release evidence; consult the deep release gate report.
+
+Distribution verification now also installs a real GitHub candidate-commit ZIP
+through Composer dist and checks its installed commit/type, file exclusions and
+production-only Laravel consumer. The ZIP is downloaded first and consumed as a
+local file. This does not prove Packagist indexing or Composer remote transport;
+the consumer remains PHP 8.4/Laravel 13 with Memory bootstrap.
