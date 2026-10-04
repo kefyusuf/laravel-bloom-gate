@@ -1,6 +1,15 @@
 # Laravel Bloom Gate
 
-> **Status:** pre-release — M5 safe Laravel query integration is complete.
+> **Status:** pre-release — M6 online rebuild/write coordination is implementation-complete.
+
+M6 includes coordinated persistence, prepared writers, explicit adoption/recovery,
+online rebuild/abort, coordination diagnostics, and Laravel adapters/commands.
+See the [final verification report](docs/verification/2026-10-02-m6-wu13.md),
+[full local release matrix](docs/verification/2026-10-02-release-matrix.md),
+[final code review and post-fix checks](docs/verification/2026-10-02-m6-final-review.md),
+[Laravel coordinated operation](docs/architecture/laravel-coordination.md),
+[coordination diagnostics](docs/architecture/coordination-diagnostics.md)
+and the [M6 work-unit plan](docs/plans/2026-09-28-m6-implementation-task-breakdown-verification-matrix.md).
 
 Laravel Bloom Gate is a production-safe probabilistic query gate for Laravel applications.
 
@@ -195,7 +204,8 @@ Redis Sentinel and Redis Cluster runtime support are **not** M5 support claims. 
 7. Missing/corrupt managed Redis storage is never interpreted as a definite negative.
 8. Old unbound M3 generations are query-skip-ineligible, not automatically corrupt.
 9. Observer-based eventual synchronization is not trusted-negative authority.
-10. M5 does not claim online dual-write rebuild, CDC/outbox synchronization, Redis Sentinel, or Redis Cluster runtime support.
+10. Coordinated writes require explicit adoption and durable PREPARED evidence before authoritative visibility; unknown outcomes retain active leases.
+11. CDC/outbox synchronization, Redis Sentinel, and Redis Cluster runtime support remain outside the implemented scope.
 
 ## Architecture
 
@@ -209,6 +219,8 @@ See:
 - [Lifecycle](docs/architecture/lifecycle.md)
 - [Redis foundation](docs/architecture/redis-foundation.md)
 - [Redis keyspace](docs/architecture/redis-keyspace.md)
+- [Laravel coordinated operation](docs/architecture/laravel-coordination.md)
+- [Coordination diagnostics](docs/architecture/coordination-diagnostics.md)
 - [ADRs](docs/adr)
 
 ## Requirements
@@ -233,7 +245,7 @@ Predis operational-exception normalization is unit-tested, but real Predis runti
 - **M3:** Redis foundation — complete
 - **M4:** lifecycle and verification — complete
 - **M5:** safe Laravel query integration — implementation complete
-- **M6:** deferred hardening such as online rebuild/dual-write coordination and broader runtime profiles
+- **M6:** online rebuild/write coordination — implementation complete; pre-release
 
 ## Contributing
 

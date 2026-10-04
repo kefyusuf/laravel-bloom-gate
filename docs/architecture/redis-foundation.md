@@ -210,12 +210,18 @@ Verified M5 Redis support:
 - production diagnostics reads;
 - `noeviction` profile expectation.
 
-Not claimed in M5:
+M6 additionally verifies coordinated ownership, strict synchronization/lease/count
+representation, opposite-revision atomic fences, epoch-pinned writer admission,
+prepared writer lifetime, and resumable rebuild/abort on live Redis 8.
+See [coordination keyspace](redis-keyspace.md#m6-coordination-keys) and
+[final M6 evidence](../verification/2026-10-02-m6-wu13.md).
+
+Not claimed:
 
 - Redis Sentinel runtime support;
 - Redis Cluster runtime support;
 - replica trusted negatives;
-- online dual-write rebuild;
-- automatic writer barriers.
+- automatic enrollment of external writers;
+- correctness lease expiry or automatic release.
 
 Same-filter keys remain Cluster hash-tag compatible by construction, but that is not a Cluster runtime-support claim.

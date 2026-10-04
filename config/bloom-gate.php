@@ -35,5 +35,7 @@ return [
         'chunk_size' => 1000,
     ],
 
+    // Per-filter 'coordination' may be null (legacy) or 'coordinated-v1'.
+    // The declaration requires explicit adoption and complete writer coverage.
     'filters' => [],
 ];

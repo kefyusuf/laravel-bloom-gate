@@ -207,14 +207,37 @@ For the M5 Redis trusted-negative profile it can inspect:
 
 A successful doctor run is point-in-time evidence, not a daemon or lease. The operator remains responsible for keeping the declared production profile true.
 
-## M5 boundary
+## M6 coordinated operation
 
-M5 intentionally does not implement or claim:
+M6 adds opt-in coordination for mutable `preadd-v1` filters. The Application
+layer owns adoption, prepared writer lifetime, rebuild phase transitions, abort,
+and evidence-bound lease recovery. Memory and Redis persistence own atomic
+control/sync observations, opposite-revision fencing and epoch-pinned admission.
+Laravel supplies configuration, facade preparation, workflow commands and diagnostics.
+
+All membership-entry writers must acquire a stable token, pre-add every persisted
+target, and durably reach PREPARED before making authoritative membership visible.
+Known outcomes permit release; unknown outcomes keep the lease active. Both
+ACQUIRED and PREPARED leases count until terminal release. No correctness TTL or
+automatic release exists.
+
+Rebuild publishes a candidate and rotates admission, drains old writers,
+reconciles and freshly verifies the candidate, promotes control, then contracts
+targets and drains remaining dual-target writers. Abort also persists intent and
+drains relevant epochs before retirement. Repeated commands resume durable work.
+Brownfield adoption requires an externally established quiescent handoff and no
+current candidate. Ownership permanently fences the legacy mutation path.
+
+See [coordinated operation](laravel-coordination.md),
+[diagnostics](coordination-diagnostics.md), and the
+[M6 verification report](../verification/2026-10-02-m6-wu13.md).
+
+## Remaining boundary
+
+The package does not implement or claim:
 
 - Redis Sentinel runtime support;
 - Redis Cluster runtime support;
-- online dual-write rebuild;
-- writer barriers;
 - CDC/outbox-based synchronization;
 - background continuous profile attestation;
 - observer-based trusted-negative authority.

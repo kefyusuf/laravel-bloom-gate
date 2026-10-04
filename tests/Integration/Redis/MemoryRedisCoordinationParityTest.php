@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kefyusuf\BloomGate\Tests\Integration\Redis;
 
+use Kefyusuf\BloomGate\Application\CoordinatedFilterAdopter;
 use Kefyusuf\BloomGate\Contracts\CoordinatedLifecycleSnapshot;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationFenced;
 use Kefyusuf\BloomGate\Contracts\Exception\CoordinationStateCorrupt;
@@ -11,6 +12,7 @@ use Kefyusuf\BloomGate\Contracts\Exception\CoordinationWriteConflict;
 use Kefyusuf\BloomGate\Contracts\Exception\FilterControlWriteConflict;
 use Kefyusuf\BloomGate\Contracts\Exception\UnknownWriterLease;
 use Kefyusuf\BloomGate\Contracts\Exception\WriterLeaseReleased;
+use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
 use Kefyusuf\BloomGate\Core\FilterControlState;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\FilterStateRevision;
@@ -37,6 +39,132 @@ use Throwable;
 #[Group('redis')]
 final class MemoryRedisCoordinationParityTest extends TestCase
 {
+    public function test_r07_candidate_retirement_fences_stale_publication(): void
+    {
+        $this->assertParity('R07', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->putControl($name, $this->controlState($name, 1));
+            $harness->putCoordination($name, true, $this->syncState(1, 1, []));
+            $observed = $harness->lifecycle()->read($name);
+            $version = FilterVersion::fromInt(1);
+            $retired = new FilterControlState($name, FilterStateRevision::fromInt(2), $version, null, null, [
+                new GenerationControlState($version, LifecycleState::Retired, HealthState::Unavailable),
+            ]);
+            $harness->lifecycle()->compareAndSwapControl($name, $retired, $observed->control()?->revision(), SynchronizationRevision::fromInt(1));
+            $publication = $this->outcome(fn () => $harness->lifecycle()->compareAndSwapSynchronization($name, $this->syncState(2, 2, [1]), SynchronizationRevision::fromInt(1), $observed->control()?->revision()));
+            $synchronization = $harness->lifecycle()->read($name)->synchronization();
+            self::assertNotNull($synchronization);
+
+            return [
+                'publication' => $publication,
+                'targets' => $this->targetValues($synchronization->currentTargets()),
+            ];
+        }, ['publication' => 'conflict', 'targets' => []]);
+    }
+
+    public function test_c01_owner_only_interruption_resumes_explicit_adoption_on_both_backends(): void
+    {
+        $this->assertParity('C01', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->lifecycle()->claimOwnership($name, null);
+            $blocked = $this->outcome(fn () => $harness->writer()->acquire($name, $this->token('d')));
+            $adopter = new CoordinatedFilterAdopter($harness->lifecycle());
+            $first = $adopter->adopt($name);
+            $retry = (new CoordinatedFilterAdopter($harness->lifecycle()))->adopt($name);
+
+            return [
+                'blocked' => $blocked,
+                'first' => $first->name,
+                'retry' => $retry->name,
+                'epoch' => $harness->writer()->acquire($name, $this->token('d'))->epoch()->value(),
+                'count' => $harness->writer()->activeWriterCount($name, SynchronizationEpoch::fromInt(1)),
+            ];
+        }, ['blocked' => 'fenced', 'first' => 'Adopted', 'retry' => 'AlreadyAdopted', 'epoch' => 1, 'count' => 1]);
+    }
+
+    public function test_r12_enumeration_can_become_stale_across_release_without_changing_durable_counts(): void
+    {
+        $this->assertParity('R12', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->putCoordination($name, true, $this->syncState(1, 1, [1]));
+            $store = $harness->writer();
+            self::assertInstanceOf(WriterLeaseInspector::class, $store);
+            $token = $this->token('e');
+            $store->acquire($name, $token);
+            $observed = $store->readActiveLeases($name);
+            $store->release($name, $token);
+
+            return [
+                'observed_before_release' => count($observed),
+                'count_after_release' => $store->activeWriterCount($name, SynchronizationEpoch::fromInt(1)),
+                'observed_after_release' => count($store->readActiveLeases($name)),
+            ];
+        }, ['observed_before_release' => 1, 'count_after_release' => 0, 'observed_after_release' => 0]);
+    }
+
+    public function test_r01_ownership_claim_fences_previously_observed_legacy_control_revision(): void
+    {
+        $this->assertParity('R01', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->putControl($name, $this->controlState($name, 1));
+            $observed = $harness->control()->read($name);
+            self::assertNotNull($observed);
+            $harness->lifecycle()->claimOwnership($name, $observed->revision());
+
+            return [
+                'stale_write' => $this->outcome(fn () => $harness->control()->compareAndSwap($name, $this->controlState($name, 2), $observed->revision())),
+                'revision' => $harness->lifecycle()->read($name)->control()?->revision()->value(),
+            ];
+        }, ['stale_write' => 'fenced', 'revision' => 1]);
+    }
+
+    public function test_r04_prepare_before_and_after_rotation_preserves_original_binding(): void
+    {
+        $this->assertParity('R04', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->putCoordination($name, true, $this->syncState(1, 1, [1, 2]));
+            $before = $this->token('a');
+            $after = $this->token('b');
+            $harness->writer()->acquire($name, $before);
+            $harness->writer()->acquire($name, $after);
+            $first = $harness->writer()->markPrepared($name, $before);
+            $harness->lifecycle()->compareAndSwapSynchronization($name, $this->syncState(2, 2, [2]), SynchronizationRevision::fromInt(1), null);
+            $second = $harness->writer()->markPrepared($name, $after);
+
+            return [
+                'before' => $this->leaseTrace($first),
+                'after' => $this->leaseTrace($second),
+                'old_count' => $harness->writer()->activeWriterCount($name, SynchronizationEpoch::fromInt(1)),
+                'new_count' => $harness->writer()->activeWriterCount($name, SynchronizationEpoch::fromInt(2)),
+            ];
+        }, [
+            'before' => ['state' => 'P', 'epoch' => 1, 'targets' => [1, 2]],
+            'after' => ['state' => 'P', 'epoch' => 1, 'targets' => [1, 2]],
+            'old_count' => 2,
+            'new_count' => 0,
+        ]);
+    }
+
+    public function test_r06_terminal_release_wins_against_acquire_retry_in_both_orders(): void
+    {
+        $this->assertParity('R06', function (CoordinationParityHarness $harness, FilterName $name): array {
+            $harness->putCoordination($name, true, $this->syncState(1, 1, [1]));
+            $token = $this->token('c');
+            $harness->writer()->acquire($name, $token);
+            $retry = $harness->writer()->acquire($name, $token);
+            $released = $harness->writer()->release($name, $token);
+
+            return [
+                'retry_before' => $this->leaseTrace($retry),
+                'released' => $this->leaseTrace($released),
+                'retry_after' => $this->outcome(fn () => $harness->writer()->acquire($name, $token)),
+                'prepare_after' => $this->outcome(fn () => $harness->writer()->markPrepared($name, $token)),
+                'count' => $harness->writer()->activeWriterCount($name, SynchronizationEpoch::fromInt(1)),
+            ];
+        }, [
+            'retry_before' => ['state' => 'A', 'epoch' => 1, 'targets' => [1]],
+            'released' => ['state' => 'R', 'epoch' => 1, 'targets' => [1]],
+            'retry_after' => 'released_lease',
+            'prepare_after' => 'released_lease',
+            'count' => 0,
+        ]);
+    }
+
     public function test_p01_uncoordinated_ordinary_control_cas_is_eligible(): void
     {
         $this->assertParity(

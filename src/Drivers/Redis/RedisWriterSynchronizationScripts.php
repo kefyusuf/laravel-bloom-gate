@@ -66,6 +66,66 @@ LUA;
         return self::prelude().PHP_EOL.$operation;
     }
 
+    public static function readActiveLeases(): string
+    {
+        $operation = <<<'LUA'
+local keyType = redis.call('TYPE', KEYS[1]).ok
+local countsType = redis.call('TYPE', KEYS[2]).ok
+if (keyType ~= 'none' and keyType ~= 'hash')
+    or (countsType ~= 'none' and countsType ~= 'hash') then
+    return {'204'}
+end
+local persistedCounts = {}
+if countsType == 'hash' then
+    local fields = redis.call('HGETALL', KEYS[2])
+    for index = 1, #fields, 2 do
+        local epoch = string.match(fields[index], '^e:([1-9][0-9]*)$')
+        local count = fields[index + 1]
+        if epoch == nil or not isCanonicalPositiveInteger(epoch)
+            or not isCanonicalNonNegativeInteger(count) then
+            return {'204'}
+        end
+        persistedCounts[epoch] = count
+    end
+end
+local tokens = redis.call('HKEYS', KEYS[1])
+table.sort(tokens)
+local response = {'100'}
+local activeCounts = {}
+for _, token in ipairs(tokens) do
+    if #token ~= 32 or string.match(token, '^[0-9a-f]+$') == nil then
+        return {'204'}
+    end
+    local status, state, epoch, _, encoded = loadLease(KEYS[1], token)
+    if status ~= 'ok' then
+        return {'204'}
+    end
+    if state ~= 'R' then
+        local count = incrementNonNegativeInteger(activeCounts[epoch] or '0')
+        if count == nil then
+            return {'204'}
+        end
+        activeCounts[epoch] = count
+        response[#response + 1] = token
+        response[#response + 1] = encoded
+    end
+end
+for epoch, count in pairs(activeCounts) do
+    if persistedCounts[epoch] ~= count then
+        return {'204'}
+    end
+end
+for epoch, count in pairs(persistedCounts) do
+    if (activeCounts[epoch] or '0') ~= count then
+        return {'204'}
+    end
+end
+return response
+LUA;
+
+        return self::prelude().PHP_EOL.$operation;
+    }
+
     public static function acquire(): string
     {
         $operation = <<<'LUA'

@@ -10,6 +10,12 @@ Laravel Bloom Gate is developed with explicit architectural boundaries and evide
 4. Add or update executable verification.
 5. Update documentation or an ADR when a public or architectural contract changes.
 6. Open a pull request and complete the architecture/risk sections.
+7. Merge after checking CI and review results, including any overlapping work.
+
+For behavior changes, follow TDD: establish a failing regression, implement the
+smallest correction, and verify the result before committing and opening the PR.
+Preserve existing red/green evidence when integrating work already completed;
+do not represent a retroactive test-only commit as a newly executed failing run.
 
 ## Local quality gate
 

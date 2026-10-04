@@ -6,7 +6,39 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- Opt-in lease diagnostics now atomically reject count/lease disagreement in
+  Memory and Redis, including malformed count storage, without repairing state.
+- Coordination diagnostics distinguish invalid configuration from unavailable
+  infrastructure. Status retains coordination evidence and its failure exit when
+  control or generation status cannot be read.
+- Minimum-dependency static-analysis compatibility for writer token generation
+  and deterministic Laravel drain-polling test fixtures.
+
 ### Added
+
+- Local release-matrix evidence for PHP 8.3/8.4/8.5 with Laravel 12/13,
+  plus the Laravel 12 minimum-dependency set, including live-Redis regression.
+
+- M6 implementation closure with canonical coordination/recovery documentation
+  and final Core, contract, architecture, Laravel and live-Redis verification.
+
+- M6 WU-12 deterministic Memory/live-Redis race and interruption evidence for
+  writer acknowledgements, rebuild/abort recovery, stale publication, competing
+  coordinators, prepared-lease drains, and read-only diagnostics.
+- R01–R12 and C01–C20 verification index, including the external history boundary.
+
+- M6 WU-11 Laravel coordination port/service bindings and per-filter explicit
+  `coordinated-v1` runtime requirements.
+- `BloomGate::prepare()` plus thin adoption, rebuild/resume, abort/resume, and
+  evidence-bound lease-resolution commands, with bounded drain polling.
+- Coordination status/doctor presentation and opt-in active lease output.
+
+- M6 WU-10 framework-neutral coordination status and read-only doctor diagnostics,
+  including ownership/config disagreement, drain blockers, and resumable rebuild/abort recovery states.
+- Optional Memory/Redis active A/P lease diagnostics retaining original bindings
+  and excluding released tombstones, with shared live-backend contract evidence.
 
 - Initial repository and package bootstrap.
 - Laravel package discovery and safe default configuration.

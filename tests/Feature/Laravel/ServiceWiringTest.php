@@ -12,7 +12,6 @@ use Kefyusuf\BloomGate\Application\ManagedFilterVerifier;
 use Kefyusuf\BloomGate\Application\MembershipAdder;
 use Kefyusuf\BloomGate\Application\QueryGate;
 use Kefyusuf\BloomGate\Application\QuerySafetyDescriptorResolver;
-use Kefyusuf\BloomGate\Application\UncoordinatedRuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\BloomDriver;
@@ -27,6 +26,7 @@ use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\HealthState;
 use Kefyusuf\BloomGate\Laravel\BloomGateManager;
 use Kefyusuf\BloomGate\Laravel\BloomGateServiceProvider;
+use Kefyusuf\BloomGate\Laravel\ConfigRuntimeCoordinationRequirement;
 use Kefyusuf\BloomGate\Laravel\Facades\BloomGate as BloomGateFacade;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerificationEvidenceApplier;
 use Kefyusuf\BloomGate\Lifecycle\ActivationVerifier;
@@ -84,7 +84,7 @@ it('resolves the complete application and lifecycle service graph with memory dr
         ->and($application->make(FilterControlStore::class))
         ->toBeInstanceOf(LegacyMutationFilterControlStore::class)
         ->and($application->make(RuntimeCoordinationRequirement::class))
-        ->toBeInstanceOf(UncoordinatedRuntimeCoordinationRequirement::class);
+        ->toBeInstanceOf(ConfigRuntimeCoordinationRequirement::class);
 });
 
 it('shares memory coordinated ownership with the public legacy control fence', function (): void {

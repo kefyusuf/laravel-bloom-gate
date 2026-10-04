@@ -26,9 +26,10 @@ final readonly class ManagedFilterStatusReader
         private BloomGenerationInspector $inspector,
         private GenerationContractStore $contracts,
         private SemanticFingerprintCalculator $fingerprints,
+        private ?CoordinationStatusReader $coordination = null,
     ) {}
 
-    public function read(FilterName $name): ManagedFilterStatus
+    public function read(FilterName $name, bool $includeLeases = false): ManagedFilterStatus
     {
         $registered = true;
         $filterEnabled = null;
@@ -78,6 +79,7 @@ final readonly class ManagedFilterStatusReader
                 'candidate',
                 $expectedContract,
             ),
+            coordination: $this->coordination?->read($name, $includeLeases),
         );
     }
 
