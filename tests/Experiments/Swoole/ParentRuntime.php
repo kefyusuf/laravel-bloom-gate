@@ -1,11 +1,14 @@
 <?php
 
 declare(strict_types=1);
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedMemoryDomain;
 use Swoole\Table;
 
 final class ParentRuntime
 {
     public static ?Table $control = null;
+
+    public static ?SharedMemoryDomain $domain = null;
 
     public static function initialize(): void
     {
@@ -24,5 +27,6 @@ final class ParentRuntime
             throw new RuntimeException('Parent control table could not be initialized.');
         }
         self::$control = $control;
+        self::$domain = new SharedMemoryDomain;
     }
 }

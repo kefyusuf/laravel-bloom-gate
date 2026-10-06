@@ -36,7 +36,29 @@ outside HTTP workers; their environment must contain none of these credentials.
 The tests verify its actual grants, global seal and
 rejected INSERT/UPDATE/DELETE (MySQL errors 1142 or 1290 only).
 
-Task 1 verifies native capability and unpublished control state. It does not
-implement QueryGate or establish trusted negative/SQL-bypass behavior. The real
-QueryGate decision and authoritative SQL call assertions are required in Task 2.
-No HTTP performance claim is made by these tests.
+Task 1 verifies native capability and unpublished control state. Task 2 uses the
+actual package QueryGate/resolver through fixture-only shared-memory ports.
+The parent explicitly publishes only when `SHARED_MEMORY_PUBLISH=1`; otherwise
+the query endpoint remains SQL-only. Publication enumerates the sealed SQL set
+and verifies the exact million-row digest before exposing a generation.
+No database connection survives publication into the HTTP workers.
+
+`SharedMemoryDomain` retains at most two generations, uses packed 4096-byte
+chunks with exact-length/SHA-256 validation, and binds layout/semantics/data/build
+to a sealed manifest. The authorized probe validates the whole control tuple
+before/after reading every touched chunk, and rechecks manifest identity at the
+end. Drift, missing/corrupt storage or unsafe metadata bypasses to SQL. Mutation,
+contract binding and early retirement through the adapters raise protocol errors.
+Native Tables remain writable primitives; only test code injects faults, and
+there is no HTTP publication or generation-mutation endpoint.
+
+The script runs capability, query-safety and HTTP suites separately. Safety tests
+exhaustively probe all 1,000,000 seeded keys, force a publication race with a fork
+barrier, reject stale incarnations and failed writes, and verify exact SQL calls
+for positives, forced false positives and selected negatives. Small fault-test
+fixtures use a matching single-row SQL scope with a distinct semantic identity;
+the HTTP/exhaustive checks use the full sealed dataset.
+
+No HTTP performance claim is made by these tests. See the
+[query safety record](../../../docs/verification/2026-10-06-shared-memory-query-safety.md)
+and [runtime provenance](../../../docs/verification/evidence/2026-10-06-shared-memory-provenance.json).

@@ -2,9 +2,24 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedMemoryQuery;
 use Laravel\Octane\Swoole\WorkerState;
 use Swoole\Http\Server;
+
+Route::get('/query', function (Request $request): array {
+    $key = $request->query('key');
+    if (! is_string($key)) {
+        throw new InvalidArgumentException('A membership key is required.');
+    }
+    $domain = ParentRuntime::$domain ?? throw new RuntimeException('Parent query domain is unavailable.');
+    $query = new SharedMemoryQuery($domain);
+    $result = $query->lookup($key);
+
+    return ['exists' => $result->exists(), 'membership' => $result->membership()->name,
+        'sql_calls' => $query->sqlCalls(), 'pid' => getmypid(), 'filter' => $domain->name->value()];
+});
 
 Route::get('/probe', function (): array {
     $row = ParentRuntime::$control?->get('active');

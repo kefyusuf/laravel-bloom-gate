@@ -1,0 +1,31 @@
+{
+  "scope": "task2-local-native-safety",
+  "package_source_base": "4fea698662074cd4ab7ba891fdf3a1b5e1e97bfa",
+  "production_source_changed": false,
+  "runtime": {"php": "8.4.26", "openswoole": "26.2.0", "laravel": "13.34.0", "octane": "2.20.0", "http_workers": 4, "task_workers": 0},
+  "images": {
+    "php_base": "php:8.4-cli-bookworm@sha256:f1d32fb402fffba0b3dd8ba8c0aca474c9e9f04395fa846eedea77c503257dee",
+    "composer_base": "composer:2@sha256:9715c7f69044da2a212a5fbde29ee7da24e364d426560ae6367b060236f847d7",
+    "mysql": "mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+    "local_built_image_id": "sha256:90dfcea91986c097e2e573be247f23b6085bad95f72c0b2cd9c9a0df7c52f1c2"
+  },
+  "dataset": {"rows": 1000000, "sha256": "9ee8cb5c216392aacf242289162d07bc7292f5c06ffa373a51d4f7d1e10fae00", "immutable": true, "synthetic": true},
+  "shared_memory_bytes": {"chunks": 8749104, "control": 29744, "manifests": 546864, "total": 9325712},
+  "hash_encoding": "sha256 of UTF-8 source with CRLF normalized to LF; paths relative to tests/Experiments/Swoole",
+  "source_sha256": {
+    "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+    "compose.yaml": "cbfc50a933b297f862051953d93c77bc37d507fa8d424db30616f024ffaf950c",
+    "composer.lock": "343f37ed74f18c8a476155dd42437c5ef9978134027726e7d28fc5fd474b60be",
+    "SharedMemoryDomain.php": "74503956d33662dd85ee91c0feb995e5725b16e76a6377dbab9fff966200001f",
+    "SharedMemoryPorts.php": "2d35636088ad9a5d4cfa34031b7a285354da08f4260fa9eb69ea1d0a73ac9910",
+    "SharedMemoryQuery.php": "1bfc38837753392bfaddeac31e0dd21e0e2c5d7286ac2ac3c20c2465cfb86da0",
+    "SharedMemoryQueryTest.php": "a4b9cbb0bb5721ec3eca8ac7806e40ff941f5200b0ce4185329db83dba17411f",
+    "SharedMemoryHttpTest.php": "c4d9db6144f7dc5a629fa07e854bab136711299d26c984062ba9306f4f461864",
+    "ParentRuntime.php": "f5fc2e00ea21696fb57dacdbee68f9703c5ae3f5fe8eb28d375ae973875f18eb",
+    "parent-server.php": "d096af9c1a6f6cd1859ed3930b75fae64c8fab226e8fd0a48d7358ecea12f41f",
+    "routes.php": "277d54b995ab8b04dd6bdff28f98c78d97630c895dfabd9627b7535a82df7008",
+    "fixture.php": "3d256f7398c3dfb156960b806451cc352b7353ca1afda88e3668a38b94013281",
+    "run.sh": "95245798fa76653cd6b309dd5152ab034f45dfd2cdde79dd86b27e672a117da1",
+    "bootstrap/app.php": "b0ade9ff4ca257420f599b01c9069db0bf44714c9d96e473726263160bac5026"
+  }
+}

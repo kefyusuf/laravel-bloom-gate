@@ -6,13 +6,18 @@ The user approved the Redis-free single-host evaluation; plan PR #86 merged at
 `ad6fc04e5319d009bbda2b0e06600342afef57ac`. See
 the [implementation plan](plans/2026-10-06-single-host-shared-memory-evaluation.md) and
 [experiment design](architecture/single-host-shared-memory-evaluation.md).
-Task 1's capability fixture is implemented on `test/swoole-shared-memory-capability`.
+Task 1's capability fixture merged in PR #87 at
+`4fea698662074cd4ab7ba891fdf3a1b5e1e97bfa` after independent review and all
+exact-head checks (native CI `37481211118`, 4 tests/43 assertions).
 See the [capability record](verification/2026-10-06-shared-memory-capability.md).
-Its native tests and local package checks pass; refresh its exact-commit PR/CI
-and independent review before Task 2. This is an immutable synthetic-data experiment,
+Task 2 is implemented on `test/swoole-coherent-query-gate`; see the
+[query safety record](verification/2026-10-06-shared-memory-query-safety.md).
+Local native query/HTTP tests and package quality checks pass; refresh its
+exact-commit PR/CI before Task 3. This is an immutable synthetic-data experiment,
 not a change to ADR-0003 production support or an authorization to publish a
-new backend. Task 1 proves native sharing and sealed SQL permissions, not actual
-QueryGate negatives or concurrent HTTP performance.
+new backend. Task 2 proves actual QueryGate behavior and selected SQL call counts,
+with exhaustive authorized probes of the million seeded keys. Concurrent equal
+offered-load HTTP performance remains unmeasured and belongs to Task 3.
 
 For synthetic application checks, use the [blank Laravel factory demo](verification/2026-10-06-factory-demo.md).
 It owns its demo data, dependency installation and Docker stack. Do not inspect
