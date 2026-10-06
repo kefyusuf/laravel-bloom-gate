@@ -1,0 +1,24 @@
+services:
+  php:
+    image: ${FACTORY_DEMO_PHP_IMAGE:?Set a PHP 8.3+ image with Composer, Redis and PDO SQLite extensions}
+    entrypoint: ["sh", "-c", "sleep infinity"]
+    working_dir: /demo
+    volumes:
+      - ../../..:/package:ro
+      - demo:/demo
+    environment:
+      REDIS_HOST: redis
+      PILOT_PROFILE: standalone-primary-durable-v1
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "always", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
+volumes:
+  demo:
+  redis:

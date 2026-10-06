@@ -1,0 +1,49 @@
+name: Factory Demo
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/factory-demo.yml'
+      - 'tests/Distribution/factory-demo.php'
+      - 'tests/Distribution/FactoryDemo/**'
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: redis, pdo_sqlite
+          tools: composer:v2
+      - name: Install blank Laravel demo
+        run: |
+          mkdir -p .build/factory-demo
+          php -r '$c=json_decode(file_get_contents("tests/Distribution/FactoryDemo/composer.json"),true,512,JSON_THROW_ON_ERROR); $c["repositories"][0]["url"]="../.."; file_put_contents(".build/factory-demo/composer.json",json_encode($c,JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR));'
+          cp tests/Distribution/factory-demo.php .build/factory-demo/
+          composer install --working-dir=.build/factory-demo --no-interaction --no-progress --prefer-dist
+      - name: Start task-owned Redis
+        run: |
+          docker run -d --name factory-demo-redis -p 127.0.0.1:6379:6379 redis:8-alpine redis-server --appendonly yes --appendfsync always --maxmemory-policy noeviction
+          for _ in $(seq 1 30); do
+            if docker exec factory-demo-redis redis-cli ping | grep -q '^PONG'; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Check missing-profile failure
+        run: |
+          if REDIS_HOST=127.0.0.1 PILOT_PROFILE= php .build/factory-demo/factory-demo.php > .build/factory-negative.txt 2>&1; then exit 1; fi
+          grep -F 'Safe negative did not skip the authoritative SQL lookup.' .build/factory-negative.txt
+      - name: Verify factory workload and lifecycle
+        env:
+          REDIS_HOST: 127.0.0.1
+          PILOT_PROFILE: standalone-primary-durable-v1
+        run: php .build/factory-demo/factory-demo.php
+      - name: Remove task-owned Redis
+        if: always()
+        run: docker rm -f -v factory-demo-redis || true

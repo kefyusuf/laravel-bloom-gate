@@ -1,0 +1,18 @@
+{
+    "name": "local/bloom-gate-factory-demo",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^13.0",
+        "fakerphp/faker": "^1.24",
+        "kefyusuf/laravel-bloom-gate": "dev-main"
+    },
+    "repositories": [{
+        "type": "path",
+        "url": "/package",
+        "options": {"symlink": false, "versions": {"kefyusuf/laravel-bloom-gate": "dev-main"}}
+    }],
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
