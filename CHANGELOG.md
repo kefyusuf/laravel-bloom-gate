@@ -18,6 +18,8 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Fixed
 
+- Minimum-dependency static analysis for standalone consumer token generation,
+  using the existing typed writer-token factory.
 - Candidate pilot checks the selected workflow commit rather than always
   installing the first RC's source.
 - Writer drain counts reject inconsistent lease/count evidence in Memory and
