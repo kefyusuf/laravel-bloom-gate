@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Kefyusuf\BloomGate\Laravel\Redis;
 
 use Illuminate\Redis\Connections\Connection;
+use Illuminate\Redis\Connections\PhpRedisConnection;
 use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
+use Redis;
+use RedisException;
 use ReflectionMethod;
 use Throwable;
 use UnexpectedValueException;
@@ -83,7 +86,16 @@ final readonly class LaravelRedisCommandExecutor implements RedisStructuredComma
         array $arguments,
     ): mixed {
         try {
-            return $this->invokeEval($script, $keys, $arguments);
+            try {
+                return $this->invokeEvalsha($script, $keys, $arguments);
+            } catch (Throwable $failure) {
+                if (! $this->isOperationalRedisFailure($failure)
+                    || $failure->getMessage() !== 'NOSCRIPT No matching script. Please use EVAL.') {
+                    throw $failure;
+                }
+
+                return $this->invokeEval($script, $keys, $arguments);
+            }
         } catch (Throwable $failure) {
             if (! $this->isOperationalRedisFailure($failure)) {
                 throw $failure;
@@ -95,6 +107,44 @@ final readonly class LaravelRedisCommandExecutor implements RedisStructuredComma
                 $failure,
             );
         }
+    }
+
+    /**
+     * @param  list<string>  $keys
+     * @param  list<string>  $arguments
+     */
+    private function invokeEvalsha(string $script, array $keys, array $arguments): mixed
+    {
+        $hash = sha1($script);
+
+        if ($this->connection instanceof PhpRedisConnection) {
+            $client = $this->connection->client();
+
+            if ($client instanceof Redis) {
+                $client->clearLastError();
+            }
+
+            // Laravel's evalsha wrapper loads source on every call; dispatch the native signature.
+            $result = $this->connection->command('evalsha', [$hash, [...$keys, ...$arguments], count($keys)]);
+
+            if ($result === false && $client instanceof Redis) {
+                $error = $client->getLastError();
+
+                if ($error !== null) {
+                    throw new RedisException($error);
+                }
+            }
+
+            return $result;
+        }
+
+        $parameters = [$hash, count($keys), ...$keys, ...$arguments];
+
+        if (method_exists($this->connection, 'evalsha')) {
+            return (new ReflectionMethod($this->connection, 'evalsha'))->invokeArgs($this->connection, $parameters);
+        }
+
+        return $this->connection->command('evalsha', $parameters);
     }
 
     /**

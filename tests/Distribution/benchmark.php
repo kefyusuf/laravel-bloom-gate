@@ -230,8 +230,8 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
                         benchmarkCheck(($sampleProfile['groups'][$group]['calls'] ?? 0) === $expectedGroupCalls,
                             'Profiled query script group did not match descriptor hint scope: '.$group);
                     }
-                    benchmarkCheck($sampleProfile['source_bytes'] > 0,
-                        'Profiled gate did not record transmitted Lua source bytes.');
+                    benchmarkCheck($sampleProfile['logical_script_bytes'] > 0,
+                        'Profiled gate did not record logical Lua script bytes.');
                 }
             }
             if ($repetition >= 0) {
