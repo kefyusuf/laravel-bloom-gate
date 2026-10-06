@@ -1,0 +1,1738 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "database": "mysql",
+  "database_server_version": "8.4.11",
+  "php": "8.4.26",
+  "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+  "sapi": "fpm-fcgi",
+  "apcu_enabled": true,
+  "cross_request": {
+    "cold": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 1.748895,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 3,
+        "wall_ns": 655911,
+        "source_bytes": 10752,
+        "groups": {
+          "snapshot": {
+            "calls": 1,
+            "wall_ns": 240849,
+            "source_bytes": 1872
+          },
+          "contract": {
+            "calls": 1,
+            "wall_ns": 167283,
+            "source_bytes": 2173
+          },
+          "probe": {
+            "calls": 1,
+            "wall_ns": 247779,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 14.387496
+    },
+    "warm": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 7,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 0.88792,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 1,
+        "wall_ns": 283502,
+        "source_bytes": 6707,
+        "groups": {
+          "probe": {
+            "calls": 1,
+            "wall_ns": 283502,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 9.603495
+    }
+  },
+  "guards": {
+    "changed_control_bounded_retry": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 7,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 2.884455,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 4,
+        "wall_ns": 809384,
+        "source_bytes": 17459,
+        "groups": {
+          "probe": {
+            "calls": 2,
+            "wall_ns": 443605,
+            "source_bytes": 13414
+          },
+          "snapshot": {
+            "calls": 1,
+            "wall_ns": 198306,
+            "source_bytes": 1872
+          },
+          "contract": {
+            "calls": 1,
+            "wall_ns": 167473,
+            "source_bytes": 2173
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 10.896536
+    },
+    "after_retry_warm": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 1.043281,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 1,
+        "wall_ns": 342496,
+        "source_bytes": 6707,
+        "groups": {
+          "probe": {
+            "calls": 1,
+            "wall_ns": 342496,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 9.814257
+    },
+    "metadata_mismatch_sql_fallback": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "Bypassed"
+      ],
+      "query_elapsed_ms": 1.504106,
+      "authoritative_queries": 1,
+      "executor": {
+        "calls": 1,
+        "wall_ns": 282592,
+        "source_bytes": 6707,
+        "groups": {
+          "probe": {
+            "calls": 1,
+            "wall_ns": 282592,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 10.910597
+    },
+    "after_metadata_cache_evicted": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 1.111083,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 3,
+        "wall_ns": 516046,
+        "source_bytes": 10752,
+        "groups": {
+          "snapshot": {
+            "calls": 1,
+            "wall_ns": 169973,
+            "source_bytes": 1872
+          },
+          "contract": {
+            "calls": 1,
+            "wall_ns": 146072,
+            "source_bytes": 2173
+          },
+          "probe": {
+            "calls": 1,
+            "wall_ns": 200001,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 9.530505
+    },
+    "health_change_sql_fallback": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "Bypassed"
+      ],
+      "query_elapsed_ms": 1.618736,
+      "authoritative_queries": 1,
+      "executor": {
+        "calls": 2,
+        "wall_ns": 428153,
+        "source_bytes": 8579,
+        "groups": {
+          "probe": {
+            "calls": 1,
+            "wall_ns": 267071,
+            "source_bytes": 6707
+          },
+          "snapshot": {
+            "calls": 1,
+            "wall_ns": 161082,
+            "source_bytes": 1872
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 10.337528
+    },
+    "after_health_cache_evicted": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "DefinitelyAbsent"
+      ],
+      "query_elapsed_ms": 1.125037,
+      "authoritative_queries": 0,
+      "executor": {
+        "calls": 3,
+        "wall_ns": 481857,
+        "source_bytes": 10752,
+        "groups": {
+          "snapshot": {
+            "calls": 1,
+            "wall_ns": 183034,
+            "source_bytes": 1872
+          },
+          "contract": {
+            "calls": 1,
+            "wall_ns": 135381,
+            "source_bytes": 2173
+          },
+          "probe": {
+            "calls": 1,
+            "wall_ns": 163442,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 9.285585
+    },
+    "live_bitmap_preadd_rollback": {
+      "schema_version": 1,
+      "status": "passed",
+      "database": "mysql",
+      "database_server_version": "8.4.11",
+      "php": "8.4.26",
+      "sapi": "fpm-fcgi",
+      "pid": 8,
+      "apcu_enabled": true,
+      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "descriptor_cache_requested": true,
+      "path": "gate",
+      "requests": 1,
+      "present": 0,
+      "correctness_equal": true,
+      "answers": [
+        false
+      ],
+      "memberships": [
+        "MaybePresent"
+      ],
+      "query_elapsed_ms": 1.927334,
+      "authoritative_queries": 1,
+      "executor": {
+        "calls": 1,
+        "wall_ns": 445554,
+        "source_bytes": 6707,
+        "groups": {
+          "probe": {
+            "calls": 1,
+            "wall_ns": 445554,
+            "source_bytes": 6707
+          }
+        },
+        "script_sha256": {
+          "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+          "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+          "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+        }
+      },
+      "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
+      "http_elapsed_ms": 12.538398
+    }
+  },
+  "workloads": [
+    {
+      "requests_per_http_request": 1,
+      "present_requests": 0,
+      "paths": {
+        "direct": {
+          "query_ms": [
+            0.348603,
+            0.365808,
+            0.304004,
+            0.309104,
+            0.30953
+          ],
+          "http_ms": [
+            9.475819,
+            8.425524,
+            8.732539,
+            9.111128,
+            8.896296
+          ],
+          "sql_queries": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "executor": [
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            7,
+            8,
+            7,
+            8
+          ],
+          "median_query_ms": 0.30953,
+          "median_http_ms": 8.896296
+        },
+        "bypass": {
+          "query_ms": [
+            0.853346,
+            0.683913,
+            0.882319,
+            0.843846,
+            0.571034
+          ],
+          "http_ms": [
+            10.060351,
+            9.328884,
+            8.852406,
+            9.988796,
+            7.357484
+          ],
+          "sql_queries": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "executor": [
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            7,
+            8,
+            7,
+            8,
+            7
+          ],
+          "median_query_ms": 0.843846,
+          "median_http_ms": 9.328884
+        },
+        "uncached": {
+          "query_ms": [
+            1.213074,
+            1.212855,
+            1.275548,
+            1.303781,
+            1.107786
+          ],
+          "http_ms": [
+            9.947122,
+            8.762579,
+            9.596495,
+            9.713498,
+            8.647117
+          ],
+          "sql_queries": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "executor": [
+            {
+              "calls": 3,
+              "wall_ns": 514779,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 197925,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 144851,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 172003,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 560165,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 199856,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 146282,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 214027,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 565174,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 230207,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 143082,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 191885,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 596027,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 216447,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 178984,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 200596,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 535172,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 203556,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 165143,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 166473,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            7,
+            8,
+            7,
+            8
+          ],
+          "median_query_ms": 1.213074,
+          "median_http_ms": 9.596495
+        },
+        "cache_cold": {
+          "query_ms": [
+            1.002328,
+            1.415885,
+            1.175152,
+            1.251127,
+            1.235595
+          ],
+          "http_ms": [
+            7.834099,
+            9.694234,
+            8.553668,
+            9.906394,
+            9.585394
+          ],
+          "sql_queries": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "executor": [
+            {
+              "calls": 3,
+              "wall_ns": 475336,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 177173,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 135300,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 162863,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 558609,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 214882,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 164753,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 178974,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 510412,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 170435,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 136850,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 203127,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 549563,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 208347,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 148011,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 193205,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3,
+              "wall_ns": 568773,
+              "source_bytes": 10752,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 204816,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 153191,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 210766,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            8,
+            8,
+            8,
+            8
+          ],
+          "median_query_ms": 1.235595,
+          "median_http_ms": 9.585394
+        },
+        "cache_warm": {
+          "query_ms": [
+            0.601937,
+            1.171597,
+            0.721566,
+            0.812894,
+            0.892849
+          ],
+          "http_ms": [
+            6.869958,
+            8.990252,
+            8.334577,
+            9.436123,
+            9.847259
+          ],
+          "sql_queries": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "executor": [
+            {
+              "calls": 1,
+              "wall_ns": 182854,
+              "source_bytes": 6707,
+              "groups": {
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 182854,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1,
+              "wall_ns": 336092,
+              "source_bytes": 6707,
+              "groups": {
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 336092,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1,
+              "wall_ns": 242819,
+              "source_bytes": 6707,
+              "groups": {
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 242819,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1,
+              "wall_ns": 308224,
+              "source_bytes": 6707,
+              "groups": {
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 308224,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1,
+              "wall_ns": 300163,
+              "source_bytes": 6707,
+              "groups": {
+                "probe": {
+                  "calls": 1,
+                  "wall_ns": 300163,
+                  "source_bytes": 6707
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            8,
+            8,
+            8,
+            8
+          ],
+          "median_query_ms": 0.812894,
+          "median_http_ms": 8.990252
+        }
+      }
+    },
+    {
+      "requests_per_http_request": 1000,
+      "present_requests": 100,
+      "paths": {
+        "direct": {
+          "query_ms": [
+            144.716268,
+            158.816805,
+            145.932373,
+            171.64046,
+            158.580295
+          ],
+          "http_ms": [
+            151.809215,
+            168.495674,
+            155.079502,
+            181.435105,
+            167.264648
+          ],
+          "sql_queries": [
+            1000,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "executor": [
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            7,
+            8,
+            7,
+            8
+          ],
+          "median_query_ms": 158.580295,
+          "median_http_ms": 167.264648
+        },
+        "bypass": {
+          "query_ms": [
+            157.284414,
+            168.884085,
+            171.784067,
+            192.932111,
+            175.88644
+          ],
+          "http_ms": [
+            166.415366,
+            175.928608,
+            179.462626,
+            209.100371,
+            207.008898
+          ],
+          "sql_queries": [
+            1000,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "executor": [
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 0,
+              "wall_ns": 0,
+              "source_bytes": 0,
+              "groups": [],
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            7,
+            8,
+            7,
+            8,
+            7
+          ],
+          "median_query_ms": 171.784067,
+          "median_http_ms": 179.462626
+        },
+        "uncached": {
+          "query_ms": [
+            638.588161,
+            799.384839,
+            563.503332,
+            608.757192,
+            618.155783
+          ],
+          "http_ms": [
+            648.4212,
+            815.283691,
+            571.926837,
+            617.145382,
+            626.963254
+          ],
+          "sql_queries": [
+            108,
+            108,
+            108,
+            108,
+            108
+          ],
+          "executor": [
+            {
+              "calls": 3000,
+              "wall_ns": 522843173,
+              "source_bytes": 10752000,
+              "groups": {
+                "snapshot": {
+                  "calls": 1000,
+                  "wall_ns": 158401302,
+                  "source_bytes": 1872000
+                },
+                "contract": {
+                  "calls": 1000,
+                  "wall_ns": 162957366,
+                  "source_bytes": 2173000
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 201484505,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3000,
+              "wall_ns": 646620760,
+              "source_bytes": 10752000,
+              "groups": {
+                "snapshot": {
+                  "calls": 1000,
+                  "wall_ns": 190208122,
+                  "source_bytes": 1872000
+                },
+                "contract": {
+                  "calls": 1000,
+                  "wall_ns": 196582985,
+                  "source_bytes": 2173000
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 259829653,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3000,
+              "wall_ns": 458453639,
+              "source_bytes": 10752000,
+              "groups": {
+                "snapshot": {
+                  "calls": 1000,
+                  "wall_ns": 138659098,
+                  "source_bytes": 1872000
+                },
+                "contract": {
+                  "calls": 1000,
+                  "wall_ns": 142772065,
+                  "source_bytes": 2173000
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 177022476,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3000,
+              "wall_ns": 499393475,
+              "source_bytes": 10752000,
+              "groups": {
+                "snapshot": {
+                  "calls": 1000,
+                  "wall_ns": 153363369,
+                  "source_bytes": 1872000
+                },
+                "contract": {
+                  "calls": 1000,
+                  "wall_ns": 155096387,
+                  "source_bytes": 2173000
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 190933719,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 3000,
+              "wall_ns": 506729899,
+              "source_bytes": 10752000,
+              "groups": {
+                "snapshot": {
+                  "calls": 1000,
+                  "wall_ns": 152740983,
+                  "source_bytes": 1872000
+                },
+                "contract": {
+                  "calls": 1000,
+                  "wall_ns": 157300460,
+                  "source_bytes": 2173000
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 196688456,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            7,
+            8,
+            7,
+            8
+          ],
+          "median_query_ms": 618.155783,
+          "median_http_ms": 626.963254
+        },
+        "cache_cold": {
+          "query_ms": [
+            269.726408,
+            389.252312,
+            268.615002,
+            269.202027,
+            255.7835
+          ],
+          "http_ms": [
+            279.402054,
+            396.674119,
+            277.295293,
+            278.864156,
+            266.4304
+          ],
+          "sql_queries": [
+            108,
+            108,
+            108,
+            108,
+            108
+          ],
+          "executor": [
+            {
+              "calls": 1002,
+              "wall_ns": 192767487,
+              "source_bytes": 6711045,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 257410,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 232239,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 192277838,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1002,
+              "wall_ns": 289458424,
+              "source_bytes": 6711045,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 192675,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 157503,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 289108246,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1002,
+              "wall_ns": 190832821,
+              "source_bytes": 6711045,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 229048,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 148241,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 190455532,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1002,
+              "wall_ns": 190865350,
+              "source_bytes": 6711045,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 295703,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 180284,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 190389363,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1002,
+              "wall_ns": 182677806,
+              "source_bytes": 6711045,
+              "groups": {
+                "snapshot": {
+                  "calls": 1,
+                  "wall_ns": 290963,
+                  "source_bytes": 1872
+                },
+                "contract": {
+                  "calls": 1,
+                  "wall_ns": 170244,
+                  "source_bytes": 2173
+                },
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 182216599,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            8,
+            8,
+            8,
+            8
+          ],
+          "median_query_ms": 269.202027,
+          "median_http_ms": 278.864156
+        },
+        "cache_warm": {
+          "query_ms": [
+            238.762285,
+            241.960694,
+            259.772482,
+            269.906859,
+            262.058211
+          ],
+          "http_ms": [
+            249.547626,
+            250.545544,
+            269.044052,
+            279.774303,
+            270.56215
+          ],
+          "sql_queries": [
+            108,
+            108,
+            108,
+            108,
+            108
+          ],
+          "executor": [
+            {
+              "calls": 1000,
+              "wall_ns": 170923218,
+              "source_bytes": 6707000,
+              "groups": {
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 170923218,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1000,
+              "wall_ns": 170256377,
+              "source_bytes": 6707000,
+              "groups": {
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 170256377,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1000,
+              "wall_ns": 187499163,
+              "source_bytes": 6707000,
+              "groups": {
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 187499163,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1000,
+              "wall_ns": 192797100,
+              "source_bytes": 6707000,
+              "groups": {
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 192797100,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            },
+            {
+              "calls": 1000,
+              "wall_ns": 186563680,
+              "source_bytes": 6707000,
+              "groups": {
+                "probe": {
+                  "calls": 1000,
+                  "wall_ns": 186563680,
+                  "source_bytes": 6707000
+                }
+              },
+              "script_sha256": {
+                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+              }
+            }
+          ],
+          "pid": [
+            8,
+            8,
+            8,
+            8,
+            8
+          ],
+          "median_query_ms": 259.772482,
+          "median_http_ms": 269.044052
+        }
+      }
+    }
+  ],
+  "warmup_repetitions": 1,
+  "measured_repetitions": 5,
+  "limits": [
+    "Dedicated disposable FPM/APCu/Redis/MySQL/PostgreSQL task services; no concurrency or production-load claim.",
+    "Query timing excludes Laravel bootstrap/PDO connection; HTTP timing includes request startup and response transfer.",
+    "No timing threshold assertion; correctness and actual Redis/SQL counts are asserted.",
+    "APCu persists across independent HTTP requests; cache clear is restricted to this isolated fixture pool."
+  ]
+}

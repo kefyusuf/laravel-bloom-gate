@@ -43,7 +43,52 @@ workers, native APCu, nginx, MySQL and PostgreSQL. Each HTTP request constructs
 a fresh Laravel application and captures actual Redis script and SQL counts.
 The executable driver checks separate-request sharing, real rebuild recovery,
 metadata and health fallback, and live bitmap changes before timed measurements.
-Candidate-source results are recorded after the immutable archive run.
+Candidate runtime source: `d0504fb40e02466912d8911e690e37e3c2be1f4f`.
+Installed src/config files match the exact commit ZIP byte for byte; the
+[provenance manifest](evidence/2026-10-06-apcu-source-provenance.json) preserves
+archive and installed-file SHA-256 values. The consumer has no Testbench.
+PHP 8.4.26 / Laravel 13.34.0 / MySQL 8.4.11 / PostgreSQL 17.11 were used.
+The local verification package uses a fixture-only `dev-apcu-proof` version.
+
+Both database drivers passed all guards. Separate cold/warm requests were
+handled by different FPM workers (PIDs 8 and 7): three Redis operations became
+one. A real rebuild caused exactly four operations (two probes, one snapshot,
+one contract), no SQL, and the next request returned to one probe. Metadata
+corruption bypassed with one probe and one SQL lookup. Unhealthy state bypassed
+with one probe plus one snapshot and one SQL lookup. After restoring either
+condition, the evicted hint was resolved normally. A rollback pre-add changed
+the bits: the same warm hint produced MaybePresent and an authoritative false,
+demonstrating that membership answers are never cached.
+
+Five measured passes follow one warmup with alternating path order. Median
+query-loop wall times for 1,000 lookups, 100 known-present inputs:
+
+| Engine | Direct SQL | SQL-only gate | Uncached gate | APCu cold request | APCu warm request |
+|---|---:|---:|---:|---:|---:|
+| MySQL | 158.58 ms | 171.78 ms | 618.16 ms | 269.20 ms | 259.77 ms |
+| PostgreSQL | 442.14 ms | 474.11 ms | 633.74 ms | 286.39 ms | 279.59 ms |
+
+All gate paths executed 108 SQL lookups (100 positives plus eight false
+positives). Redis operations were 3,000 uncached, 1,002 for a cold APCu request,
+and 1,000 warm. Warm APCu reduced gate time about 58% on MySQL and 56% on
+PostgreSQL. It beat direct SQL by about 37% on PostgreSQL; MySQL direct SQL
+remained faster. A single cold lookup still costs three Redis operations.
+
+Single-lookup query-loop medians were MySQL direct 0.310 ms / uncached 1.213 ms /
+warm 0.813 ms and PostgreSQL direct 3.950 ms / uncached 1.434 ms / warm 0.762 ms.
+These include lazy gate service resolution. End-to-end HTTP measurements include
+bootstrap and transfer (for example, MySQL direct 8.90 ms / warm 8.99 ms).
+The small single-query samples are not a claim of universal speedup.
+
+Complete samples and guard replies: [MySQL](evidence/2026-10-06-apcu-mysql.json),
+[PostgreSQL](evidence/2026-10-06-apcu-pgsql.json).
+
+The first candidate installation reused a local ZIP URL. Composer metadata
+advanced but reinstall still used the old installed package's archive URL. The
+cross-request guard caught three operations instead of one; these failed runs
+are excluded from measurements. A unique commit-specific ZIP URL/checksum and
+fixture version forced the intended archive installation. Byte comparisons,
+not Composer reference metadata alone, established provenance before GREEN.
 
 Run the fixture only against disposable, task-owned databases and an isolated
 FPM cache: setup resets its `users` table and fixture controls clear APCu.
@@ -68,5 +113,9 @@ database cost and production acceptance are outside this evidence.
 
 Independent source review found no blocking correctness/security issue. Its
 warm-write observation was addressed with a failing test and a narrow fix.
+Required local `composer check` passed (lint, max PHPStan, fast suite). Native
+APCu cases were additionally exercised in the full FPM-image CLI suite and the
+HTTP checks, and Quality CI now enables APCu for its fast suite.
+
 Task Compose project: `lbg-apcu-20261006`; task-built PHP image:
 `lbg-apcu-fpm:20261006`. Resource cleanup is recorded after verification.
