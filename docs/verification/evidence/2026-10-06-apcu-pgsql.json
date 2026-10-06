@@ -4,7 +4,7 @@
   "database": "pgsql",
   "database_server_version": "17.11",
   "php": "8.4.26",
-  "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+  "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
   "sapi": "fpm-fcgi",
   "apcu_enabled": true,
   "cross_request": {
@@ -17,7 +17,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -29,26 +29,26 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 1.518431,
+      "query_elapsed_ms": 1.129957,
       "authoritative_queries": 0,
       "executor": {
         "calls": 3,
-        "wall_ns": 798253,
+        "wall_ns": 515033,
         "source_bytes": 10752,
         "groups": {
           "snapshot": {
             "calls": 1,
-            "wall_ns": 239254,
+            "wall_ns": 187449,
             "source_bytes": 1872
           },
           "contract": {
             "calls": 1,
-            "wall_ns": 174259,
+            "wall_ns": 156706,
             "source_bytes": 2173
           },
           "probe": {
             "calls": 1,
-            "wall_ns": 384740,
+            "wall_ns": 170878,
             "source_bytes": 6707
           }
         },
@@ -59,7 +59,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 37.360602
+      "http_elapsed_ms": 18.314224
     },
     "warm": {
       "schema_version": 1,
@@ -70,7 +70,7 @@
       "sapi": "fpm-fcgi",
       "pid": 7,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -82,16 +82,16 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 0.964098,
+      "query_elapsed_ms": 0.782676,
       "authoritative_queries": 0,
       "executor": {
         "calls": 1,
-        "wall_ns": 280223,
+        "wall_ns": 253870,
         "source_bytes": 6707,
         "groups": {
           "probe": {
             "calls": 1,
-            "wall_ns": 280223,
+            "wall_ns": 253870,
             "source_bytes": 6707
           }
         },
@@ -102,7 +102,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 31.152095
+      "http_elapsed_ms": 15.866059
     }
   },
   "guards": {
@@ -115,7 +115,7 @@
       "sapi": "fpm-fcgi",
       "pid": 7,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -127,26 +127,26 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 1.378954,
+      "query_elapsed_ms": 1.380645,
       "authoritative_queries": 0,
       "executor": {
         "calls": 4,
-        "wall_ns": 691520,
+        "wall_ns": 607673,
         "source_bytes": 17459,
         "groups": {
           "probe": {
             "calls": 2,
-            "wall_ns": 370929,
+            "wall_ns": 340585,
             "source_bytes": 13414
           },
           "snapshot": {
             "calls": 1,
-            "wall_ns": 156933,
+            "wall_ns": 131265,
             "source_bytes": 1872
           },
           "contract": {
             "calls": 1,
-            "wall_ns": 163658,
+            "wall_ns": 135823,
             "source_bytes": 2173
           }
         },
@@ -157,7 +157,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 20.8175
+      "http_elapsed_ms": 16.687944
     },
     "after_retry_warm": {
       "schema_version": 1,
@@ -168,7 +168,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -180,16 +180,16 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 0.694985,
+      "query_elapsed_ms": 0.896478,
       "authoritative_queries": 0,
       "executor": {
         "calls": 1,
-        "wall_ns": 226918,
+        "wall_ns": 244416,
         "source_bytes": 6707,
         "groups": {
           "probe": {
             "calls": 1,
-            "wall_ns": 226918,
+            "wall_ns": 244416,
             "source_bytes": 6707
           }
         },
@@ -200,7 +200,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 18.593783
+      "http_elapsed_ms": 16.723615
     },
     "metadata_mismatch_sql_fallback": {
       "schema_version": 1,
@@ -211,7 +211,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -223,16 +223,16 @@
       "memberships": [
         "Bypassed"
       ],
-      "query_elapsed_ms": 6.445637,
+      "query_elapsed_ms": 3.019936,
       "authoritative_queries": 1,
       "executor": {
         "calls": 1,
-        "wall_ns": 391581,
+        "wall_ns": 212533,
         "source_bytes": 6707,
         "groups": {
           "probe": {
             "calls": 1,
-            "wall_ns": 391581,
+            "wall_ns": 212533,
             "source_bytes": 6707
           }
         },
@@ -243,7 +243,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 20.602251
+      "http_elapsed_ms": 15.510804
     },
     "after_metadata_cache_evicted": {
       "schema_version": 1,
@@ -254,7 +254,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -266,26 +266,26 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 1.592498,
+      "query_elapsed_ms": 1.092384,
       "authoritative_queries": 0,
       "executor": {
         "calls": 3,
-        "wall_ns": 589427,
+        "wall_ns": 561190,
         "source_bytes": 10752,
         "groups": {
           "snapshot": {
             "calls": 1,
-            "wall_ns": 236379,
+            "wall_ns": 194271,
             "source_bytes": 1872
           },
           "contract": {
             "calls": 1,
-            "wall_ns": 164139,
+            "wall_ns": 136074,
             "source_bytes": 2173
           },
           "probe": {
             "calls": 1,
-            "wall_ns": 188909,
+            "wall_ns": 230845,
             "source_bytes": 6707
           }
         },
@@ -296,7 +296,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 19.196745
+      "http_elapsed_ms": 15.077892
     },
     "health_change_sql_fallback": {
       "schema_version": 1,
@@ -307,7 +307,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -319,21 +319,21 @@
       "memberships": [
         "Bypassed"
       ],
-      "query_elapsed_ms": 5.649611,
+      "query_elapsed_ms": 3.584618,
       "authoritative_queries": 1,
       "executor": {
         "calls": 2,
-        "wall_ns": 476157,
+        "wall_ns": 369283,
         "source_bytes": 8579,
         "groups": {
           "probe": {
             "calls": 1,
-            "wall_ns": 297273,
+            "wall_ns": 229834,
             "source_bytes": 6707
           },
           "snapshot": {
             "calls": 1,
-            "wall_ns": 178884,
+            "wall_ns": 139449,
             "source_bytes": 1872
           }
         },
@@ -344,7 +344,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 26.101016
+      "http_elapsed_ms": 16.606036
     },
     "after_health_cache_evicted": {
       "schema_version": 1,
@@ -355,7 +355,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -367,26 +367,26 @@
       "memberships": [
         "DefinitelyAbsent"
       ],
-      "query_elapsed_ms": 1.490964,
+      "query_elapsed_ms": 1.160297,
       "authoritative_queries": 0,
       "executor": {
         "calls": 3,
-        "wall_ns": 687859,
+        "wall_ns": 570306,
         "source_bytes": 10752,
         "groups": {
           "snapshot": {
             "calls": 1,
-            "wall_ns": 296018,
+            "wall_ns": 198117,
             "source_bytes": 1872
           },
           "contract": {
             "calls": 1,
-            "wall_ns": 174954,
+            "wall_ns": 176783,
             "source_bytes": 2173
           },
           "probe": {
             "calls": 1,
-            "wall_ns": 216887,
+            "wall_ns": 195406,
             "source_bytes": 6707
           }
         },
@@ -397,7 +397,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 25.200734
+      "http_elapsed_ms": 15.425197
     },
     "live_bitmap_preadd_rollback": {
       "schema_version": 1,
@@ -408,7 +408,7 @@
       "sapi": "fpm-fcgi",
       "pid": 8,
       "apcu_enabled": true,
-      "package_reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
+      "package_reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
       "descriptor_cache_requested": true,
       "path": "gate",
       "requests": 1,
@@ -420,16 +420,16 @@
       "memberships": [
         "MaybePresent"
       ],
-      "query_elapsed_ms": 4.544264,
+      "query_elapsed_ms": 3.615553,
       "authoritative_queries": 1,
       "executor": {
         "calls": 1,
-        "wall_ns": 295374,
+        "wall_ns": 208832,
         "source_bytes": 6707,
         "groups": {
           "probe": {
             "calls": 1,
-            "wall_ns": 295374,
+            "wall_ns": 208832,
             "source_bytes": 6707
           }
         },
@@ -440,7 +440,7 @@
         }
       },
       "limits": "One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.",
-      "http_elapsed_ms": 22.393271
+      "http_elapsed_ms": 16.395019
     }
   },
   "workloads": [
@@ -450,18 +450,18 @@
       "paths": {
         "direct": {
           "query_ms": [
-            3.99891,
-            3.635741,
-            6.515716,
-            3.485149,
-            3.949734
+            3.253099,
+            2.253376,
+            2.268042,
+            2.280848,
+            2.202579
           ],
           "http_ms": [
-            22.285887,
-            23.392144,
-            23.466721,
-            18.506239,
-            19.845937
+            15.079631,
+            13.943298,
+            14.991164,
+            17.120424,
+            14.670738
           ],
           "sql_queries": [
             1,
@@ -534,23 +534,23 @@
             7,
             8
           ],
-          "median_query_ms": 3.949734,
-          "median_http_ms": 22.285887
+          "median_query_ms": 2.268042,
+          "median_http_ms": 14.991164
         },
         "bypass": {
           "query_ms": [
-            3.655772,
-            4.476183,
-            4.548222,
-            4.947931,
-            4.640208
+            2.638906,
+            3.111949,
+            3.149849,
+            2.67343,
+            2.720905
           ],
           "http_ms": [
-            16.822164,
-            48.853971,
-            20.70591,
-            23.160142,
-            22.278561
+            15.136763,
+            15.191337,
+            14.232417,
+            14.476114,
+            14.373969
           ],
           "sql_queries": [
             1,
@@ -623,23 +623,23 @@
             8,
             7
           ],
-          "median_query_ms": 4.548222,
-          "median_http_ms": 22.278561
+          "median_query_ms": 2.720905,
+          "median_http_ms": 14.476114
         },
         "uncached": {
           "query_ms": [
-            1.285313,
-            1.497785,
-            2.025341,
-            1.305104,
-            1.43363
+            1.084264,
+            1.049179,
+            1.409628,
+            1.33354,
+            1.022162
           ],
           "http_ms": [
-            18.026021,
-            20.195305,
-            25.509351,
-            19.831929,
-            22.28098
+            14.878427,
+            15.045169,
+            15.82518,
+            16.330747,
+            15.499535
           ],
           "sql_queries": [
             0,
@@ -651,22 +651,22 @@
           "executor": [
             {
               "calls": 3,
-              "wall_ns": 669293,
+              "wall_ns": 546057,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 259611,
+                  "wall_ns": 211362,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 169113,
+                  "wall_ns": 152636,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 240569,
+                  "wall_ns": 182059,
                   "source_bytes": 6707
                 }
               },
@@ -678,22 +678,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 698761,
+              "wall_ns": 516084,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 223658,
+                  "wall_ns": 187490,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 204726,
+                  "wall_ns": 147185,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 270377,
+                  "wall_ns": 181409,
                   "source_bytes": 6707
                 }
               },
@@ -705,22 +705,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 992570,
+              "wall_ns": 874154,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 408298,
+                  "wall_ns": 171009,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 256581,
+                  "wall_ns": 164828,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 327691,
+                  "wall_ns": 538317,
                   "source_bytes": 6707
                 }
               },
@@ -732,22 +732,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 566926,
+              "wall_ns": 571949,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 216108,
+                  "wall_ns": 179879,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 157582,
+                  "wall_ns": 184559,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 193236,
+                  "wall_ns": 207511,
                   "source_bytes": 6707
                 }
               },
@@ -759,22 +759,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 668888,
+              "wall_ns": 484685,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 233248,
+                  "wall_ns": 187799,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 194951,
+                  "wall_ns": 136914,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 240689,
+                  "wall_ns": 159972,
                   "source_bytes": 6707
                 }
               },
@@ -792,23 +792,23 @@
             7,
             8
           ],
-          "median_query_ms": 1.43363,
-          "median_http_ms": 20.195305
+          "median_query_ms": 1.084264,
+          "median_http_ms": 15.499535
         },
         "cache_cold": {
           "query_ms": [
-            1.652752,
-            1.521491,
-            1.104603,
-            1.49792,
-            1.261901
+            1.273478,
+            1.435346,
+            1.227783,
+            1.157936,
+            1.124208
           ],
           "http_ms": [
-            20.539181,
-            37.451473,
-            29.784532,
-            22.079601,
-            19.446619
+            15.839517,
+            17.103794,
+            16.572422,
+            14.963074,
+            14.753069
           ],
           "sql_queries": [
             0,
@@ -820,22 +820,22 @@
           "executor": [
             {
               "calls": 3,
-              "wall_ns": 679605,
+              "wall_ns": 529576,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 263391,
+                  "wall_ns": 209862,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 216468,
+                  "wall_ns": 146706,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 199746,
+                  "wall_ns": 173008,
                   "source_bytes": 6707
                 }
               },
@@ -847,22 +847,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 652502,
+              "wall_ns": 802569,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 266461,
+                  "wall_ns": 437095,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 183520,
+                  "wall_ns": 163223,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 202521,
+                  "wall_ns": 202251,
                   "source_bytes": 6707
                 }
               },
@@ -874,22 +874,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 524047,
+              "wall_ns": 487126,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 224628,
+                  "wall_ns": 184344,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 141591,
+                  "wall_ns": 132070,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 157828,
+                  "wall_ns": 170712,
                   "source_bytes": 6707
                 }
               },
@@ -901,22 +901,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 633150,
+              "wall_ns": 510530,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 217787,
+                  "wall_ns": 206722,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 177454,
+                  "wall_ns": 140511,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 237909,
+                  "wall_ns": 163297,
                   "source_bytes": 6707
                 }
               },
@@ -928,22 +928,22 @@
             },
             {
               "calls": 3,
-              "wall_ns": 563215,
+              "wall_ns": 520646,
               "source_bytes": 10752,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 218938,
+                  "wall_ns": 194961,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 154662,
+                  "wall_ns": 133184,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 189615,
+                  "wall_ns": 192501,
                   "source_bytes": 6707
                 }
               },
@@ -961,23 +961,23 @@
             8,
             8
           ],
-          "median_query_ms": 1.49792,
-          "median_http_ms": 22.079601
+          "median_query_ms": 1.227783,
+          "median_http_ms": 15.839517
         },
         "cache_warm": {
           "query_ms": [
-            1.116329,
-            0.754046,
-            0.906907,
-            0.735909,
-            0.762482
+            0.725381,
+            0.647862,
+            1.319132,
+            0.736427,
+            0.702284
           ],
           "http_ms": [
-            18.557553,
-            65.67219,
-            21.723043,
-            17.943354,
-            18.942095
+            14.377574,
+            15.39594,
+            15.448316,
+            15.49808,
+            15.273028
           ],
           "sql_queries": [
             0,
@@ -989,12 +989,12 @@
           "executor": [
             {
               "calls": 1,
-              "wall_ns": 493419,
+              "wall_ns": 269124,
               "source_bytes": 6707,
               "groups": {
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 493419,
+                  "wall_ns": 269124,
                   "source_bytes": 6707
                 }
               },
@@ -1006,12 +1006,12 @@
             },
             {
               "calls": 1,
-              "wall_ns": 232654,
+              "wall_ns": 216597,
               "source_bytes": 6707,
               "groups": {
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 232654,
+                  "wall_ns": 216597,
                   "source_bytes": 6707
                 }
               },
@@ -1023,12 +1023,12 @@
             },
             {
               "calls": 1,
-              "wall_ns": 242559,
+              "wall_ns": 226108,
               "source_bytes": 6707,
               "groups": {
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 242559,
+                  "wall_ns": 226108,
                   "source_bytes": 6707
                 }
               },
@@ -1040,12 +1040,12 @@
             },
             {
               "calls": 1,
-              "wall_ns": 251230,
+              "wall_ns": 231355,
               "source_bytes": 6707,
               "groups": {
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 251230,
+                  "wall_ns": 231355,
                   "source_bytes": 6707
                 }
               },
@@ -1057,12 +1057,12 @@
             },
             {
               "calls": 1,
-              "wall_ns": 274283,
+              "wall_ns": 201372,
               "source_bytes": 6707,
               "groups": {
                 "probe": {
                   "calls": 1,
-                  "wall_ns": 274283,
+                  "wall_ns": 201372,
                   "source_bytes": 6707
                 }
               },
@@ -1080,8 +1080,8 @@
             8,
             8
           ],
-          "median_query_ms": 0.762482,
-          "median_http_ms": 18.942095
+          "median_query_ms": 0.725381,
+          "median_http_ms": 15.39594
         }
       }
     },
@@ -1091,18 +1091,18 @@
       "paths": {
         "direct": {
           "query_ms": [
-            431.611545,
-            442.139355,
-            440.421535,
-            499.503688,
-            444.41162
+            401.957212,
+            481.685241,
+            543.87396,
+            405.916119,
+            392.591918
           ],
           "http_ms": [
-            445.101969,
-            455.14011,
-            454.264788,
-            521.2273,
-            458.822485
+            414.57909,
+            497.992253,
+            573.842198,
+            418.597842,
+            405.800552
           ],
           "sql_queries": [
             1000,
@@ -1175,23 +1175,23 @@
             7,
             8
           ],
-          "median_query_ms": 442.139355,
-          "median_http_ms": 455.14011
+          "median_query_ms": 405.916119,
+          "median_http_ms": 418.597842
         },
         "bypass": {
           "query_ms": [
-            482.735503,
-            467.446119,
-            474.113758,
-            508.452648,
-            454.816705
+            413.981357,
+            445.714353,
+            464.896716,
+            437.149681,
+            422.990552
           ],
           "http_ms": [
-            497.65007,
-            482.065459,
-            488.56692,
-            526.097838,
-            477.241681
+            428.180854,
+            457.979157,
+            479.426003,
+            453.639034,
+            435.903436
           ],
           "sql_queries": [
             1000,
@@ -1264,23 +1264,23 @@
             8,
             7
           ],
-          "median_query_ms": 474.113758,
-          "median_http_ms": 488.56692
+          "median_query_ms": 437.149681,
+          "median_http_ms": 453.639034
         },
         "uncached": {
           "query_ms": [
-            647.050956,
-            635.533768,
-            633.735081,
-            622.027695,
-            626.963678
+            548.226319,
+            611.478665,
+            582.413681,
+            603.414356,
+            552.909557
           ],
           "http_ms": [
-            660.281414,
-            650.197021,
-            647.314588,
-            635.165942,
-            644.780409
+            561.429545,
+            624.956082,
+            595.529054,
+            617.691555,
+            567.125412
           ],
           "sql_queries": [
             108,
@@ -1292,22 +1292,22 @@
           "executor": [
             {
               "calls": 3000,
-              "wall_ns": 504908769,
+              "wall_ns": 424700726,
               "source_bytes": 10752000,
               "groups": {
                 "snapshot": {
                   "calls": 1000,
-                  "wall_ns": 154389605,
+                  "wall_ns": 130805355,
                   "source_bytes": 1872000
                 },
                 "contract": {
                   "calls": 1000,
-                  "wall_ns": 157941898,
+                  "wall_ns": 132278637,
                   "source_bytes": 2173000
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 192577266,
+                  "wall_ns": 161616734,
                   "source_bytes": 6707000
                 }
               },
@@ -1319,22 +1319,22 @@
             },
             {
               "calls": 3000,
-              "wall_ns": 495066645,
+              "wall_ns": 476087447,
               "source_bytes": 10752000,
               "groups": {
                 "snapshot": {
                   "calls": 1000,
-                  "wall_ns": 150467841,
+                  "wall_ns": 146114399,
                   "source_bytes": 1872000
                 },
                 "contract": {
                   "calls": 1000,
-                  "wall_ns": 154013819,
+                  "wall_ns": 148397840,
                   "source_bytes": 2173000
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 190584985,
+                  "wall_ns": 181575208,
                   "source_bytes": 6707000
                 }
               },
@@ -1346,22 +1346,22 @@
             },
             {
               "calls": 3000,
-              "wall_ns": 492187357,
+              "wall_ns": 450087898,
               "source_bytes": 10752000,
               "groups": {
                 "snapshot": {
                   "calls": 1000,
-                  "wall_ns": 151552696,
+                  "wall_ns": 137749686,
                   "source_bytes": 1872000
                 },
                 "contract": {
                   "calls": 1000,
-                  "wall_ns": 151730742,
+                  "wall_ns": 141015113,
                   "source_bytes": 2173000
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 188903919,
+                  "wall_ns": 171323099,
                   "source_bytes": 6707000
                 }
               },
@@ -1373,22 +1373,22 @@
             },
             {
               "calls": 3000,
-              "wall_ns": 483854305,
+              "wall_ns": 473004707,
               "source_bytes": 10752000,
               "groups": {
                 "snapshot": {
                   "calls": 1000,
-                  "wall_ns": 147185147,
+                  "wall_ns": 141787981,
                   "source_bytes": 1872000
                 },
                 "contract": {
                   "calls": 1000,
-                  "wall_ns": 150778641,
+                  "wall_ns": 153277454,
                   "source_bytes": 2173000
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 185890517,
+                  "wall_ns": 177939272,
                   "source_bytes": 6707000
                 }
               },
@@ -1400,22 +1400,22 @@
             },
             {
               "calls": 3000,
-              "wall_ns": 489238399,
+              "wall_ns": 430867093,
               "source_bytes": 10752000,
               "groups": {
                 "snapshot": {
                   "calls": 1000,
-                  "wall_ns": 145729324,
+                  "wall_ns": 132882448,
                   "source_bytes": 1872000
                 },
                 "contract": {
                   "calls": 1000,
-                  "wall_ns": 160124904,
+                  "wall_ns": 134423783,
                   "source_bytes": 2173000
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 183384171,
+                  "wall_ns": 163560862,
                   "source_bytes": 6707000
                 }
               },
@@ -1433,23 +1433,23 @@
             7,
             8
           ],
-          "median_query_ms": 633.735081,
-          "median_http_ms": 647.314588
+          "median_query_ms": 582.413681,
+          "median_http_ms": 595.529054
         },
         "cache_cold": {
           "query_ms": [
-            286.388527,
-            287.28637,
-            280.810673,
-            278.905095,
-            298.282474
+            290.047873,
+            251.381537,
+            259.565058,
+            252.6074,
+            244.636875
           ],
           "http_ms": [
-            299.530259,
-            305.42511,
-            294.718997,
-            292.140388,
-            319.852305
+            303.13604,
+            264.355097,
+            272.204862,
+            265.186554,
+            257.133713
           ],
           "sql_queries": [
             108,
@@ -1461,22 +1461,22 @@
           "executor": [
             {
               "calls": 1002,
-              "wall_ns": 180730060,
+              "wall_ns": 184622474,
               "source_bytes": 6711045,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 731819,
+                  "wall_ns": 214306,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 205287,
+                  "wall_ns": 154498,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 179792954,
+                  "wall_ns": 184253670,
                   "source_bytes": 6707000
                 }
               },
@@ -1488,22 +1488,22 @@
             },
             {
               "calls": 1002,
-              "wall_ns": 180227261,
+              "wall_ns": 157846758,
               "source_bytes": 6711045,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 241215,
+                  "wall_ns": 170515,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 177809,
+                  "wall_ns": 137184,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 179808237,
+                  "wall_ns": 157539059,
                   "source_bytes": 6707000
                 }
               },
@@ -1515,22 +1515,22 @@
             },
             {
               "calls": 1002,
-              "wall_ns": 176712433,
+              "wall_ns": 160275623,
               "source_bytes": 6711045,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 212617,
+                  "wall_ns": 198513,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 155138,
+                  "wall_ns": 149614,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 176344678,
+                  "wall_ns": 159927496,
                   "source_bytes": 6707000
                 }
               },
@@ -1542,22 +1542,22 @@
             },
             {
               "calls": 1002,
-              "wall_ns": 174329224,
+              "wall_ns": 159039286,
               "source_bytes": 6711045,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 208712,
+                  "wall_ns": 406662,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 169088,
+                  "wall_ns": 131942,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 173951424,
+                  "wall_ns": 158500682,
                   "source_bytes": 6707000
                 }
               },
@@ -1569,22 +1569,22 @@
             },
             {
               "calls": 1002,
-              "wall_ns": 187632257,
+              "wall_ns": 153228177,
               "source_bytes": 6711045,
               "groups": {
                 "snapshot": {
                   "calls": 1,
-                  "wall_ns": 195575,
+                  "wall_ns": 167717,
                   "source_bytes": 1872
                 },
                 "contract": {
                   "calls": 1,
-                  "wall_ns": 146512,
+                  "wall_ns": 129933,
                   "source_bytes": 2173
                 },
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 187290170,
+                  "wall_ns": 152930527,
                   "source_bytes": 6707000
                 }
               },
@@ -1602,23 +1602,23 @@
             8,
             8
           ],
-          "median_query_ms": 286.388527,
-          "median_http_ms": 299.530259
+          "median_query_ms": 252.6074,
+          "median_http_ms": 265.186554
         },
         "cache_warm": {
           "query_ms": [
-            289.570599,
-            287.586169,
-            276.14133,
-            279.594761,
-            275.721642
+            269.295654,
+            276.928764,
+            305.456178,
+            293.237945,
+            245.518443
           ],
           "http_ms": [
-            303.765087,
-            301.971716,
-            289.406985,
-            293.058262,
-            289.428685
+            284.961767,
+            290.601994,
+            317.214757,
+            309.050936,
+            259.581307
           ],
           "sql_queries": [
             108,
@@ -1630,12 +1630,12 @@
           "executor": [
             {
               "calls": 1000,
-              "wall_ns": 183720726,
+              "wall_ns": 166470421,
               "source_bytes": 6707000,
               "groups": {
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 183720726,
+                  "wall_ns": 166470421,
                   "source_bytes": 6707000
                 }
               },
@@ -1647,12 +1647,12 @@
             },
             {
               "calls": 1000,
-              "wall_ns": 180877758,
+              "wall_ns": 175603655,
               "source_bytes": 6707000,
               "groups": {
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 180877758,
+                  "wall_ns": 175603655,
                   "source_bytes": 6707000
                 }
               },
@@ -1664,12 +1664,12 @@
             },
             {
               "calls": 1000,
-              "wall_ns": 174369199,
+              "wall_ns": 196759761,
               "source_bytes": 6707000,
               "groups": {
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 174369199,
+                  "wall_ns": 196759761,
                   "source_bytes": 6707000
                 }
               },
@@ -1681,12 +1681,12 @@
             },
             {
               "calls": 1000,
-              "wall_ns": 174602222,
+              "wall_ns": 184275990,
               "source_bytes": 6707000,
               "groups": {
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 174602222,
+                  "wall_ns": 184275990,
                   "source_bytes": 6707000
                 }
               },
@@ -1698,12 +1698,12 @@
             },
             {
               "calls": 1000,
-              "wall_ns": 174109470,
+              "wall_ns": 152523943,
               "source_bytes": 6707000,
               "groups": {
                 "probe": {
                   "calls": 1000,
-                  "wall_ns": 174109470,
+                  "wall_ns": 152523943,
                   "source_bytes": 6707000
                 }
               },
@@ -1721,8 +1721,8 @@
             8,
             8
           ],
-          "median_query_ms": 279.594761,
-          "median_http_ms": 293.058262
+          "median_query_ms": 276.928764,
+          "median_http_ms": 290.601994
         }
       }
     }

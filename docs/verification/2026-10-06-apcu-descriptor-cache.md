@@ -43,7 +43,7 @@ workers, native APCu, nginx, MySQL and PostgreSQL. Each HTTP request constructs
 a fresh Laravel application and captures actual Redis script and SQL counts.
 The executable driver checks separate-request sharing, real rebuild recovery,
 metadata and health fallback, and live bitmap changes before timed measurements.
-Candidate runtime source: `d0504fb40e02466912d8911e690e37e3c2be1f4f`.
+Final candidate runtime source: `130ff1eb51c63eb67f07df005c273780dea494c1`.
 Installed src/config files match the exact commit ZIP byte for byte; the
 [provenance manifest](evidence/2026-10-06-apcu-source-provenance.json) preserves
 archive and installed-file SHA-256 values. The consumer has no Testbench.
@@ -65,19 +65,19 @@ query-loop wall times for 1,000 lookups, 100 known-present inputs:
 
 | Engine | Direct SQL | SQL-only gate | Uncached gate | APCu cold request | APCu warm request |
 |---|---:|---:|---:|---:|---:|
-| MySQL | 158.58 ms | 171.78 ms | 618.16 ms | 269.20 ms | 259.77 ms |
-| PostgreSQL | 442.14 ms | 474.11 ms | 633.74 ms | 286.39 ms | 279.59 ms |
+| MySQL | 160.59 ms | 171.21 ms | 534.28 ms | 221.76 ms | 217.22 ms |
+| PostgreSQL | 405.92 ms | 437.15 ms | 582.41 ms | 252.61 ms | 276.93 ms |
 
 All gate paths executed 108 SQL lookups (100 positives plus eight false
 positives). Redis operations were 3,000 uncached, 1,002 for a cold APCu request,
-and 1,000 warm. Warm APCu reduced gate time about 58% on MySQL and 56% on
-PostgreSQL. It beat direct SQL by about 37% on PostgreSQL; MySQL direct SQL
+and 1,000 warm. Warm APCu reduced gate time about 59% on MySQL and 52% on
+PostgreSQL. It beat direct SQL by about 32% on PostgreSQL; MySQL direct SQL
 remained faster. A single cold lookup still costs three Redis operations.
 
-Single-lookup query-loop medians were MySQL direct 0.310 ms / uncached 1.213 ms /
-warm 0.813 ms and PostgreSQL direct 3.950 ms / uncached 1.434 ms / warm 0.762 ms.
+Single-lookup query-loop medians were MySQL direct 0.258 ms / uncached 1.162 ms /
+warm 0.708 ms and PostgreSQL direct 2.268 ms / uncached 1.084 ms / warm 0.725 ms.
 These include lazy gate service resolution. End-to-end HTTP measurements include
-bootstrap and transfer (for example, MySQL direct 8.90 ms / warm 8.99 ms).
+bootstrap and transfer (for example, MySQL direct 7.87 ms / warm 7.27 ms).
 The small single-query samples are not a claim of universal speedup.
 
 Complete samples and guard replies: [MySQL](evidence/2026-10-06-apcu-mysql.json),
@@ -111,6 +111,16 @@ database cost and production acceptance are outside this evidence.
 
 ## Review and resource ownership
 
+The first PR run caught a test-isolation issue and new PHPStan 2.3 diagnostics.
+Configuration tests now resolve the cache binding directly rather than opening
+a Redis connection. The retry is an explicit two-element iteration and its
+unreachable post-loop bypass arm is removed. Full local tests passed again
+(1,127 / 8,620) and PHPStan 2.3 passed. Both database/FPM experiments and all
+installed-file comparisons were repeated on the final runtime commit above.
+Quality, both compatibility anchors, Distribution and Redis Integration passed
+on that exact commit in [PR #83](https://github.com/kefyusuf/laravel-bloom-gate/pull/83).
+Later evidence-only commits do not alter this verified runtime source.
+
 Independent source review found no blocking correctness/security issue. Its
 warm-write observation was addressed with a failing test and a narrow fix.
 Required local `composer check` passed (lint, max PHPStan, fast suite). Native
@@ -118,4 +128,7 @@ APCu cases were additionally exercised in the full FPM-image CLI suite and the
 HTTP checks, and Quality CI now enables APCu for its fast suite.
 
 Task Compose project: `lbg-apcu-20261006`; task-built PHP image:
-`lbg-apcu-fpm:20261006`. Resource cleanup is recorded after verification.
+`lbg-apcu-fpm:20261006`. Both task runtime instances were removed after checks,
+including all task containers, volumes, the network and task-built image.
+Reused base/Redis/MySQL/PostgreSQL/nginx images and unrelated services were kept.
+No worktree was created.

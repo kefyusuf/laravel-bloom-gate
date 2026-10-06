@@ -1,4 +1,26 @@
-# Project handoff — 2026-10-04
+# Project handoff — 2026-10-06
+
+## Latest continuation
+
+The latest published evaluation candidate is `v0.1.0-rc.2`, source
+`e82584c62425146b43082147284c88d9411e9bd7`. See the
+[rc.2 publication record](verification/2026-10-06-published-rc2.md).
+The immutable tag does not include the later performance work.
+
+[PR #83](https://github.com/kefyusuf/laravel-bloom-gate/pull/83) adds opt-in APCu
+descriptor hints with live Redis authorization and one bounded stale refresh.
+Final measured runtime source: `130ff1eb51c63eb67f07df005c273780dea494c1`.
+Full local tests, PHPStan 2.3, archive-backed MySQL/PostgreSQL FPM checks and
+exact-source PR checks passed. Refresh live PR/main state before continuing.
+See the [verification record](verification/2026-10-06-apcu-descriptor-cache.md)
+and README configuration; default descriptor caching remains disabled.
+
+Further performance increments are EVALSHA with NOSCRIPT fallback, immutable
+script/reflection reuse, and separately scoped batching. No local bitmap cache,
+Redis Cluster qualification, concurrency qualification or new release is
+included. Use failing test -> narrow fix -> commit/branch -> green PR merge.
+
+The sections below retain the M6/first-candidate historical handoff.
 
 ## Verify before continuing
 

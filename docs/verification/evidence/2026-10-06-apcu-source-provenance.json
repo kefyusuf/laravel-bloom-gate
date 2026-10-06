@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "reference": "d0504fb40e02466912d8911e690e37e3c2be1f4f",
-  "archive_sha256": "21442c16390eb4a8014c27e8b190e71783b55add82ac277b7671dcee0f89962a",
+  "reference": "130ff1eb51c63eb67f07df005c273780dea494c1",
+  "archive_sha256": "7252245cb1f64bfa1029fa296bcfbb9bafa9fde834334f2aacf563ddc0f1e942",
   "installed_matches_archive": true,
   "production_only": true,
   "verified_files": {
@@ -39,7 +39,7 @@
     "src/Application/ProductionSafetyCheck.php": "485f53db2fe5171838838404d63aaaa93e976650ab2b22134b6cf7f0ab440a64",
     "src/Application/ProductionSafetyDoctor.php": "e4dcca98d558caf248ddc737de198c189a7e139b617fb50ca3280d7874b0bee0",
     "src/Application/ProductionSafetyReport.php": "841ffe601183f5c6735bd43b0a8ddcd2a7e6257a7a114fccb6f78c2a62c7e9d4",
-    "src/Application/QueryGate.php": "c5eb0332386715e60291ee2c5f60750c7e230d0f74903cc529821d28fb65b191",
+    "src/Application/QueryGate.php": "30cdda6cc47717818a0a8830afd921bdbdad6a73bc3760e7956e69572b8b5bf0",
     "src/Application/QuerySafetyDescriptorResolution.php": "8c5c8a13c94f01fbf5e520b995881a6b6cac7a262b34c667ec2e515cc05c26d3",
     "src/Application/QuerySafetyDescriptorResolver.php": "5bbbb4aa7e7d3f2acb5c05cfc678f0e753051498dce6b34871f863a578213db5",
     "src/Application/RebuildProgress.php": "5f831f8b9e1ff01aec1cf91e8a831228f85f358098af29793c16e09f8cb29d54",
