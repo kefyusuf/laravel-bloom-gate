@@ -2,8 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Preserve the existing TDD -> branch/commit -> PR -> green review/CI -> merge workflow; use the existing independent reviewer at each decision gate.
 
-**Status:** approved by the user; Task 1 implementation and native verification
-complete locally, awaiting its independent review and exact-commit CI gate.
+**Status:** approved by the user; Task 1 merged in PR #87 at `4fea698` after
+independent review and exact-commit CI. Task 2 safety implementation and local
+proof complete; its PR and exact-commit hosted gate remain pending.
 **Goal:** obtain a bounded GO/NO-GO/INCONCLUSIVE verdict for an immutable,
 single-host Redis-free Bloom query path.
 **Architecture:** a fixture-only OpenSwoole shared-memory domain provides the
@@ -94,7 +95,7 @@ and a genuinely read-only factory dataset before any speed claim.
   No writer-capable connection may remain inside HTTP workers.
 - [x] Verify factory cardinality/uniqueness and reject all mutation paths. Capture
   setup time, connection behavior and actual Table whole-row semantics.
-- [ ] Commit to a task branch and open the first experiment PR. Run project
+- [x] Commit to a task branch and open the first experiment PR. Run project
   Composer checks plus required native checks. Independent review gates Task 2.
 
 Expected native commands, run inside the task runtime:
@@ -113,22 +114,22 @@ with process-local PHP arrays or install an alternative runtime automatically.
 Deliverable: actual QueryGate returns authoritative-correct results across
 workers and publication/failure scenarios, with no Redis call on the local path.
 
-- [ ] Write RED tests `present_keys_never_return_definitely_absent`,
+- [x] Write RED tests `present_keys_never_return_definitely_absent`,
   `positive_and_false_positive_use_sql`, `negative_skips_sql_only_when_sealed`,
   `publication_during_probe_bypasses`, `old_incarnation_bypasses`,
   `missing_or_corrupt_chunk_bypasses`, `wrong_semantics_bypasses`,
   `failed_table_write_cannot_publish` and `third_generation_is_rejected`.
-- [ ] Run and capture intended failures before implementing fixture adapters.
-- [ ] Implement packed immutable chunks, exact-length/integrity validation and
+- [x] Run and capture intended failures before implementing fixture adapters.
+- [x] Implement packed immutable chunks, exact-length/integrity validation and
   sealed manifests in SharedMemoryDomain. Publish one coherent control row with
   monotonic revision after the entire generation has verified successfully.
-- [ ] Implement the existing ports in SharedMemoryPorts. AuthorizedProbe validates
+- [x] Implement the existing ports in SharedMemoryPorts. AuthorizedProbe validates
   descriptor/incarnation/layout/semantics/health, reads required chunks and checks
   the unchanged whole control tuple before permitting DefinitelyAbsent.
   Any drift bypasses; do not add unbounded retries or skip integrity checks.
-- [ ] Use explicit process barriers to force publication between authorization
+- [x] Use explicit process barriers to force publication between authorization
   and chunk reading. Retain both generations; assert no negative from mixed state.
-- [ ] Verify all 1,000,000 seeded values have no Bloom false negatives, compare
+- [x] Verify all 1,000,000 seeded values have no Bloom false negatives, compare
   HTTP results with sealed-dataset expectations and assert exact SQL fallback
   behavior for selected positive/negative/corrupted-state cases.
 - [ ] Run project checks and live native tests, then commit/PR/review/merge.

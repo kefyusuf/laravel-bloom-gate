@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Laravel\Octane\OctaneServiceProvider;
 
 require_once dirname(__DIR__).'/ParentRuntime.php';
+require_once dirname(__DIR__).'/fixture.php';
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([OctaneServiceProvider::class])

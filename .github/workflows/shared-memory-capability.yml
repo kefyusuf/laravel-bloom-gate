@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - name: Verify real Octane workers and sealed synthetic dataset
+      - name: Verify native capability, coherent QueryGate and sealed dataset
         env:
           SHARED_MEMORY_TASK: ci-${{ github.run_id }}-${{ github.run_attempt }}
         run: bash tests/Experiments/Swoole/run.sh
