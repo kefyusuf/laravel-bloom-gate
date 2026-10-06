@@ -87,3 +87,15 @@ The reproducible script now generates fresh SQL administrator/seeder passwords
 outside HTTP workers, deletes the seeder account after setup and verifies that
 HTTP environments contain no writer credentials. This strengthened setup requires
 the final fresh native CI run; initial local observations precede this change.
+
+Final fresh local reproduction also caught the fixture's incorrect assumption
+that upstream Octane always declares a `swoole` configuration key. Missing
+optional settings now receive an explicit empty default; malformed settings
+still fail. Startup failure diagnostics are retained instead of discarded.
+The fresh Linux/PHP 8.4.26 reproduction then passed all four native tests with
+43 assertions, no warnings/risky tests, and no writer credentials in workers.
+The 1,000,000-row factory digest matched again (30.40-second setup). Preflight
+observed 14,571 coherent reads, 8,547 intermediate revisions during 100,000
+writes, and exact 4096-byte binary preservation. Pint and PHPStan max passed.
+The additional `lbg-shared-memory-20261006-startup` stack, both volumes, network
+and `lbg-shared-memory-php:20261006-startup` image were removed after verification.

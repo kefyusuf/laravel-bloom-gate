@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 $config = require dirname(__DIR__).'/vendor/laravel/octane/config/octane.php';
-if (! is_array($config) || ! is_array($config['swoole'] ?? null)) {
+if (! is_array($config)) {
     throw new RuntimeException('Octane configuration is invalid.');
+}
+$config['swoole'] ??= [];
+if (! is_array($config['swoole'])) {
+    throw new RuntimeException('Octane Swoole configuration is invalid.');
 }
 $config['swoole']['options'] = [];
 $config['server'] = 'swoole';

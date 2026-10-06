@@ -62,12 +62,11 @@ function capabilityStart(): Process
     $process = new Process(['php', 'artisan', 'octane:start', '--server=swoole',
         '--host=127.0.0.1', '--port=8000', '--workers=4', '--task-workers=0',
         '--max-requests=0'], '/experiment', timeout: null);
-    $process->disableOutput();
     $process->start();
     $deadline = microtime(true) + 15;
     do {
         if (! $process->isRunning()) {
-            throw new RuntimeException('Octane exited before readiness.');
+            throw new RuntimeException('Octane exited before readiness: '.$process->getOutput().$process->getErrorOutput());
         }
         if (capabilityListening()) {
             return $process;
