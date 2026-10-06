@@ -9,3 +9,4 @@
 /phpunit.xml.dist export-ignore
 /phpstan.neon.dist export-ignore
 /pint.json export-ignore
+/tests/Experiments/Swoole/*.sh text eol=lf

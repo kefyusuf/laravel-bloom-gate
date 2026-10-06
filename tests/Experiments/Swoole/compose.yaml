@@ -1,0 +1,35 @@
+services:
+  php:
+    build:
+      context: .
+    image: lbg-shared-memory-php:${SHARED_MEMORY_TASK:-local}
+    command: ["sleep", "infinity"]
+    working_dir: /experiment
+    cpus: 2
+    mem_limit: 1g
+    volumes:
+      - ../../..:/package:ro
+      - experiment:/experiment
+    environment:
+      DEMO_DB_HOST: mysql
+      DEMO_DB_DATABASE: demo
+      DEMO_DB_USERNAME: reader
+      DEMO_DB_PASSWORD: fixture-reader-only
+  mysql:
+    image: mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d
+    cpus: 2
+    mem_limit: 1g
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: ${SHARED_MEMORY_SQL_ROOT_PASSWORD:?Set a task-owned SQL administrator password}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$${MYSQL_ROOT_PASSWORD}\" mysqladmin ping -h localhost --silent"]
+      interval: 2s
+      timeout: 2s
+      retries: 60
+volumes:
+  experiment:
+  mysql:

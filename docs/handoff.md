@@ -2,12 +2,17 @@
 
 ## Latest continuation
 
-The next requested work is planning a Redis-free single-host evaluation. See
-the [draft plan](plans/2026-10-06-single-host-shared-memory-evaluation.md) and
+The user approved the Redis-free single-host evaluation; plan PR #86 merged at
+`ad6fc04e5319d009bbda2b0e06600342afef57ac`. See
+the [implementation plan](plans/2026-10-06-single-host-shared-memory-evaluation.md) and
 [experiment design](architecture/single-host-shared-memory-evaluation.md).
-Implementation has not started. This is an immutable synthetic-data experiment,
+Task 1's capability fixture is implemented on `test/swoole-shared-memory-capability`.
+See the [capability record](verification/2026-10-06-shared-memory-capability.md).
+Its native tests and local package checks pass; refresh its exact-commit PR/CI
+and independent review before Task 2. This is an immutable synthetic-data experiment,
 not a change to ADR-0003 production support or an authorization to publish a
-new backend. Review the plan before executing its capability gate.
+new backend. Task 1 proves native sharing and sealed SQL permissions, not actual
+QueryGate negatives or concurrent HTTP performance.
 
 For synthetic application checks, use the [blank Laravel factory demo](verification/2026-10-06-factory-demo.md).
 It owns its demo data, dependency installation and Docker stack. Do not inspect

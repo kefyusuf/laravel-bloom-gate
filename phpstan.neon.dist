@@ -9,3 +9,6 @@ parameters:
         - tests
 
     tmpDir: .build/phpstan
+
+    scanFiles:
+        - vendor/laravel/octane/bin/WorkerState.php

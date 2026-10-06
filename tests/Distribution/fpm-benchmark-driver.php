@@ -79,7 +79,9 @@ function runFpmBenchmark(string $url, string $engine): array
         && in_array($engine, ['mysql', 'pgsql'], true), 'Usage: php fpm-benchmark-driver.php <http-url> <mysql|pgsql>');
     $scriptMode = (string) (getenv('FPM_EXPECT_SCRIPT_MODE') ?: '');
     fpmDriverCheck(in_array($scriptMode, ['', 'eval', 'evalsha'], true), 'Invalid expected Redis script mode.');
-    $run = bin2hex(random_bytes(8));
+    /** @var non-empty-string $entropy Native PHP guarantees string; older analyzers model mixed. */
+    $entropy = random_bytes(8);
+    $run = bin2hex($entropy);
     $base = ['database' => $engine, 'run' => $run];
     $setup = fpmRequest($url, $base + ['action' => 'setup']);
     $miss = $setup['definite_miss'] ?? null;

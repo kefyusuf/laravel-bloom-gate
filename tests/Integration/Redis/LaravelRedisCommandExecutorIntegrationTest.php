@@ -91,7 +91,9 @@ final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
     {
         $connection = $this->clientConnection($client);
         $executor = new LaravelRedisCommandExecutor($connection);
-        $key = 'lbg:{evalsha-'.bin2hex(random_bytes(12)).'}:counter';
+        /** @var non-empty-string $entropy Native PHP guarantees string; older analyzers model mixed. */
+        $entropy = random_bytes(12);
+        $key = 'lbg:{evalsha-'.bin2hex($entropy).'}:counter';
         $script = "return redis.call('INCR', KEYS[1])";
 
         try {
@@ -123,7 +125,9 @@ final class LaravelRedisCommandExecutorIntegrationTest extends TestCase
     {
         $connection = $this->clientConnection($client);
         $executor = new LaravelRedisCommandExecutor($connection);
-        $key = 'lbg:{evalsha-error-'.bin2hex(random_bytes(12)).'}:counter';
+        /** @var non-empty-string $entropy Native PHP guarantees string; older analyzers model mixed. */
+        $entropy = random_bytes(12);
+        $key = 'lbg:{evalsha-error-'.bin2hex($entropy).'}:counter';
         $script = "redis.call('INCR', KEYS[1]); return redis.error_reply('NOSCRIPT user-defined Lua error')";
 
         try {

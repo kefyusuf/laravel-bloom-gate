@@ -2,7 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Preserve the existing TDD -> branch/commit -> PR -> green review/CI -> merge workflow; use the existing independent reviewer at each decision gate.
 
-**Status:** draft for user review; planning only, no implementation started.
+**Status:** approved by the user; Task 1 implementation and native verification
+complete locally, awaiting its independent review and exact-commit CI gate.
 **Goal:** obtain a bounded GO/NO-GO/INCONCLUSIVE verdict for an immutable,
 single-host Redis-free Bloom query path.
 **Architecture:** a fixture-only OpenSwoole shared-memory domain provides the
@@ -77,20 +78,21 @@ verdict in `docs/verification/<date>-shared-memory-evaluation.md`.
 Deliverable: a reproducible blank application proves real cross-worker sharing
 and a genuinely read-only factory dataset before any speed claim.
 
-- [ ] Write RED checks named `workers_share_parent_table`,
+- [x] Write RED checks named `workers_share_parent_table`,
   `worker_restart_preserves_parent_table`, `parent_restart_changes_incarnation`
   and `consumer_cannot_mutate_sealed_dataset`. Assert distinct worker PIDs,
-  shared contents, new namespace on parent restart, zero trusted negatives
-  before publication and SQL permission-denied writes.
-- [ ] Run the native preflight and focused test file; missing implementation
+  shared worker-written contents, new namespace on parent restart, unpublished
+  control state and SQL permission-denied writes. Actual QueryGate SQL-only
+  behavior belongs to Task 2; a constant boolean is not evidence for it.
+- [x] Run the native preflight and focused test file; missing implementation
   must fail. Missing extension/unsupported startup is BLOCKED, not a passing skip.
-- [ ] Implement parent-before-workers shared Table construction and the minimum
+- [x] Implement parent-before-workers shared Table construction and the minimum
   Octane startup bridge. Pin the tested versions/image digests in the fixture.
   OpenSwoole is the first candidate; do not silently substitute another runtime.
-- [ ] Implement deterministic Factory seeding in bounded batches, indexed exact
+- [x] Implement deterministic Factory seeding in bounded batches, indexed exact
   membership keys, SELECT-only HTTP credentials and sealed row-count/digest proof.
   No writer-capable connection may remain inside HTTP workers.
-- [ ] Verify factory cardinality/uniqueness and reject all mutation paths. Capture
+- [x] Verify factory cardinality/uniqueness and reject all mutation paths. Capture
   setup time, connection behavior and actual Table whole-row semantics.
 - [ ] Commit to a task branch and open the first experiment PR. Run project
   Composer checks plus required native checks. Independent review gates Task 2.
