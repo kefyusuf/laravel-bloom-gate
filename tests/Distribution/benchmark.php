@@ -6,6 +6,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Redis\Connections\Connection;
 use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
+use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
@@ -20,6 +21,7 @@ use Kefyusuf\BloomGate\Core\NormalizationIdentity;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
 use Kefyusuf\BloomGate\Core\WriterLeaseState;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
+use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Laravel\Facades\BloomGate;
 
 require __DIR__.'/vendor/autoload.php';
@@ -132,11 +134,16 @@ function benchmarkRedisEvalStats(Connection $redis): array
  * @return array<string, mixed>
  */
 function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, array $expected,
-    ?BenchmarkProfileExecutor $profile = null, ?Application $app = null): array
+    ?BenchmarkProfileExecutor $profile = null, ?Application $app = null,
+    ?BenchmarkDescriptorHint $hint = null): array
 {
     $timings = ['authoritative' => [], 'bloom_gate' => []];
     if ($profile !== null) {
         $timings['authoritative_bypass'] = [];
+    }
+    if ($hint !== null) {
+        $timings['descriptor_hint_cold'] = [];
+        $timings['descriptor_hint_warm'] = [];
     }
     $counts = ['authoritative' => [], 'bloom_gate' => []];
     $falsePositives = [];
@@ -151,7 +158,14 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
             $paths = $repetition % 2 === 0 ? ['authoritative', 'authoritative_bypass', 'bloom_gate'] :
                 ['bloom_gate', 'authoritative_bypass', 'authoritative'];
         }
+        if ($hint !== null) {
+            $paths = ['authoritative', 'authoritative_bypass', 'bloom_gate', 'descriptor_hint_cold', 'descriptor_hint_warm'];
+            if ($repetition % 2 !== 0) {
+                $paths = array_reverse($paths);
+            }
+        }
         foreach ($paths as $path) {
+            $hint?->clear();
             if ($app !== null) {
                 $app['config']->set('bloom-gate.enabled', $path !== 'authoritative_bypass');
             }
@@ -168,7 +182,14 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
                 if ($path === 'authoritative') {
                     $answers[] = $set->exists(NormalizedValue::fromBytes($value));
                 } else {
-                    $result = BloomGate::existsResult('benchmark.email', $value);
+                    if ($hint !== null && ($path === 'descriptor_hint_cold' || $path === 'descriptor_hint_warm')) {
+                        if ($path === 'descriptor_hint_cold') {
+                            $hint->clear();
+                        }
+                        $result = $hint->existsResult('benchmark.email', $value);
+                    } else {
+                        $result = BloomGate::existsResult('benchmark.email', $value);
+                    }
                     $answers[] = $result->exists();
                     $results[] = $result;
                 }
@@ -193,18 +214,21 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
             benchmarkCheck($answers === $expected, 'Bloom/authoritative answers differed from deterministic ground truth.');
             benchmarkCheck($bypassedCount === ($path === 'authoritative_bypass' ? count($values) : 0),
                 'Query bypass decisions did not match the measured path.');
-            if ($path !== 'bloom_gate') {
+            $gated = in_array($path, ['bloom_gate', 'descriptor_hint_cold', 'descriptor_hint_warm'], true);
+            if (! $gated) {
                 benchmarkCheck($set->lookups - $before === count($values),
                     'An authoritative path did not execute one SQL lookup per request.');
             }
             if ($sampleProfile !== null) {
-                $expectedCalls = $path === 'bloom_gate' ? count($values) * 3 : 0;
+                $warm = $path === 'descriptor_hint_warm';
+                $expectedCalls = $gated ? ($warm ? count($values) + 2 : count($values) * 3) : 0;
                 benchmarkCheck($sampleProfile['calls'] === $expectedCalls,
                     'Profiled executor calls did not match the measured path.');
-                if ($path === 'bloom_gate') {
+                if ($gated) {
                     foreach (['snapshot', 'contract', 'probe'] as $group) {
-                        benchmarkCheck(($sampleProfile['groups'][$group]['calls'] ?? 0) === count($values),
-                            'Profiled query script group did not execute once per request: '.$group);
+                        $expectedGroupCalls = $warm && $group !== 'probe' ? 1 : count($values);
+                        benchmarkCheck(($sampleProfile['groups'][$group]['calls'] ?? 0) === $expectedGroupCalls,
+                            'Profiled query script group did not match descriptor hint scope: '.$group);
                     }
                     benchmarkCheck($sampleProfile['source_bytes'] > 0,
                         'Profiled gate did not record transmitted Lua source bytes.');
@@ -218,11 +242,13 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
                 if ($sampleProfile !== null) {
                     $profiles[$path][] = $sampleProfile;
                 }
+                if ($gated) {
+                    benchmarkCheck($set->lookups - $before === count($values) - $trustedNegativeCount,
+                        'Authoritative query count did not match Bloom fallback decisions.');
+                }
                 if ($path === 'bloom_gate') {
                     $falsePositives[] = $falsePositiveCount;
                     $trustedNegatives[] = $trustedNegativeCount;
-                    benchmarkCheck($set->lookups - $before === count($values) - $trustedNegativeCount,
-                        'Authoritative query count did not match Bloom fallback decisions.');
                 }
             }
         }
@@ -237,6 +263,78 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
         'redis_eval_calls' => $redisCalls, 'redis_eval_cpu_usec' => $redisCpuUsec,
         'executor_profile' => $profiles,
     ];
+}
+
+function benchmarkHintMutation(Application $app, BenchmarkSet $set, BenchmarkDescriptorHint $hint,
+    BenchmarkProfileExecutor $profile): bool
+{
+    $name = FilterName::fromString('benchmark.email');
+    $snapshot = $app->make(ActiveGenerationSnapshotReader::class)->readActive($name);
+    benchmarkCheck($snapshot !== null, 'Mutation fixture needs an active generation.');
+    $meta = $app->make(RedisKeyspace::class)->metaKey($name, $snapshot->activeVersion());
+    $redis = $app['redis']->connection();
+    $original = $redis->command('hget', [$meta, 'normalization_fingerprint']);
+    benchmarkCheck(is_string($original), 'Mutation fixture needs a persisted normalization fingerprint.');
+    $alternate = 'sha256:'.str_repeat('0', 64);
+    benchmarkCheck($original !== $alternate, 'Mutation fixture fingerprint must differ.');
+    $value = 'hint-absent@example.test';
+    $hint->clear();
+    $warm = $hint->existsResult('benchmark.email', $value);
+    benchmarkCheck(! $warm->exists() && $warm->membership() !== Membership::Bypassed,
+        'Mutation fixture did not warm a usable descriptor hint.');
+    $before = $set->lookups;
+    $profile->reset();
+    try {
+        $redis->command('hset', [$meta, 'normalization_fingerprint', $alternate]);
+        $result = $hint->existsResult('benchmark.email', $value);
+        benchmarkCheck(! $result->exists() && $result->membership() === Membership::Bypassed
+            && $set->lookups === $before + 1, 'Atomic probe did not reject changed metadata and use SQL.');
+        benchmarkCheck($profile->snapshot()['calls'] === 1, 'Warmed hint did not execute the atomic production probe.');
+    } finally {
+        $redis->command('hset', [$meta, 'normalization_fingerprint', $original]);
+    }
+    $profile->reset();
+    $restored = $hint->existsResult('benchmark.email', $value);
+    benchmarkCheck(! $restored->exists() && $restored->membership() !== Membership::Bypassed
+        && $profile->snapshot()['calls'] === 3, 'Bypass did not clear both descriptor hint caches.');
+
+    $absentValue = null;
+    for ($attempt = 0; $attempt < 100; $attempt++) {
+        $candidate = 'hint-live-bitmap-'.$attempt.'@example.test';
+        if ($hint->existsResult('benchmark.email', $candidate)->membership() === Membership::DefinitelyAbsent) {
+            $absentValue = $candidate;
+            break;
+        }
+    }
+    benchmarkCheck($absentValue !== null, 'Could not warm a definitely absent bitmap mutation fixture.');
+    $prepared = BloomGate::prepare('benchmark.email', WriterLeaseToken::generate()->value(), [$absentValue]);
+    benchmarkCheck($prepared->authoritativeAborted() === CoordinatedWriterCompletionResult::Released,
+        'Bitmap mutation fixture did not release its rolled-back writer.');
+    $before = $set->lookups;
+    $profile->reset();
+    $preAdded = $hint->existsResult('benchmark.email', $absentValue);
+    benchmarkCheck(! $preAdded->exists() && $preAdded->membership() === Membership::MaybePresent
+        && $set->lookups === $before + 1 && $profile->snapshot()['calls'] === 1,
+        'Warmed hint cached a negative answer or failed to probe the live pre-added bitmap.');
+
+    $state = $app->make(RedisKeyspace::class)->stateKey($name);
+    $healthField = 'g:'.$snapshot->activeVersion()->value().':health';
+    $originalHealth = $redis->command('hget', [$state, $healthField]);
+    benchmarkCheck(is_string($originalHealth) && $originalHealth === 'healthy',
+        'Control mutation fixture needs a healthy active generation.');
+    $before = $set->lookups;
+    $profile->reset();
+    try {
+        $redis->command('hset', [$state, $healthField, 'degraded']);
+        $degraded = $hint->existsResult('benchmark.email', $value);
+        benchmarkCheck(! $degraded->exists() && $degraded->membership() === Membership::Bypassed
+            && $set->lookups === $before + 1 && $profile->snapshot()['calls'] === 1,
+            'Warmed hint did not recheck live control health and use SQL fallback.');
+    } finally {
+        $redis->command('hset', [$state, $healthField, $originalHealth]);
+    }
+
+    return true;
 }
 
 /**
@@ -284,6 +382,9 @@ function runBenchmark(): array
         'capacity' => 1000, 'false_positive_rate' => 0.01, 'coordination' => 'coordinated-v1',
     ]]);
     $app->instance(BenchmarkDefinition::class, new BenchmarkDefinition(new BenchmarkNormalizer, $set));
+    $hintRequested = getenv('BENCHMARK_DESCRIPTOR_HINT') === '1';
+    benchmarkCheck(! $hintRequested || getenv('BENCHMARK_PROFILE') === '1',
+        'BENCHMARK_DESCRIPTOR_HINT=1 requires BENCHMARK_PROFILE=1.');
     $profile = null;
     if (getenv('BENCHMARK_PROFILE') === '1') {
         require_once __DIR__.'/benchmark-profile.php';
@@ -309,6 +410,11 @@ function runBenchmark(): array
     $caseVariantExpected = $set->exists(NormalizedValue::fromBytes($caseVariant));
     benchmarkCheck(BloomGate::exists('benchmark.email', $caseVariant) === $caseVariantExpected,
         'Exact-byte normalization did not match authoritative SQL case semantics.');
+    $hint = null;
+    if ($hintRequested) {
+        require_once __DIR__.'/benchmark-descriptor-hint.php';
+        $hint = new BenchmarkDescriptorHint($app);
+    }
 
     $workloads = [];
     foreach ([0, 100, 1000] as $present) {
@@ -319,9 +425,8 @@ function runBenchmark(): array
             $values[] = ($index < $present ? 'present-' : 'absent-').$index.'@example.test';
         }
         $workloads['present_'.$present.'_of_1000'] = benchmarkWorkload($set, $app['redis']->connection(),
-            $values, $expected, $profile, $profile !== null ? $app : null);
+            $values, $expected, $profile, $profile !== null ? $app : null, $hint);
     }
-
     $store = $app->make(WriterSynchronizationStore::class);
     $name = FilterName::fromString('benchmark.email');
     $epoch = $store->read($name)?->currentEpoch();
@@ -336,6 +441,11 @@ function runBenchmark(): array
                 'Benchmark writer did not release.');
             $retained++;
         }
+        $actualRetained = $app['redis']->connection()->command('hlen', [
+            $app->make(RedisKeyspace::class)->syncLeasesKey($name),
+        ]);
+        benchmarkCheck(is_int($actualRetained) && $actualRetained === $target,
+            'Actual retained lease count did not match the writer drain measurement label.');
         $samples = [];
         for ($repetition = 0; $repetition < 11; $repetition++) {
             $started = hrtime(true);
@@ -349,6 +459,12 @@ function runBenchmark(): array
         sort($samples, SORT_NUMERIC);
         $drain[] = ['retained_released_leases' => $retained, 'active_writers' => 0,
             'elapsed_ms' => $samples, 'median_elapsed_ms' => ($samples[4] + $samples[5]) / 2];
+    }
+
+    $hintMutation = null;
+    if ($hint !== null) {
+        benchmarkCheck($profile !== null, 'Descriptor hint profiling is required.');
+        $hintMutation = benchmarkHintMutation($app, $set, $hint, $profile);
     }
 
     $prepared = BloomGate::prepare('benchmark.email', WriterLeaseToken::generate()->value(), ['rolled-back@example.test']);
@@ -369,6 +485,8 @@ function runBenchmark(): array
         'workloads' => $workloads, 'rollback_false_positive_fallback_verified' => true,
         'writer_drain' => $drain,
         'profile_enabled' => $profile !== null,
+        'descriptor_hint_enabled' => $hint !== null,
+        'descriptor_hint_mutation_fallback_verified' => $hintMutation,
         'readonly_replay_calls' => $profile?->capturedCalls() ?? [],
         'limitations' => [
             'A dedicated test database with indexed email lookups; no additional latency is simulated.',
@@ -376,6 +494,9 @@ function runBenchmark(): array
             'Redis is a separate process; timings depend on the supplied runtime and transport.',
             'EVAL commandstats deltas require an otherwise idle Redis instance and exclude client/network CPU.',
             'Profiling adds wrapper bookkeeping; executor wall time includes transport, driver dispatch and Redis execution.',
+            'Descriptor hints are an experimental fixture for batch/process reuse; cold single-query requests still make three Redis calls.',
+            'Hints cache only descriptor metadata; every value executes the unchanged atomic production probe and fresh application fingerprint calculation.',
+            'Hint bypass diagnostics can differ from fresh resolution; no production API compatibility claim is made.',
             'Fixed deterministic requests and dataset; no concurrency, production load or statistical speed claim.',
             'A random isolated Redis prefix requires a disposable Redis instance; no shared keys are deleted.',
         ],
