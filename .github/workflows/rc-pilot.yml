@@ -2,22 +2,74 @@ name: RC Pilot
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional published tag to verify against the selected workflow commit'
+        required: false
+        default: ''
+      version:
+        description: 'Composer version assigned to the selected commit archive'
+        required: false
+        default: 'dev-main'
   pull_request:
     paths:
       - '.github/workflows/rc-pilot.yml'
       - 'tests/Distribution/redis-pilot.php'
       - 'tests/Distribution/smoke.php'
       - 'tests/Distribution/prepare-dist.php'
+      - 'tests/Distribution/benchmark.php'
 
 permissions:
   contents: read
 
 jobs:
-  redis-sqlite:
+  consumer:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - database: sqlite
+            dsn: ''
+          - database: mysql
+            dsn: 'mysql:host=127.0.0.1;port=3306;dbname=bloom'
+          - database: pgsql
+            dsn: 'pgsql:host=127.0.0.1;port=5432;dbname=bloom'
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: bloom
+          MYSQL_USER: bloom
+          MYSQL_PASSWORD: fixture-only
+          MYSQL_ROOT_PASSWORD: fixture-root-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: bloom
+          POSTGRES_USER: bloom
+          POSTGRES_PASSWORD: fixture-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bloom"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     env:
-      RC_TAG: v0.1.0-rc.1
-      RC_SHA: 77401a64b76ea7ceb47a6254fd1f38b3a0d09aca
+      RC_TAG: ${{ inputs.release_tag || '' }}
+      RC_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      RC_VERSION: ${{ inputs.version || 'dev-main' }}
+      PILOT_DB_DSN: ${{ matrix.dsn }}
+      PILOT_DB_USER: bloom
+      PILOT_DB_PASSWORD: fixture-only
 
     steps:
       - uses: actions/checkout@v7
@@ -26,18 +78,20 @@ jobs:
         with:
           php-version: '8.4'
           coverage: none
-          extensions: redis, pdo_sqlite, zip
+          extensions: redis, pdo_sqlite, pdo_mysql, pdo_pgsql, zip
           tools: composer:v2
 
-      - name: Verify published tag and prepare production consumer
+      - name: Verify selected commit and prepare production consumer
         run: |
-          actual=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${RC_TAG}^{}" | cut -f1)
-          test "$actual" = "$RC_SHA"
+          if [ -n "$RC_TAG" ]; then
+            actual=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${RC_TAG}^{}" | cut -f1)
+            test "$actual" = "$RC_SHA"
+          fi
           mkdir -p .build/rc-archive .build/rc-consumer
           curl --fail --location --retry 3 --output .build/rc.zip "https://github.com/${GITHUB_REPOSITORY}/archive/${RC_SHA}.zip"
           unzip -q .build/rc.zip -d .build/rc-archive
           php tests/Distribution/verify.php .build/rc-archive/*
-          php tests/Distribution/prepare-dist.php .build/rc-archive/*/composer.json .build/rc-consumer "file://${PWD}/.build/rc.zip" "$RC_SHA" 0.1.0-rc.1
+          php tests/Distribution/prepare-dist.php .build/rc-archive/*/composer.json .build/rc-consumer "file://${PWD}/.build/rc.zip" "$RC_SHA" "$RC_VERSION"
           cp tests/Distribution/smoke.php tests/Distribution/redis-pilot.php .build/rc-consumer/
 
       - name: Install production dependencies
@@ -60,7 +114,7 @@ jobs:
       - name: Start isolated durable-profile Redis
         run: |
           docker run --detach --name lbg-rc-pilot -p 127.0.0.1:6379:6379 redis:8-alpine redis-server --appendonly yes --appendfsync always --maxmemory-policy noeviction
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if docker exec lbg-rc-pilot redis-cli ping | grep -q '^PONG'; then exit 0; fi
             sleep 1
           done
@@ -78,6 +132,30 @@ jobs:
         env:
           PILOT_PROFILE: standalone-primary-durable-v1
         run: php .build/rc-consumer/redis-pilot.php
+
+      - name: Measure bounded query and drain workloads
+        env:
+          PILOT_PROFILE: standalone-primary-durable-v1
+        run: |
+          cp tests/Distribution/benchmark.php .build/rc-consumer/
+          php .build/rc-consumer/benchmark.php > .build/benchmark.json
+          cat .build/benchmark.json
+
+      - name: Verify measurement failure exit after Laravel bootstrap
+        env:
+          BENCHMARK_FORCE_FAILURE: '1'
+        run: |
+          if php .build/rc-consumer/benchmark.php > .build/benchmark-negative.log 2>&1; then
+            cat .build/benchmark-negative.log
+            exit 1
+          fi
+          grep -F 'Injected benchmark failure after Laravel bootstrap.' .build/benchmark-negative.log
+
+      - name: Preserve measurement evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-benchmark-${{ matrix.database }}
+          path: .build/benchmark.json
 
       - name: Stop isolated Redis
         if: always()
