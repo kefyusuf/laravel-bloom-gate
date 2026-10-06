@@ -8,6 +8,8 @@ use Illuminate\Redis\Connections\Connection;
 use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\FilterDefinition;
+use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
+use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
 use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\AuthoritativeSetIdentity;
@@ -129,22 +131,37 @@ function benchmarkRedisEvalStats(Connection $redis): array
  * @param  list<bool>  $expected
  * @return array<string, mixed>
  */
-function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, array $expected): array
+function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, array $expected,
+    ?BenchmarkProfileExecutor $profile = null, ?Application $app = null): array
 {
     $timings = ['authoritative' => [], 'bloom_gate' => []];
+    if ($profile !== null) {
+        $timings['authoritative_bypass'] = [];
+    }
     $counts = ['authoritative' => [], 'bloom_gate' => []];
     $falsePositives = [];
     $trustedNegatives = [];
     $redisCalls = ['authoritative' => [], 'bloom_gate' => []];
     $redisCpuUsec = ['authoritative' => [], 'bloom_gate' => []];
+    $profiles = [];
     // Warm both paths once; alternate measured order to reduce ordering bias.
     for ($repetition = -1; $repetition < 5; $repetition++) {
         $paths = $repetition % 2 === 0 ? ['authoritative', 'bloom_gate'] : ['bloom_gate', 'authoritative'];
+        if ($profile !== null) {
+            $paths = $repetition % 2 === 0 ? ['authoritative', 'authoritative_bypass', 'bloom_gate'] :
+                ['bloom_gate', 'authoritative_bypass', 'authoritative'];
+        }
         foreach ($paths as $path) {
+            if ($app !== null) {
+                $app['config']->set('bloom-gate.enabled', $path !== 'authoritative_bypass');
+            }
+            $profile?->reset();
             $before = $set->lookups;
             $answers = [];
+            $results = [];
             $falsePositiveCount = 0;
             $trustedNegativeCount = 0;
+            $bypassedCount = 0;
             $redisBefore = benchmarkRedisEvalStats($redis);
             $started = hrtime(true);
             foreach ($values as $index => $value) {
@@ -153,23 +170,54 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
                 } else {
                     $result = BloomGate::existsResult('benchmark.email', $value);
                     $answers[] = $result->exists();
-                    benchmarkCheck($result->membership() !== Membership::Bypassed, 'Bloom gate unexpectedly bypassed.');
-                    if (! $expected[$index] && $result->membership() === Membership::MaybePresent) {
-                        $falsePositiveCount++;
-                    }
-                    if ($result->membership() === Membership::DefinitelyAbsent) {
-                        $trustedNegativeCount++;
-                    }
+                    $results[] = $result;
                 }
             }
             $elapsed = (hrtime(true) - $started) / 1_000_000;
+            foreach ($results as $index => $result) {
+                if ($result->membership() === Membership::Bypassed) {
+                    $bypassedCount++;
+                }
+                if (! $expected[$index] && $result->membership() === Membership::MaybePresent) {
+                    $falsePositiveCount++;
+                }
+                if ($result->membership() === Membership::DefinitelyAbsent) {
+                    $trustedNegativeCount++;
+                }
+            }
+            if ($app !== null) {
+                $app['config']->set('bloom-gate.enabled', true);
+            }
+            $sampleProfile = $profile?->snapshot();
             $redisAfter = benchmarkRedisEvalStats($redis);
             benchmarkCheck($answers === $expected, 'Bloom/authoritative answers differed from deterministic ground truth.');
+            benchmarkCheck($bypassedCount === ($path === 'authoritative_bypass' ? count($values) : 0),
+                'Query bypass decisions did not match the measured path.');
+            if ($path !== 'bloom_gate') {
+                benchmarkCheck($set->lookups - $before === count($values),
+                    'An authoritative path did not execute one SQL lookup per request.');
+            }
+            if ($sampleProfile !== null) {
+                $expectedCalls = $path === 'bloom_gate' ? count($values) * 3 : 0;
+                benchmarkCheck($sampleProfile['calls'] === $expectedCalls,
+                    'Profiled executor calls did not match the measured path.');
+                if ($path === 'bloom_gate') {
+                    foreach (['snapshot', 'contract', 'probe'] as $group) {
+                        benchmarkCheck(($sampleProfile['groups'][$group]['calls'] ?? 0) === count($values),
+                            'Profiled query script group did not execute once per request: '.$group);
+                    }
+                    benchmarkCheck($sampleProfile['source_bytes'] > 0,
+                        'Profiled gate did not record transmitted Lua source bytes.');
+                }
+            }
             if ($repetition >= 0) {
                 $timings[$path][] = $elapsed;
                 $counts[$path][] = $set->lookups - $before;
                 $redisCalls[$path][] = $redisAfter['calls'] - $redisBefore['calls'];
                 $redisCpuUsec[$path][] = $redisAfter['cpu_usec'] - $redisBefore['cpu_usec'];
+                if ($sampleProfile !== null) {
+                    $profiles[$path][] = $sampleProfile;
+                }
                 if ($path === 'bloom_gate') {
                     $falsePositives[] = $falsePositiveCount;
                     $trustedNegatives[] = $trustedNegativeCount;
@@ -187,6 +235,7 @@ function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, 
         'authoritative_queries' => $counts, 'false_positives' => $falsePositives,
         'trusted_negatives' => $trustedNegatives,
         'redis_eval_calls' => $redisCalls, 'redis_eval_cpu_usec' => $redisCpuUsec,
+        'executor_profile' => $profiles,
     ];
 }
 
@@ -235,6 +284,13 @@ function runBenchmark(): array
         'capacity' => 1000, 'false_positive_rate' => 0.01, 'coordination' => 'coordinated-v1',
     ]]);
     $app->instance(BenchmarkDefinition::class, new BenchmarkDefinition(new BenchmarkNormalizer, $set));
+    $profile = null;
+    if (getenv('BENCHMARK_PROFILE') === '1') {
+        require_once __DIR__.'/benchmark-profile.php';
+        $profile = new BenchmarkProfileExecutor($app->make(RedisStructuredCommandExecutor::class));
+        $app->instance(RedisStructuredCommandExecutor::class, $profile);
+        $app->instance(RedisCommandExecutor::class, $profile);
+    }
     $exit = $kernel->call('bloom:coordinate:adopt', ['filter' => 'benchmark.email']);
     $output = $kernel->output();
     benchmarkCheck($exit === 0, 'Coordination adoption failed: '.$output);
@@ -262,7 +318,8 @@ function runBenchmark(): array
             $expected[] = $index < $present;
             $values[] = ($index < $present ? 'present-' : 'absent-').$index.'@example.test';
         }
-        $workloads['present_'.$present.'_of_1000'] = benchmarkWorkload($set, $app['redis']->connection(), $values, $expected);
+        $workloads['present_'.$present.'_of_1000'] = benchmarkWorkload($set, $app['redis']->connection(),
+            $values, $expected, $profile, $profile !== null ? $app : null);
     }
 
     $store = $app->make(WriterSynchronizationStore::class);
@@ -311,11 +368,14 @@ function runBenchmark(): array
         'measured_repetitions' => 5, 'warmup_repetitions' => 1,
         'workloads' => $workloads, 'rollback_false_positive_fallback_verified' => true,
         'writer_drain' => $drain,
+        'profile_enabled' => $profile !== null,
+        'readonly_replay_calls' => $profile?->capturedCalls() ?? [],
         'limitations' => [
             'A dedicated test database with indexed email lookups; no additional latency is simulated.',
             'SQLite defaults to memory; MySQL/PostgreSQL evidence requires explicitly supplied PDO DSN and observed runs.',
             'Redis is a separate process; timings depend on the supplied runtime and transport.',
             'EVAL commandstats deltas require an otherwise idle Redis instance and exclude client/network CPU.',
+            'Profiling adds wrapper bookkeeping; executor wall time includes transport, driver dispatch and Redis execution.',
             'Fixed deterministic requests and dataset; no concurrency, production load or statistical speed claim.',
             'A random isolated Redis prefix requires a disposable Redis instance; no shared keys are deleted.',
         ],
