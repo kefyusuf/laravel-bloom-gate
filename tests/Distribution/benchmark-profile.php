@@ -15,7 +15,7 @@ final class BenchmarkProfileExecutor implements RedisStructuredCommandExecutor
     /** @var array<string, string> */
     private array $scriptHashes = [];
 
-    /** @var array<string, array{calls: int, wall_ns: int, source_bytes: int}> */
+    /** @var array<string, array{calls: int, wall_ns: int, logical_script_bytes: int}> */
     private array $totals = [];
 
     /** @var array<string, array{script: string, keys: list<string>, arguments: list<string>}> */
@@ -73,7 +73,7 @@ final class BenchmarkProfileExecutor implements RedisStructuredCommandExecutor
         $this->totals = [];
     }
 
-    /** @return array{calls: int, wall_ns: int, source_bytes: int, groups: array<string, array{calls: int, wall_ns: int, source_bytes: int}>, script_sha256: array<string, string>} */
+    /** @return array{calls: int, wall_ns: int, logical_script_bytes: int, groups: array<string, array{calls: int, wall_ns: int, logical_script_bytes: int}>, script_sha256: array<string, string>} */
     public function snapshot(): array
     {
         $calls = 0;
@@ -82,10 +82,10 @@ final class BenchmarkProfileExecutor implements RedisStructuredCommandExecutor
         foreach ($this->totals as $group) {
             $calls += $group['calls'];
             $wall += $group['wall_ns'];
-            $bytes += $group['source_bytes'];
+            $bytes += $group['logical_script_bytes'];
         }
 
-        return ['calls' => $calls, 'wall_ns' => $wall, 'source_bytes' => $bytes,
+        return ['calls' => $calls, 'wall_ns' => $wall, 'logical_script_bytes' => $bytes,
             'groups' => $this->totals, 'script_sha256' => $this->scriptHashes];
     }
 
@@ -98,10 +98,10 @@ final class BenchmarkProfileExecutor implements RedisStructuredCommandExecutor
     private function record(string $script, int $elapsed): void
     {
         $group = $this->groups[$script] ?? 'other';
-        $totals = $this->totals[$group] ?? ['calls' => 0, 'wall_ns' => 0, 'source_bytes' => 0];
+        $totals = $this->totals[$group] ?? ['calls' => 0, 'wall_ns' => 0, 'logical_script_bytes' => 0];
         $this->totals[$group] = ['calls' => $totals['calls'] + 1,
             'wall_ns' => $totals['wall_ns'] + $elapsed,
-            'source_bytes' => $totals['source_bytes'] + strlen($script)];
+            'logical_script_bytes' => $totals['logical_script_bytes'] + strlen($script)];
     }
 
     /**

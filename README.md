@@ -198,6 +198,16 @@ your deployment and hit/miss distribution. Fewer Redis calls do not guarantee
 lower latency than an inexpensive indexed SQL lookup. See the
 [FPM verification record](docs/verification/2026-10-06-apcu-descriptor-cache.md).
 
+The development branch also executes Redis scripts by their SHA1 digest using
+`EVALSHA`. A missing server-side script triggers one `EVAL` to execute and cache
+the source. Subsequent calls use the digest again. Connection failures and Lua
+execution errors do not trigger this fallback. This applies to PhpRedis and
+Predis without additional configuration; the published rc.2 does not include it.
+Restricted Redis users must allow both `EVALSHA` and `EVAL`, as well as the
+commands used inside the scripts. An ACL denial does not trigger a retry. Verify
+these permissions before upgrading; keep the previous package version available
+if the deployment cannot grant them.
+
 ## Current milestone
 
 **M6 — Online Rebuild and Write Coordination — implementation complete**

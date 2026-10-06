@@ -2,16 +2,23 @@
 
 declare(strict_types=1);
 
+use Illuminate\Redis\Connections\PhpRedisConnection;
 use Kefyusuf\BloomGate\Contracts\Redis\Exception\RedisCommandFailed;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
 use Kefyusuf\BloomGate\Laravel\Redis\LaravelRedisCommandExecutor;
 use Kefyusuf\BloomGate\Tests\Support\Redis\FakeRedisClientException;
-use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingIlluminateRedisConnection;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingEvalshaIlluminateConnection as RecordingIlluminateRedisConnection;
+use Kefyusuf\BloomGate\Tests\Support\Redis\RecordingNativeEvalshaClient;
+use Predis\Response\ServerException;
 
-function makeLaravelRedisClientFailure(string $class): Throwable
+function makeLaravelRedisClientFailure(string $class, string $message = 'Redis client failure.'): Throwable
 {
-    if (class_exists($class, false) === false) {
+    if ($class === 'Predis\\PredisException' && class_exists(ServerException::class)) {
+        return new ServerException($message);
+    }
+
+    if (class_exists($class) === false) {
         class_alias(FakeRedisClientException::class, $class);
     }
 
@@ -20,7 +27,7 @@ function makeLaravelRedisClientFailure(string $class): Throwable
     }
 
     /** @var class-string<Throwable> $class */
-    return new $class('Redis client failure.');
+    return new $class($message);
 }
 
 it('forwards eval through the resolved Illuminate Redis connection exactly', function (): void {
@@ -174,3 +181,78 @@ it('does not mask programming failures during structured eval', function (): voi
         expect($actual)->toBe($failure);
     }
 });
+
+it('uses a warm EVALSHA without sending the Lua source or issuing EVAL', function (): void {
+    $script = "return {'warm'}";
+    $connection = new RecordingIlluminateRedisConnection(['warm'], scriptCached: true);
+    $executor = new LaravelRedisCommandExecutor($connection);
+    expect($executor->evaluateStructured($script, ['key'], ['arg']))->toBe(['warm'])
+        ->and($connection->shaCalls())->toBe([[
+            'hash' => sha1($script), 'numberOfKeys' => 1, 'arguments' => ['key', 'arg'],
+        ]])
+        ->and($connection->evalCalls())->toBe([]);
+});
+
+it('falls back exactly once only for operational NOSCRIPT errors', function (string $class): void {
+    $script = "return redis.call('INCR', KEYS[1])";
+    $connection = new RecordingIlluminateRedisConnection(1,
+        shaFailure: makeLaravelRedisClientFailure($class, 'NOSCRIPT No matching script. Please use EVAL.'));
+    expect((new LaravelRedisCommandExecutor($connection))->evaluate($script, ['counter'], ['opaque']))->toBe(1)
+        ->and($connection->shaCalls())->toBe([[
+            'hash' => sha1($script), 'numberOfKeys' => 1, 'arguments' => ['counter', 'opaque'],
+        ]])
+        ->and($connection->evalCalls())->toBe([[
+            'script' => $script, 'numberOfKeys' => 1, 'arguments' => ['counter', 'opaque'],
+        ]]);
+})->with(['RedisException', 'Predis\\PredisException']);
+
+it('never replays an operational error that does not prove NOSCRIPT', function (string $message): void {
+    $failure = makeLaravelRedisClientFailure('RedisException', $message);
+    $connection = new RecordingIlluminateRedisConnection(1, shaFailure: $failure);
+    try {
+        (new LaravelRedisCommandExecutor($connection))->evaluate('return 1', [], []);
+        throw new LogicException('Expected operational failure.');
+    } catch (RedisCommandFailed $mapped) {
+        expect($mapped->getPrevious())->toBe($failure)
+            ->and($connection->shaCalls())->toHaveCount(1)
+            ->and($connection->evalCalls())->toBe([]);
+    }
+})->with(['read timeout', 'NOAUTH Authentication required.', 'READONLY replica',
+    'ERR Error running script: NOSCRIPT is a user value', 'NOSCRIPTING unsupported',
+    'ERR NOSCRIPT No matching script. Please use EVAL.']);
+
+it('does not retry an EVAL fallback that itself fails', function (): void {
+    $failure = makeLaravelRedisClientFailure('RedisException', 'NOSCRIPT No matching script. Please use EVAL.');
+    $connection = new RecordingIlluminateRedisConnection(1, failure: $failure);
+    expect(fn () => (new LaravelRedisCommandExecutor($connection))->evaluate('return 1', [], []))
+        ->toThrow(RedisCommandFailed::class)
+        ->and($connection->shaCalls())->toHaveCount(1)
+        ->and($connection->evalCalls())->toHaveCount(1);
+});
+
+it('propagates programming failures containing NOSCRIPT without fallback', function (): void {
+    $failure = new LogicException('NOSCRIPT No matching script. Please use EVAL.');
+    $connection = new RecordingIlluminateRedisConnection(1, shaFailure: $failure);
+    expect(fn () => (new LaravelRedisCommandExecutor($connection))->evaluate('return 1', [], []))
+        ->toThrow(LogicException::class)
+        ->and($connection->evalCalls())->toBe([]);
+});
+
+it('uses the native phpredis SHA signature and safely consumes only current NOSCRIPT errors', function (): void {
+    $client = new RecordingNativeEvalshaClient(false, 'NOSCRIPT No matching script. Please use EVAL.');
+    $executor = new LaravelRedisCommandExecutor(new PhpRedisConnection($client));
+    expect($executor->evaluate('return 42', ['key'], ['arg']))->toBe(42)
+        ->and($client->shaCalls)->toBe([[sha1('return 42'), ['key', 'arg'], 1]])
+        ->and($client->clears)->toBe(1)
+        ->and($client->evalCalls)->toBe(1);
+})->skip(fn (): bool => ! extension_loaded('redis'), 'Requires the native phpredis extension.');
+
+it('does not treat stale native errors or non-NOSCRIPT native errors as retry permission', function (?string $currentError): void {
+    $client = new RecordingNativeEvalshaClient(false, $currentError, 'NOSCRIPT No matching script. Please use EVAL.');
+    $executor = new LaravelRedisCommandExecutor(new PhpRedisConnection($client));
+    expect(fn () => $executor->evaluate('return false', [], []))
+        ->toThrow($currentError === null ? UnexpectedValueException::class : RedisCommandFailed::class)
+        ->and($client->clears)->toBe(1)
+        ->and($client->evalCalls)->toBe(0);
+})->with([null, 'NOAUTH Authentication required.', 'READONLY replica', 'NOSCRIPT user-defined Lua error'])
+    ->skip(fn (): bool => ! extension_loaded('redis'), 'Requires the native phpredis extension.');

@@ -48,6 +48,22 @@ function fpmAssertQuery(array $report, int $calls, int $sql, string $membership)
         'FPM query did not meet membership/SQL/answer expectations.');
 }
 
+/** @param array<string, mixed> $report */
+function fpmAssertLuaTransport(array $report, int $eval, int $evalsha, int $failedEvalsha = 0): void
+{
+    $transport = $report['lua_transport'] ?? null;
+    fpmDriverCheck(is_array($transport), 'Redis Lua transport evidence is missing.');
+    foreach (['eval' => $eval, 'evalsha' => $evalsha] as $command => $expected) {
+        $entry = $transport[$command] ?? null;
+        $actual = is_array($entry) && is_int($entry['calls'] ?? null) ? (string) $entry['calls'] : 'missing';
+        fpmDriverCheck(is_array($entry) && ($entry['calls'] ?? null) === $expected,
+            'Unexpected Redis '.$command.' calls; expected '.$expected.', actual '.$actual.'.');
+        $failed = $command === 'evalsha' ? $failedEvalsha : 0;
+        fpmDriverCheck(($entry['failed_calls'] ?? null) === $failed && ($entry['rejected_calls'] ?? null) === 0,
+            'Unexpected Redis '.$command.' failed/rejected command count.');
+    }
+}
+
 /** @param list<float> $samples */
 function fpmMedian(array $samples): float
 {
@@ -61,6 +77,8 @@ function runFpmBenchmark(string $url, string $engine): array
 {
     fpmDriverCheck(filter_var($url, FILTER_VALIDATE_URL) !== false
         && in_array($engine, ['mysql', 'pgsql'], true), 'Usage: php fpm-benchmark-driver.php <http-url> <mysql|pgsql>');
+    $scriptMode = (string) (getenv('FPM_EXPECT_SCRIPT_MODE') ?: '');
+    fpmDriverCheck(in_array($scriptMode, ['', 'eval', 'evalsha'], true), 'Invalid expected Redis script mode.');
     $run = bin2hex(random_bytes(8));
     $base = ['database' => $engine, 'run' => $run];
     $setup = fpmRequest($url, $base + ['action' => 'setup']);
@@ -73,6 +91,21 @@ function runFpmBenchmark(string $url, string $engine): array
     // This fails on the previous implementation: process-local hints cannot survive separate FPM HTTP requests.
     fpmAssertQuery($warm, 1, 0, 'DefinitelyAbsent');
     fpmDriverCheck($cold['package_reference'] === $warm['package_reference'], 'Installed package reference changed between requests.');
+    $scriptReload = null;
+    $afterScriptReload = null;
+    if ($scriptMode === 'eval') {
+        fpmAssertLuaTransport($warm, 1, 0);
+    }
+    if ($scriptMode === 'evalsha') {
+        fpmAssertLuaTransport($warm, 0, 1);
+        fpmRequest($url, $base + ['action' => 'script-flush']);
+        $scriptReload = fpmRequest($url, $query);
+        fpmAssertQuery($scriptReload, 1, 0, 'DefinitelyAbsent');
+        fpmAssertLuaTransport($scriptReload, 1, 1, 1);
+        $afterScriptReload = fpmRequest($url, $query);
+        fpmAssertQuery($afterScriptReload, 1, 0, 'DefinitelyAbsent');
+        fpmAssertLuaTransport($afterScriptReload, 0, 1);
+    }
 
     fpmRequest($url, $base + ['action' => 'rebuild']);
     $retried = fpmRequest($url, $query);
@@ -145,6 +178,10 @@ function runFpmBenchmark(string $url, string $engine): array
                 };
                 fpmDriverCheck(($executor['calls'] ?? null) === $expectedCalls,
                     'Measured FPM Redis count does not match cold/warm request scope: '.$path);
+                if ($scriptMode !== '') {
+                    fpmAssertLuaTransport($report, $scriptMode === 'eval' ? $expectedCalls : 0,
+                        $scriptMode === 'evalsha' ? $expectedCalls : 0);
+                }
                 if ($path === 'direct' || $path === 'bypass') {
                     fpmDriverCheck(($report['authoritative_queries'] ?? null) === $requests,
                         'SQL-only path did not execute one authoritative query per request.');
@@ -157,6 +194,7 @@ function runFpmBenchmark(string $url, string $engine): array
                     $samples[$path]['http_ms'][] = $httpMs;
                     $samples[$path]['sql_queries'][] = $report['authoritative_queries'];
                     $samples[$path]['executor'][] = $executor;
+                    $samples[$path]['lua_transport'][] = $report['lua_transport'];
                     $samples[$path]['pid'][] = $report['pid'];
                 }
             }
@@ -172,15 +210,18 @@ function runFpmBenchmark(string $url, string $engine): array
     return ['schema_version' => 1, 'status' => 'passed', 'database' => $engine,
         'database_server_version' => $setup['database_server_version'], 'php' => $setup['php'],
         'package_reference' => $setup['package_reference'], 'sapi' => 'fpm-fcgi', 'apcu_enabled' => true,
+        'expected_script_mode' => $scriptMode,
         'cross_request' => ['cold' => $cold, 'warm' => $warm],
         'guards' => ['changed_control_bounded_retry' => $retried, 'after_retry_warm' => $retryWarm,
             'metadata_mismatch_sql_fallback' => $metadata, 'after_metadata_cache_evicted' => $afterMetadata,
             'health_change_sql_fallback' => $health, 'after_health_cache_evicted' => $afterHealth,
-            'live_bitmap_preadd_rollback' => $bitmap],
+            'live_bitmap_preadd_rollback' => $bitmap, 'noscript_fallback' => $scriptReload,
+            'after_noscript_evalsha_warm' => $afterScriptReload],
         'workloads' => $workloads, 'warmup_repetitions' => 1, 'measured_repetitions' => 5,
         'limits' => ['Dedicated disposable FPM/APCu/Redis/MySQL/PostgreSQL task services; no concurrency or production-load claim.',
             'Query timing excludes Laravel bootstrap/PDO connection; HTTP timing includes request startup and response transfer.',
             'No timing threshold assertion; correctness and actual Redis/SQL counts are asserted.',
+            'Lua transport counters are idle-server INFO deltas outside query timing; logical script lengths do not measure wire bytes.',
             'APCu persists across independent HTTP requests; cache clear is restricted to this isolated fixture pool.']];
 }
 

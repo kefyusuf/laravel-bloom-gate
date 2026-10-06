@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Composer\InstalledVersions;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
+use Illuminate\Redis\Connections\Connection;
 use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
 use Kefyusuf\BloomGate\Contracts\ActiveGenerationSnapshotReader;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
@@ -34,6 +35,49 @@ function fpmCheck(bool $condition, string $message): void
     if (! $condition) {
         throw new RuntimeException($message);
     }
+}
+
+/** @return array<string, array{calls: int, cpu_usec: int, failed_calls: int, rejected_calls: int}> */
+function fpmLuaCommandStats(Connection $redis): array
+{
+    $info = $redis->command('info', ['commandstats']);
+    fpmCheck(is_array($info), 'Redis command statistics are unavailable.');
+    $result = [];
+    foreach (['eval', 'evalsha'] as $command) {
+        $stats = $info['cmdstat_'.$command] ?? null;
+        $entry = ['calls' => 0, 'cpu_usec' => 0, 'failed_calls' => 0, 'rejected_calls' => 0];
+        if ($stats !== null) {
+            fpmCheck(is_string($stats), 'Invalid Redis command statistics.');
+            foreach (['calls' => 'calls', 'cpu_usec' => 'usec', 'failed_calls' => 'failed_calls', 'rejected_calls' => 'rejected_calls'] as $field => $redisField) {
+                if (preg_match('/(?:\A|,)'.$redisField.'=(\d+)(?:,|\z)/', $stats, $matches) !== 1) {
+                    throw new RuntimeException('Redis command statistic field is unavailable: '.$redisField);
+                }
+                $entry[$field] = (int) $matches[1];
+            }
+        }
+        $result[$command] = $entry;
+    }
+
+    return $result;
+}
+
+/**
+ * @param  array<string, array{calls: int, cpu_usec: int, failed_calls: int, rejected_calls: int}>  $before
+ * @param  array<string, array{calls: int, cpu_usec: int, failed_calls: int, rejected_calls: int}>  $after
+ * @return array<string, array{calls: int, cpu_usec: int, failed_calls: int, rejected_calls: int}>
+ */
+function fpmLuaCommandDelta(array $before, array $after): array
+{
+    $delta = [];
+    foreach ($after as $command => $entry) {
+        $delta[$command] = ['calls' => 0, 'cpu_usec' => 0, 'failed_calls' => 0, 'rejected_calls' => 0];
+        foreach ($entry as $field => $value) {
+            fpmCheck($value >= $before[$command][$field], 'Redis command statistics changed non-monotonically.');
+            $delta[$command][$field] = $value - $before[$command][$field];
+        }
+    }
+
+    return $delta;
 }
 
 final class FpmFixtureNormalizer implements ValueNormalizer
@@ -195,6 +239,12 @@ function runFpmFixture(): array
 
         return $context + ['cleared' => true];
     }
+    if ($action === 'script-flush') {
+        // The runner supplies a task-owned Redis server; this never targets a shared development instance.
+        $app['redis']->connection()->command('script', ['flush']);
+
+        return $context + ['script_cache_flushed' => true];
+    }
     if ($action === 'rebuild') {
         $exit = $kernel->call('bloom:rebuild', ['filter' => 'fpm.email']);
         $output = $kernel->output();
@@ -248,6 +298,7 @@ function runFpmFixture(): array
     $profile->reset();
     $answers = [];
     $memberships = [];
+    $transportBefore = fpmLuaCommandStats($app['redis']->connection());
     $started = hrtime(true);
     for ($index = 0; $index < $requests; $index++) {
         $value = $fixed ?? (($index < $present ? 'present-' : 'absent-').$index.'@example.test');
@@ -260,6 +311,7 @@ function runFpmFixture(): array
         }
     }
     $elapsed = (hrtime(true) - $started) / 1_000_000;
+    $transport = fpmLuaCommandDelta($transportBefore, fpmLuaCommandStats($app['redis']->connection()));
     $measuredLookups = $set->lookups;
     $executor = $profile->snapshot();
     if ($fixed === null) {
@@ -275,7 +327,8 @@ function runFpmFixture(): array
     return $context + ['path' => $mode, 'requests' => $requests, 'present' => $present,
         'correctness_equal' => true, 'answers' => $answers, 'memberships' => $memberships,
         'query_elapsed_ms' => $elapsed, 'authoritative_queries' => $measuredLookups,
-        'executor' => $executor, 'limits' => 'One HTTP request; timing excludes bootstrap/PDO connection but includes fixture result collection.'];
+        'executor' => $executor, 'lua_transport' => $transport,
+        'limits' => 'One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.'];
 }
 
 try {

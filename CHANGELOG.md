@@ -14,6 +14,14 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 - Production-only PHP-FPM/MySQL/PostgreSQL verification fixtures for shared
   descriptor reuse, rebuild recovery, live bitmap checks and safe fallbacks.
 
+### Changed
+
+- Laravel Redis script execution uses EVALSHA, with one EVAL fallback only for
+  Redis's canonical NOSCRIPT cache-miss reply. PhpRedis and Predis retain strict
+  reply validation; connection and script execution failures are not retried.
+- Development tests exercise both Redis clients and measure server-side script
+  command counts separately from logical calls and script source size.
+
 ## [0.1.0-rc.2] - 2026-10-06
 
 ### Added
