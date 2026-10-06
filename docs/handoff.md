@@ -2,6 +2,10 @@
 
 ## Latest continuation
 
+For synthetic application checks, use the [blank Laravel factory demo](verification/2026-10-06-factory-demo.md).
+It owns its demo data, dependency installation and Docker stack. Do not inspect
+or reuse private business-application source or data for package verification.
+
 The latest published evaluation candidate is `v0.1.0-rc.2`, source
 `e82584c62425146b43082147284c88d9411e9bd7`. See the
 [rc.2 publication record](verification/2026-10-06-published-rc2.md).
