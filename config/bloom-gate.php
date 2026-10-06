@@ -31,6 +31,16 @@ return [
         'prefix' => env('BLOOM_GATE_PREFIX', 'lbg'),
     ],
 
+    'query' => [
+        'descriptor_cache' => [
+            'driver' => 'none',
+            // Required for APCu: a unique application/environment/backend namespace.
+            'namespace' => null,
+            // Expiration bounds hint retention; each lookup still checks live Redis.
+            'ttl' => 60,
+        ],
+    ],
+
     'build' => [
         'chunk_size' => 1000,
     ],

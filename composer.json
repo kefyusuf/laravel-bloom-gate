@@ -45,6 +45,7 @@
         }
     },
     "suggest": {
+        "ext-apcu": "Optional shared descriptor hints for Redis query gates across PHP-FPM requests.",
         "ext-redis": "Recommended Redis client for production Laravel applications.",
         "predis/predis": "Alternative Redis client supported by Laravel."
     },

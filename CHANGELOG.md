@@ -6,6 +6,14 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ## [Unreleased]
 
+### Added
+
+- Optional APCu descriptor hints for Redis query gates across PHP-FPM requests,
+  preserving live atomic authorization on every lookup and one bounded refresh
+  after a cached control-state change.
+- Production-only PHP-FPM/MySQL/PostgreSQL verification fixtures for shared
+  descriptor reuse, rebuild recovery, live bitmap checks and safe fallbacks.
+
 ## [0.1.0-rc.2] - 2026-10-06
 
 ### Added
