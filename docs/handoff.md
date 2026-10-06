@@ -2,6 +2,13 @@
 
 ## Latest continuation
 
+The next requested work is planning a Redis-free single-host evaluation. See
+the [draft plan](plans/2026-10-06-single-host-shared-memory-evaluation.md) and
+[experiment design](architecture/single-host-shared-memory-evaluation.md).
+Implementation has not started. This is an immutable synthetic-data experiment,
+not a change to ADR-0003 production support or an authorization to publish a
+new backend. Review the plan before executing its capability gate.
+
 For synthetic application checks, use the [blank Laravel factory demo](verification/2026-10-06-factory-demo.md).
 It owns its demo data, dependency installation and Docker stack. Do not inspect
 or reuse private business-application source or data for package verification.
