@@ -49,6 +49,20 @@ The public `exists()` result is therefore authoritative-correct.
 
 ## Current milestone
 
+**M6 — Online Rebuild and Write Coordination — implementation complete**
+
+The package is evaluating the published `v0.1.0-rc.1` candidate. M6 adds
+coordinated prepared writes, explicit adoption, resumable online rebuild/abort,
+evidence-bound lease recovery, and read-only coordination diagnostics. Laravel
+exposes these capabilities through the facade and Artisan commands.
+
+The [Redis/SQLite consumer pilot](docs/verification/2026-10-05-rc-redis-sqlite-pilot.md)
+verifies the published candidate's query and known commit/rollback paths. It does
+not establish production performance or deployment acceptance. No M7 feature
+scope is currently defined.
+
+## Query integration foundation
+
 **M5 — Safe Laravel Query Integration**
 
 M5 adds the application and Laravel integration required to turn the M4 lifecycle/control plane into a safe query gate:
@@ -250,7 +264,7 @@ Predis operational-exception normalization is unit-tested, but real Predis runti
 - **M3:** Redis foundation — complete
 - **M4:** lifecycle and verification — complete
 - **M5:** safe Laravel query integration — implementation complete
-- **M6:** online rebuild/write coordination — implementation complete; pre-release
+- **M6:** online rebuild/write coordination — implementation complete; published evaluation candidate
 
 ## Contributing
 
