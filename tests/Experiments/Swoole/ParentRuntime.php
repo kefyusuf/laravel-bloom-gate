@@ -9,10 +9,8 @@ final class ParentRuntime
 
     public static function initialize(): void
     {
+        /** @var non-empty-string $entropy Native PHP guarantees string; older analyzers model mixed. */
         $entropy = random_bytes(16);
-        if (! is_string($entropy)) {
-            throw new RuntimeException('Runtime incarnation entropy is invalid.');
-        }
         $control = new Table(16);
         $control->column('incarnation', Table::TYPE_STRING, 32);
         $control->column('sentinel', Table::TYPE_STRING, 32);

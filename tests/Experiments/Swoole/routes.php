@@ -59,6 +59,8 @@ Route::get('/database', function (): array {
         'last' => $summary['last_key'], 'denied' => $denied,
         'grants' => capabilitySql($database, 'SHOW GRANTS')->fetchAll(PDO::FETCH_COLUMN),
         'read_only' => capabilitySql($database, 'SELECT @@global.super_read_only')->fetchColumn(),
+        'writer_credentials_present' => getenv('MYSQL_ROOT_PASSWORD') !== false
+            || getenv('SHARED_MEMORY_SQL_ROOT_PASSWORD') !== false || getenv('DEMO_SEED_PASSWORD') !== false,
         'username' => capabilitySql($database, 'SELECT CURRENT_USER()')->fetchColumn()];
 });
 

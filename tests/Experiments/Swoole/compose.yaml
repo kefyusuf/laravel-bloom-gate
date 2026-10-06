@@ -21,12 +21,12 @@ services:
     mem_limit: 1g
     environment:
       MYSQL_DATABASE: demo
-      MYSQL_ROOT_PASSWORD: fixture-root-only
+      MYSQL_ROOT_PASSWORD: ${SHARED_MEMORY_SQL_ROOT_PASSWORD:?Set a task-owned SQL administrator password}
     volumes:
       - mysql:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -pfixture-root-only --silent"]
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$${MYSQL_ROOT_PASSWORD}\" mysqladmin ping -h localhost --silent"]
       interval: 2s
       timeout: 2s
       retries: 60

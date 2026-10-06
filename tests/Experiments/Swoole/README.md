@@ -1,7 +1,7 @@
 # Single-host capability fixture
 
 Experimental test infrastructure only. This blank Laravel 13 application uses
-OpenSwoole 26.2.0 and Octane 2.17.0. Production backend requirements and defaults
+OpenSwoole 26.2.0 and Octane 2.20.0. Production backend requirements and defaults
 are unchanged. Root `laravel/octane` is a dev-only dependency so the existing
 PHPStan maximum-level gate checks actual Octane types; its non-autoloaded
 `bin/WorkerState.php` is scanned explicitly.
@@ -31,7 +31,9 @@ Seeding uses deterministic Eloquent factories in batches of 10,000 and exactly
 SQL contents must match the independently generated SHA-256 digest. Seeding
 finishes and disconnects before HTTP workers start. The seeder account is then
 dropped, MySQL `read_only` and `super_read_only` are enabled, and workers receive
-only a SELECT-only account. The tests verify its actual grants, global seal and
+only a SELECT-only account. Administrator/seeder passwords are generated per run
+outside HTTP workers; their environment must contain none of these credentials.
+The tests verify its actual grants, global seal and
 rejected INSERT/UPDATE/DELETE (MySQL errors 1142 or 1290 only).
 
 Task 1 verifies native capability and unpublished control state. It does not

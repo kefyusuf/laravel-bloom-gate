@@ -181,6 +181,7 @@ it('consumer_cannot_mutate_sealed_dataset', function (): void {
     expect($reply['denied'])->toBe(['insert', 'update', 'delete']);
     expect($reply['username'])->toStartWith('reader@');
     expect($reply['read_only'])->toBe(1);
+    expect($reply['writer_credentials_present'])->toBeFalse();
     if (! is_array($reply['grants'] ?? null)) {
         throw new RuntimeException('SQL grants are invalid.');
     }

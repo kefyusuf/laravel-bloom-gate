@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 use Swoole\Http\Server;
+use Swoole\Table;
 
 foreach (['openswoole', 'sockets', 'pcntl', 'pdo_mysql'] as $extension) {
     if (! extension_loaded($extension)) {
@@ -9,16 +10,17 @@ foreach (['openswoole', 'sockets', 'pcntl', 'pdo_mysql'] as $extension) {
     }
 }
 
-foreach (['OpenSwoole\\Table', Swoole\Table::class, Server::class] as $class) {
+$nativeTable = implode('\\', ['OpenSwoole', 'Table']);
+foreach ([$nativeTable, Table::class, Server::class] as $class) {
     if (! class_exists($class)) {
         throw new RuntimeException('Required Octane native type is unavailable: '.$class);
     }
 }
 
-$table = new Swoole\Table(16);
-$table->column('revision', Swoole\Table::TYPE_INT);
-$table->column('mirror', Swoole\Table::TYPE_INT);
-$table->column('bytes', Swoole\Table::TYPE_STRING, 4096);
+$table = new Table(16);
+$table->column('revision', Table::TYPE_INT);
+$table->column('mirror', Table::TYPE_INT);
+$table->column('bytes', Table::TYPE_STRING, 4096);
 $table->create();
 $bytes = str_repeat("\0\xff", 2048);
 $table->set('active', ['revision' => 0, 'mirror' => 0, 'bytes' => $bytes]);
