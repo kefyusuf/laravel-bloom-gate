@@ -112,7 +112,7 @@ function runRedisPilot(): void
         }
     }
 
-    $run = bin2hex(random_bytes(8));
+    $run = WriterLeaseToken::generate()->value();
     // An external DSN must point to a disposable test database: this fixture resets its users table.
     $database = new PDO((string) (getenv('PILOT_DB_DSN') ?: 'sqlite:'.__DIR__.'/pilot-'.$run.'.sqlite'),
         (string) (getenv('PILOT_DB_USER') ?: ''), (string) (getenv('PILOT_DB_PASSWORD') ?: ''),
@@ -162,7 +162,7 @@ function runRedisPilot(): void
     pilotCheck(BloomGate::exists('pilot.email', $caseVariant) === $caseVariantExpected,
         'Exact-byte normalization did not match authoritative SQL case semantics.');
 
-    $prepared = BloomGate::prepare('pilot.email', bin2hex(random_bytes(16)), ['committed@example.test']);
+    $prepared = BloomGate::prepare('pilot.email', WriterLeaseToken::generate()->value(), ['committed@example.test']);
     pilotCheck($prepared->lease()->state() === WriterLeaseState::Prepared, 'Write was not prepared.');
     $database->beginTransaction();
     $database->exec("INSERT INTO users VALUES ('committed@example.test')");
@@ -170,7 +170,7 @@ function runRedisPilot(): void
     pilotCheck($prepared->authoritativeCommitted() === CoordinatedWriterCompletionResult::Released, 'Committed write cleanup failed.');
     pilotCheck(BloomGate::exists('pilot.email', 'committed@example.test'), 'Committed SQL value was lost.');
 
-    $token = bin2hex(random_bytes(16));
+    $token = WriterLeaseToken::generate()->value();
     $aborted = BloomGate::prepare('pilot.email', $token, ['aborted@example.test']);
     $store = $app->make(WriterSynchronizationStore::class);
     pilotCheck($store->readLease(FilterName::fromString('pilot.email'), WriterLeaseToken::fromString($token))?->state() === WriterLeaseState::Prepared,

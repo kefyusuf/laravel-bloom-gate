@@ -200,7 +200,7 @@ function runBenchmark(): array
             mkdir(__DIR__.'/'.$directory, 0777, true);
         }
     }
-    $run = bin2hex(random_bytes(8));
+    $run = WriterLeaseToken::generate()->value();
     // An external DSN must point to a disposable test database: this fixture resets its users table.
     $database = new PDO((string) (getenv('PILOT_DB_DSN') ?: 'sqlite::memory:'),
         (string) (getenv('PILOT_DB_USER') ?: ''), (string) (getenv('PILOT_DB_PASSWORD') ?: ''),
@@ -294,7 +294,7 @@ function runBenchmark(): array
             'elapsed_ms' => $samples, 'median_elapsed_ms' => ($samples[4] + $samples[5]) / 2];
     }
 
-    $prepared = BloomGate::prepare('benchmark.email', bin2hex(random_bytes(16)), ['rolled-back@example.test']);
+    $prepared = BloomGate::prepare('benchmark.email', WriterLeaseToken::generate()->value(), ['rolled-back@example.test']);
     benchmarkCheck($prepared->authoritativeAborted() === CoordinatedWriterCompletionResult::Released,
         'Rollback lease cleanup failed.');
     $before = $set->lookups;
