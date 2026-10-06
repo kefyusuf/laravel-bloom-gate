@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Symfony\Component\Process\Process;
 
 if (getenv('SHARED_MEMORY_NATIVE_TESTS') !== '1') {
-    test('native shared-memory capability requires its isolated runtime')->skip();
+    it('requires its isolated native runtime')->skip();
 
     return;
 }
@@ -120,7 +120,7 @@ afterAll(function (): void {
     capabilityStop();
 });
 
-test('workers_share_parent_table', function (): void {
+it('workers_share_parent_table', function (): void {
     $marker = capabilityRequest('touch')['pid'];
     $replies = [];
     for ($attempt = 0; $attempt < 40; $attempt++) {
@@ -143,7 +143,7 @@ test('workers_share_parent_table', function (): void {
     }
 })->group('swoole');
 
-test('worker_restart_preserves_parent_table', function (): void {
+it('worker_restart_preserves_parent_table', function (): void {
     $before = capabilityProbe();
     $oldPids = [];
     for ($attempt = 0; $attempt < 40; $attempt++) {
@@ -164,7 +164,7 @@ test('worker_restart_preserves_parent_table', function (): void {
     expect($after['sentinel'])->toBe('parent-created');
 })->group('swoole');
 
-test('parent_restart_changes_incarnation', function (): void {
+it('parent_restart_changes_incarnation', function (): void {
     $before = capabilityProbe();
     capabilityStop();
     $GLOBALS['capability_process'] = capabilityStart();
@@ -173,7 +173,7 @@ test('parent_restart_changes_incarnation', function (): void {
     expect($after['published'])->toBeFalse();
 })->group('swoole');
 
-test('consumer_cannot_mutate_sealed_dataset', function (): void {
+it('consumer_cannot_mutate_sealed_dataset', function (): void {
     $reply = capabilityRequest('database');
     expect($reply['rows'])->toBe(1000000);
     expect($reply['first'])->toBe('member-0000000');

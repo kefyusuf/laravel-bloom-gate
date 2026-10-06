@@ -36,7 +36,9 @@ final class QuerySafetyDescriptorCacheTest extends TestCase
         $descriptor = $fixture->resolver->resolve($fixture->name, $managed->semanticContract())->descriptor();
         self::assertNotNull($descriptor);
         $this->descriptor = $descriptor;
-        $this->cache = new ApcuQuerySafetyDescriptorCache('test-'.bin2hex(random_bytes(12)), 60);
+        $entropy = random_bytes(12);
+        self::assertIsString($entropy);
+        $this->cache = new ApcuQuerySafetyDescriptorCache('test-'.bin2hex($entropy), 60);
     }
 
     protected function tearDown(): void
@@ -52,7 +54,9 @@ final class QuerySafetyDescriptorCacheTest extends TestCase
     public function test_descriptor_reuse_and_namespace_isolation(): void
     {
         $this->requireEnabledApcu();
-        $namespace = 'shared-'.bin2hex(random_bytes(12));
+        $entropy = random_bytes(12);
+        self::assertIsString($entropy);
+        $namespace = 'shared-'.bin2hex($entropy);
         $first = new ApcuQuerySafetyDescriptorCache($namespace, 60);
         $second = new ApcuQuerySafetyDescriptorCache($namespace, 60);
         $other = new ApcuQuerySafetyDescriptorCache($namespace.'-other', 60);
