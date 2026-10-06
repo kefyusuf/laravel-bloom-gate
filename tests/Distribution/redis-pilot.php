@@ -42,7 +42,12 @@ final class PilotSet implements AuthoritativeSet
 
     public function identity(): AuthoritativeSetIdentity
     {
-        return AuthoritativeSetIdentity::fromString('rc-pilot-sqlite-users-email@1');
+        $driver = $this->database->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if (! is_string($driver)) {
+            throw new RuntimeException('Invalid PDO driver name.');
+        }
+
+        return AuthoritativeSetIdentity::fromString('rc-pilot-'.$driver.'-users-email@1');
     }
 
     public function exists(NormalizedValue $value): bool
@@ -108,8 +113,18 @@ function runRedisPilot(): void
     }
 
     $run = bin2hex(random_bytes(8));
-    $database = new PDO('sqlite:'.__DIR__.'/pilot-'.$run.'.sqlite', options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    $database->exec('CREATE TABLE users (email TEXT PRIMARY KEY)');
+    // An external DSN must point to a disposable test database: this fixture resets its users table.
+    $database = new PDO((string) (getenv('PILOT_DB_DSN') ?: 'sqlite:'.__DIR__.'/pilot-'.$run.'.sqlite'),
+        (string) (getenv('PILOT_DB_USER') ?: ''), (string) (getenv('PILOT_DB_PASSWORD') ?: ''),
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $driver = $database->getAttribute(PDO::ATTR_DRIVER_NAME);
+    if (! is_string($driver)) {
+        throw new RuntimeException('Invalid PDO driver name.');
+    }
+    // MySQL's default text collation folds case; the exact-byte normalizer requires binary equality.
+    $emailType = $driver === 'mysql' ? 'VARBINARY(255)' : 'VARCHAR(255)';
+    $database->exec('DROP TABLE IF EXISTS users');
+    $database->exec('CREATE TABLE users (email '.$emailType.' PRIMARY KEY)');
     $database->exec("INSERT INTO users VALUES ('seed@example.test')");
     $set = new PilotSet($database);
     $app = Application::configure(basePath: __DIR__)->withExceptions()->create();
@@ -142,6 +157,10 @@ function runRedisPilot(): void
         'Safe negative did not skip the authoritative SQL lookup.');
     pilotCheck(BloomGate::exists('pilot.email', 'seed@example.test') && $set->lookups === $before + 1,
         'Present value did not consult authoritative SQL.');
+    $caseVariant = 'SEED@example.test';
+    $caseVariantExpected = $set->exists(NormalizedValue::fromBytes($caseVariant));
+    pilotCheck(BloomGate::exists('pilot.email', $caseVariant) === $caseVariantExpected,
+        'Exact-byte normalization did not match authoritative SQL case semantics.');
 
     $prepared = BloomGate::prepare('pilot.email', bin2hex(random_bytes(16)), ['committed@example.test']);
     pilotCheck($prepared->lease()->state() === WriterLeaseState::Prepared, 'Write was not prepared.');
@@ -172,7 +191,14 @@ function runRedisPilot(): void
     pilotCheck(! BloomGate::exists('pilot.email', 'absent@example.test') && $set->lookups === $before + 1,
         'Disabled optimization did not consult authoritative SQL.');
 
-    echo "PASS: production-only Redis/SQLite pilot, trusted negative, SQL fallback, commit/rollback leases and rebuild.\n";
+    $driver = $database->getAttribute(PDO::ATTR_DRIVER_NAME);
+    $serverVersion = $database->getAttribute(PDO::ATTR_SERVER_VERSION);
+    if (! is_string($driver) || ! is_string($serverVersion)) {
+        throw new RuntimeException('Invalid PDO runtime metadata.');
+    }
+    echo 'PASS: production-only Redis/'.$driver.
+        ' pilot, server='.$serverVersion.
+        ', trusted negative, SQL fallback, commit/rollback leases and rebuild.'.PHP_EOL;
 }
 
 try {

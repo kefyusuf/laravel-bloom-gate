@@ -1,0 +1,330 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
+use Illuminate\Redis\Connections\Connection;
+use Kefyusuf\BloomGate\Application\CoordinatedWriterCompletionResult;
+use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
+use Kefyusuf\BloomGate\Contracts\FilterDefinition;
+use Kefyusuf\BloomGate\Contracts\ValueNormalizer;
+use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
+use Kefyusuf\BloomGate\Core\AuthoritativeSetIdentity;
+use Kefyusuf\BloomGate\Core\ConsistencyContract;
+use Kefyusuf\BloomGate\Core\FilterName;
+use Kefyusuf\BloomGate\Core\Membership;
+use Kefyusuf\BloomGate\Core\NormalizationIdentity;
+use Kefyusuf\BloomGate\Core\NormalizedValue;
+use Kefyusuf\BloomGate\Core\WriterLeaseState;
+use Kefyusuf\BloomGate\Core\WriterLeaseToken;
+use Kefyusuf\BloomGate\Laravel\Facades\BloomGate;
+
+require __DIR__.'/vendor/autoload.php';
+
+final class BenchmarkNormalizer implements ValueNormalizer
+{
+    public function identity(): NormalizationIdentity
+    {
+        return NormalizationIdentity::fromString('benchmark-email-exact@1');
+    }
+
+    public function normalize(string|int $value): NormalizedValue
+    {
+        return NormalizedValue::fromBytes((string) $value);
+    }
+}
+
+final class BenchmarkSet implements AuthoritativeSet
+{
+    public int $lookups = 0;
+
+    public function __construct(private PDO $database) {}
+
+    public function identity(): AuthoritativeSetIdentity
+    {
+        $driver = $this->database->getAttribute(PDO::ATTR_DRIVER_NAME);
+        benchmarkCheck(is_string($driver), 'Invalid PDO driver name.');
+
+        return AuthoritativeSetIdentity::fromString('benchmark-'.$driver.'-users-email@1');
+    }
+
+    public function exists(NormalizedValue $value): bool
+    {
+        $this->lookups++;
+        $query = $this->database->prepare('SELECT 1 FROM users WHERE email = ? LIMIT 1');
+        benchmarkCheck($query !== false, 'Could not prepare authoritative query.');
+        $query->execute([$value->bytes()]);
+
+        return $query->fetchColumn() !== false;
+    }
+
+    public function values(): iterable
+    {
+        $query = $this->database->query('SELECT email FROM users ORDER BY email');
+        benchmarkCheck($query !== false, 'Could not enumerate authoritative values.');
+        while (($value = $query->fetchColumn()) !== false) {
+            benchmarkCheck(is_string($value), 'Invalid authoritative value.');
+            yield $value;
+        }
+    }
+}
+
+final readonly class BenchmarkDefinition implements FilterDefinition
+{
+    public function __construct(private BenchmarkNormalizer $normalization, private BenchmarkSet $set) {}
+
+    public function normalizer(): ValueNormalizer
+    {
+        return $this->normalization;
+    }
+
+    public function authoritativeSet(): AuthoritativeSet
+    {
+        return $this->set;
+    }
+
+    public function consistency(): ConsistencyContract
+    {
+        return ConsistencyContract::PreAddV1;
+    }
+}
+
+/**
+ * @phpstan-assert true $condition
+ */
+function benchmarkCheck(bool $condition, string $message): void
+{
+    if (! $condition) {
+        throw new RuntimeException($message);
+    }
+}
+
+/**
+ * @param  list<float>  $values
+ */
+function benchmarkMedian(array $values): float
+{
+    sort($values, SORT_NUMERIC);
+
+    return $values[intdiv(count($values), 2)];
+}
+
+/**
+ * @return array{calls: int, cpu_usec: int}
+ */
+function benchmarkRedisEvalStats(Connection $redis): array
+{
+    $info = $redis->command('info', ['commandstats']);
+    $stats = is_array($info) ? ($info['cmdstat_eval'] ?? null) : null;
+    if (! is_string($stats) || preg_match('/calls=(\d+),usec=(\d+),/', $stats, $matches) !== 1) {
+        throw new RuntimeException('Redis EVAL command statistics unavailable.');
+    }
+
+    return ['calls' => (int) $matches[1], 'cpu_usec' => (int) $matches[2]];
+}
+
+/**
+ * @param  list<string>  $values
+ * @param  list<bool>  $expected
+ * @return array<string, mixed>
+ */
+function benchmarkWorkload(BenchmarkSet $set, Connection $redis, array $values, array $expected): array
+{
+    $timings = ['authoritative' => [], 'bloom_gate' => []];
+    $counts = ['authoritative' => [], 'bloom_gate' => []];
+    $falsePositives = [];
+    $trustedNegatives = [];
+    $redisCalls = ['authoritative' => [], 'bloom_gate' => []];
+    $redisCpuUsec = ['authoritative' => [], 'bloom_gate' => []];
+    // Warm both paths once; alternate measured order to reduce ordering bias.
+    for ($repetition = -1; $repetition < 5; $repetition++) {
+        $paths = $repetition % 2 === 0 ? ['authoritative', 'bloom_gate'] : ['bloom_gate', 'authoritative'];
+        foreach ($paths as $path) {
+            $before = $set->lookups;
+            $answers = [];
+            $falsePositiveCount = 0;
+            $trustedNegativeCount = 0;
+            $redisBefore = benchmarkRedisEvalStats($redis);
+            $started = hrtime(true);
+            foreach ($values as $index => $value) {
+                if ($path === 'authoritative') {
+                    $answers[] = $set->exists(NormalizedValue::fromBytes($value));
+                } else {
+                    $result = BloomGate::existsResult('benchmark.email', $value);
+                    $answers[] = $result->exists();
+                    benchmarkCheck($result->membership() !== Membership::Bypassed, 'Bloom gate unexpectedly bypassed.');
+                    if (! $expected[$index] && $result->membership() === Membership::MaybePresent) {
+                        $falsePositiveCount++;
+                    }
+                    if ($result->membership() === Membership::DefinitelyAbsent) {
+                        $trustedNegativeCount++;
+                    }
+                }
+            }
+            $elapsed = (hrtime(true) - $started) / 1_000_000;
+            $redisAfter = benchmarkRedisEvalStats($redis);
+            benchmarkCheck($answers === $expected, 'Bloom/authoritative answers differed from deterministic ground truth.');
+            if ($repetition >= 0) {
+                $timings[$path][] = $elapsed;
+                $counts[$path][] = $set->lookups - $before;
+                $redisCalls[$path][] = $redisAfter['calls'] - $redisBefore['calls'];
+                $redisCpuUsec[$path][] = $redisAfter['cpu_usec'] - $redisBefore['cpu_usec'];
+                if ($path === 'bloom_gate') {
+                    $falsePositives[] = $falsePositiveCount;
+                    $trustedNegatives[] = $trustedNegativeCount;
+                    benchmarkCheck($set->lookups - $before === count($values) - $trustedNegativeCount,
+                        'Authoritative query count did not match Bloom fallback decisions.');
+                }
+            }
+        }
+    }
+
+    return [
+        'requests' => count($values), 'present' => count(array_filter($expected)),
+        'correctness_equal' => true, 'elapsed_ms' => $timings,
+        'median_elapsed_ms' => array_map(benchmarkMedian(...), $timings),
+        'authoritative_queries' => $counts, 'false_positives' => $falsePositives,
+        'trusted_negatives' => $trustedNegatives,
+        'redis_eval_calls' => $redisCalls, 'redis_eval_cpu_usec' => $redisCpuUsec,
+    ];
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function runBenchmark(): array
+{
+    foreach (['bootstrap/cache', 'config', 'storage/framework/cache', 'storage/framework/views', 'storage/logs'] as $directory) {
+        if (! is_dir(__DIR__.'/'.$directory)) {
+            mkdir(__DIR__.'/'.$directory, 0777, true);
+        }
+    }
+    $run = bin2hex(random_bytes(8));
+    // An external DSN must point to a disposable test database: this fixture resets its users table.
+    $database = new PDO((string) (getenv('PILOT_DB_DSN') ?: 'sqlite::memory:'),
+        (string) (getenv('PILOT_DB_USER') ?: ''), (string) (getenv('PILOT_DB_PASSWORD') ?: ''),
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $driver = $database->getAttribute(PDO::ATTR_DRIVER_NAME);
+    benchmarkCheck(is_string($driver), 'Invalid PDO driver name.');
+    // MySQL's default text collation folds case; the exact-byte normalizer requires binary equality.
+    $emailType = $driver === 'mysql' ? 'VARBINARY(255)' : 'VARCHAR(255)';
+    $database->exec('DROP TABLE IF EXISTS users');
+    $database->exec('CREATE TABLE users (email '.$emailType.' PRIMARY KEY)');
+    $insert = $database->prepare('INSERT INTO users (email) VALUES (?)');
+    benchmarkCheck($insert !== false, 'Could not prepare seed insertion.');
+    for ($index = 0; $index < 1000; $index++) {
+        $insert->execute(['present-'.$index.'@example.test']);
+    }
+    $set = new BenchmarkSet($database);
+    $app = Application::configure(basePath: __DIR__)->withExceptions()->create();
+    $kernel = $app->make(Kernel::class);
+    $kernel->bootstrap();
+    if (getenv('BENCHMARK_FORCE_FAILURE') === '1') {
+        throw new RuntimeException('Injected benchmark failure after Laravel bootstrap.');
+    }
+    $app['config']->set('database.redis', ['client' => 'phpredis', 'default' => [
+        'host' => (string) (getenv('REDIS_HOST') ?: '127.0.0.1'),
+        'port' => (int) (getenv('REDIS_PORT') ?: 6379), 'database' => 0,
+    ]]);
+    $app['config']->set('bloom-gate.default', 'redis');
+    $app['config']->set('bloom-gate.keyspace.prefix', 'lbg_benchmark_'.$run);
+    $app['config']->set('bloom-gate.drivers.redis.trusted_negative_profile', getenv('PILOT_PROFILE') ?: null);
+    $app['config']->set('bloom-gate.filters', ['benchmark.email' => [
+        'enabled' => true, 'definition' => BenchmarkDefinition::class,
+        'capacity' => 1000, 'false_positive_rate' => 0.01, 'coordination' => 'coordinated-v1',
+    ]]);
+    $app->instance(BenchmarkDefinition::class, new BenchmarkDefinition(new BenchmarkNormalizer, $set));
+    $exit = $kernel->call('bloom:coordinate:adopt', ['filter' => 'benchmark.email']);
+    $output = $kernel->output();
+    benchmarkCheck($exit === 0, 'Coordination adoption failed: '.$output);
+    $completed = false;
+    for ($attempt = 0; $attempt < 10; $attempt++) {
+        $exit = $kernel->call('bloom:rebuild', ['filter' => 'benchmark.email', '--wait' => '1']);
+        $output = $kernel->output();
+        benchmarkCheck($exit === 0, 'Initial rebuild failed: '.$output);
+        if (str_contains($output, 'Completed')) {
+            $completed = true;
+            break;
+        }
+    }
+    benchmarkCheck($completed, 'Initial rebuild did not complete after 10 bounded attempts: '.$output);
+    $caseVariant = 'PRESENT-0@example.test';
+    $caseVariantExpected = $set->exists(NormalizedValue::fromBytes($caseVariant));
+    benchmarkCheck(BloomGate::exists('benchmark.email', $caseVariant) === $caseVariantExpected,
+        'Exact-byte normalization did not match authoritative SQL case semantics.');
+
+    $workloads = [];
+    foreach ([0, 100, 1000] as $present) {
+        $values = [];
+        $expected = [];
+        for ($index = 0; $index < 1000; $index++) {
+            $expected[] = $index < $present;
+            $values[] = ($index < $present ? 'present-' : 'absent-').$index.'@example.test';
+        }
+        $workloads['present_'.$present.'_of_1000'] = benchmarkWorkload($set, $app['redis']->connection(), $values, $expected);
+    }
+
+    $store = $app->make(WriterSynchronizationStore::class);
+    $name = FilterName::fromString('benchmark.email');
+    $epoch = $store->read($name)?->currentEpoch();
+    benchmarkCheck($epoch !== null, 'Synchronization state missing.');
+    $retained = 0;
+    $drain = [];
+    foreach ([0, 100, 1000] as $target) {
+        while ($retained < $target) {
+            $token = WriterLeaseToken::fromString(sprintf('%032x', $retained));
+            $store->acquire($name, $token);
+            benchmarkCheck($store->release($name, $token)->state() === WriterLeaseState::Released,
+                'Benchmark writer did not release.');
+            $retained++;
+        }
+        $samples = [];
+        for ($repetition = 0; $repetition < 11; $repetition++) {
+            $started = hrtime(true);
+            benchmarkCheck($store->activeWriterCount($name, $epoch) === 0, 'Released leases prevented zero writer count.');
+            $elapsed = (hrtime(true) - $started) / 1_000_000;
+            if ($repetition > 0) {
+                $samples[] = $elapsed;
+            }
+        }
+        // Ten measurements: use the mean of the two middle samples.
+        sort($samples, SORT_NUMERIC);
+        $drain[] = ['retained_released_leases' => $retained, 'active_writers' => 0,
+            'elapsed_ms' => $samples, 'median_elapsed_ms' => ($samples[4] + $samples[5]) / 2];
+    }
+
+    $prepared = BloomGate::prepare('benchmark.email', bin2hex(random_bytes(16)), ['rolled-back@example.test']);
+    benchmarkCheck($prepared->authoritativeAborted() === CoordinatedWriterCompletionResult::Released,
+        'Rollback lease cleanup failed.');
+    $before = $set->lookups;
+    $rolledBack = BloomGate::existsResult('benchmark.email', 'rolled-back@example.test');
+    benchmarkCheck(! $rolledBack->exists() && $rolledBack->membership() === Membership::MaybePresent
+        && $set->lookups === $before + 1, 'Pre-added absent value did not use authoritative fallback.');
+
+    return [
+        'schema_version' => 1, 'status' => 'passed', 'php' => PHP_VERSION,
+        'laravel' => Application::VERSION, 'redis' => $app['redis']->connection()->info()['redis_version'] ?? 'unknown',
+        'database_driver' => $database->getAttribute(PDO::ATTR_DRIVER_NAME),
+        'database_server_version' => $database->getAttribute(PDO::ATTR_SERVER_VERSION),
+        'seed_rows' => 1000, 'configured_false_positive_rate' => 0.01,
+        'measured_repetitions' => 5, 'warmup_repetitions' => 1,
+        'workloads' => $workloads, 'rollback_false_positive_fallback_verified' => true,
+        'writer_drain' => $drain,
+        'limitations' => [
+            'A dedicated test database with indexed email lookups; no additional latency is simulated.',
+            'SQLite defaults to memory; MySQL/PostgreSQL evidence requires explicitly supplied PDO DSN and observed runs.',
+            'Redis is a separate process; timings depend on the supplied runtime and transport.',
+            'EVAL commandstats deltas require an otherwise idle Redis instance and exclude client/network CPU.',
+            'Fixed deterministic requests and dataset; no concurrency, production load or statistical speed claim.',
+            'A random isolated Redis prefix requires a disposable Redis instance; no shared keys are deleted.',
+        ],
+    ];
+}
+
+try {
+    echo json_encode(runBenchmark(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT).PHP_EOL;
+} catch (Throwable $failure) {
+    fwrite(STDERR, json_encode(['status' => 'failed', 'message' => $failure->getMessage()], JSON_THROW_ON_ERROR).PHP_EOL);
+    exit(1);
+}

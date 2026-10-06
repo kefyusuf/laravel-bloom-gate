@@ -6,13 +6,20 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ## [Unreleased]
 
+## [0.1.0-rc.2] - 2026-10-06
+
 ### Added
 
+- Executable README installation and immutable-filter lifecycle example.
+- Bounded Redis/MySQL/PostgreSQL/SQLite query and writer-drain measurements, with exact-candidate
+  pilot verification and preserved JSON evidence.
 - Manual production-dependency RC pilot with live Redis, SQLite authoritative
   queries, prepared SQL commit/rollback acknowledgement and coordinated rebuild.
 
 ### Fixed
 
+- Candidate pilot checks the selected workflow commit rather than always
+  installing the first RC's source.
 - Writer drain counts reject inconsistent lease/count evidence in Memory and
   Redis, including missing count records, without repairing persisted state.
 - Standalone consumer verification failures now return nonzero after Laravel

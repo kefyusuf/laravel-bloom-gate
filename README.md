@@ -47,6 +47,115 @@ The public `exists()` result is therefore authoritative-correct.
 - Framework-independent Core, Contracts, Lifecycle, Drivers, and Application layers.
 - No hidden database interception or observer assumptions.
 
+## Install and first filter
+
+PHP 8.3+ and Laravel 12/13 are required. The following installation command
+targets the upcoming `v0.1.0-rc.2` candidate; use it after publication and registry
+indexing are verified. This remains an evaluation prerelease.
+
+```sh
+composer require kefyusuf/laravel-bloom-gate:0.1.0-rc.2
+php artisan vendor:publish --tag=bloom-gate-config
+```
+
+Create `app/Bloom/CountryCodeFilter.php`:
+
+```php
+<?php
+
+namespace App\Bloom;
+
+use Kefyusuf\BloomGate\Contracts\{AuthoritativeSet, FilterDefinition, ValueNormalizer};
+use Kefyusuf\BloomGate\Core\{AuthoritativeSetIdentity, ConsistencyContract, NormalizationIdentity, NormalizedValue};
+
+final class CountryCodeFilter implements FilterDefinition
+{
+    public function normalizer(): ValueNormalizer
+    {
+        return new class implements ValueNormalizer {
+            public function identity(): NormalizationIdentity
+            {
+                return NormalizationIdentity::fromString('country-code-uppercase@1');
+            }
+
+            public function normalize(string|int $value): NormalizedValue
+            {
+                return NormalizedValue::fromBytes(strtoupper(trim((string) $value)));
+            }
+        };
+    }
+
+    public function authoritativeSet(): AuthoritativeSet
+    {
+        return new class implements AuthoritativeSet {
+            public function identity(): AuthoritativeSetIdentity
+            {
+                return AuthoritativeSetIdentity::fromString('demo-country-codes@1');
+            }
+
+            public function values(): iterable
+            {
+                yield from ['TR', 'DE', 'US'];
+            }
+
+            public function exists(NormalizedValue $value): bool
+            {
+                return in_array($value->bytes(), ['TR', 'DE', 'US'], true);
+            }
+        };
+    }
+
+    public function consistency(): ConsistencyContract
+    {
+        return ConsistencyContract::ImmutableV1;
+    }
+}
+```
+
+Add this entry to `filters` in `config/bloom-gate.php`:
+
+```php
+'demo.country_codes' => [
+    'enabled' => true,
+    'definition' => App\Bloom\CountryCodeFilter::class,
+    'capacity' => 100,
+    'false_positive_rate' => 0.01,
+],
+```
+
+Keep the Redis driver and configure Laravel's Redis connection. Run:
+
+```sh
+php artisan bloom:doctor
+php artisan bloom:build demo.country_codes
+php artisan bloom:verify demo.country_codes
+php artisan bloom:activate demo.country_codes
+php artisan bloom:status demo.country_codes
+```
+
+Application code can now call:
+
+```php
+use Kefyusuf\BloomGate\Laravel\Facades\BloomGate;
+
+BloomGate::exists('demo.country_codes', 'tr'); // true
+BloomGate::exists('demo.country_codes', 'ZZ'); // false
+```
+
+Without a qualified Redis trusted-negative profile, lookups still use the
+authoritative source. Declare `BLOOM_GATE_REDIS_TRUSTED_NEGATIVE_PROFILE` only
+after verifying the [Redis deployment contract](docs/architecture/redis-foundation.md).
+The three-value immutable example demonstrates the lifecycle, not a performance
+benefit. Change semantic identities when their behavior changes. For mutable
+data, follow [coordinated writing and recovery](docs/architecture/laravel-coordination.md)
+and include every membership-entry writer.
+
+For SQL definitions, normalization must match the authoritative query's equality
+and collation rules. An exact-byte normalizer with a case-insensitive SQL lookup
+is unsafe: a differently cased value can exist in SQL while its Bloom bits are
+absent. Normalize both enumeration and query inputs consistently, or use an
+appropriate exact-comparison column/query. The package cannot infer this contract.
+
 ## Current milestone
 
 **M6 — Online Rebuild and Write Coordination — implementation complete**
@@ -161,7 +270,9 @@ BloomGate::add('users.email', $email);
 BloomGate::addMany('users.email', $emails);
 ```
 
-`add()` / `addMany()` are managed synchronization operations and are valid only for the supported mutable consistency contract.
+`add()` / `addMany()` are legacy `preadd-v1` synchronization operations.
+Adopted coordinated filters fence those operations and use `BloomGate::prepare()`
+before the authoritative write, followed by an explicit commit/abort acknowledgement.
 
 Validation adapters:
 
