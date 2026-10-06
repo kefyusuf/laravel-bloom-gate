@@ -428,6 +428,8 @@ final class MemoryCoordinationDomain
         FilterName $name,
         SynchronizationEpoch $epoch,
     ): int {
+        $this->readActiveLeases($name);
+
         return $this->activeWriterCountByKey(
             $name->value(),
             $epoch,

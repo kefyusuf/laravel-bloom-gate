@@ -168,7 +168,10 @@ final readonly class RedisWriterSynchronizationStore implements WriterLeaseInspe
     ): int {
         $response = $this->evaluate(
             RedisWriterSynchronizationScripts::activeWriterCount(),
-            [$this->keyspace->syncCountsKey($name)],
+            [
+                $this->keyspace->syncLeasesKey($name),
+                $this->keyspace->syncCountsKey($name),
+            ],
             [(string) $epoch->value()],
         );
 

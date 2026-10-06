@@ -47,13 +47,14 @@ final class WriterLeaseCountDiagnosticsParityTest extends TestCase
             }
             $fixture->setActiveWriterCount($name, SynchronizationEpoch::fromInt($epoch), $count);
             $before = $store->readLease($name, $token);
+            $rawBefore = $fixture->rawWriterState($name);
 
             try {
                 $store->readActiveLeases($name);
                 self::fail('Count/lease disagreement must not produce valid diagnostics.');
             } catch (CoordinationStateCorrupt) {
                 self::assertEquals($before, $store->readLease($name, $token));
-                self::assertSame($count, $store->activeWriterCount($name, SynchronizationEpoch::fromInt($epoch)));
+                self::assertEquals($rawBefore, $fixture->rawWriterState($name));
             }
         }
     }
