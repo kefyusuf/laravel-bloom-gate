@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use Laravel\Octane\Swoole\WorkerState;
+use Swoole\Http\Server;
+
+Route::get('/probe', function (): array {
+    $row = ParentRuntime::$control?->get('active');
+    if (! is_array($row)) {
+        throw new RuntimeException('Parent control row is unavailable.');
+    }
+    $worker = app(WorkerState::class);
+
+    return ['worker_id' => $worker->workerId, 'pid' => getmypid(),
+        'parent_pid' => $row['parent_pid'] ?? 0, 'incarnation' => $row['incarnation'] ?? '',
+        'marker_pid' => $row['marker_pid'] ?? 0,
+        'sentinel' => $row['sentinel'], 'published' => $row['published'] !== 0];
+});
+
+Route::get('/touch', function (): array {
+    if (ParentRuntime::$control === null || ! ParentRuntime::$control->set('active', ['marker_pid' => getmypid()])) {
+        throw new RuntimeException('Shared marker write failed.');
+    }
+
+    return ['pid' => getmypid()];
+});
+
+Route::get('/reload', function (): array {
+    app(Server::class)->reload();
+
+    return ['requested' => true];
+});
+
+Route::get('/database', function (): array {
+    $database = new PDO('mysql:host='.getenv('DEMO_DB_HOST').';dbname=demo',
+        (string) getenv('DEMO_DB_USERNAME'), (string) getenv('DEMO_DB_PASSWORD'),
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $denied = [];
+    foreach (['insert' => "INSERT INTO members VALUES ('forbidden')", 'update' => "UPDATE members SET member_key = 'forbidden' WHERE member_key = 'member-0000000'",
+        'delete' => "DELETE FROM members WHERE member_key = 'member-0000000'"] as $operation => $sql) {
+        try {
+            $database->exec($sql);
+        } catch (PDOException $exception) {
+            if (! in_array($exception->errorInfo[1] ?? null, [1142, 1290], true)) {
+                throw $exception;
+            }
+            $denied[] = $operation;
+        }
+    }
+
+    $summary = capabilitySql($database, 'SELECT COUNT(*) AS rows_count, MIN(member_key) AS first_key, MAX(member_key) AS last_key FROM members')->fetch(PDO::FETCH_ASSOC);
+    if (! is_array($summary) || ! is_numeric($summary['rows_count'] ?? null)) {
+        throw new RuntimeException('Dataset summary is invalid.');
+    }
+
+    return ['rows' => (int) $summary['rows_count'], 'first' => $summary['first_key'],
+        'last' => $summary['last_key'], 'denied' => $denied,
+        'grants' => capabilitySql($database, 'SHOW GRANTS')->fetchAll(PDO::FETCH_COLUMN),
+        'read_only' => capabilitySql($database, 'SELECT @@global.super_read_only')->fetchColumn(),
+        'username' => capabilitySql($database, 'SELECT CURRENT_USER()')->fetchColumn()];
+});
+
+function capabilitySql(PDO $database, string $sql): PDOStatement
+{
+    $statement = $database->query($sql);
+    if ($statement === false) {
+        throw new RuntimeException('Capability SQL query failed.');
+    }
+
+    return $statement;
+}

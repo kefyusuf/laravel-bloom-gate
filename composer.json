@@ -20,6 +20,7 @@
         "illuminate/support": "^12.0 || ^13.0"
     },
     "require-dev": {
+        "laravel/octane": "^2.17",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.24",
         "orchestra/testbench": "^10.0 || ^11.0",
