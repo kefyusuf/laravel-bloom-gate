@@ -1,11 +1,13 @@
 # Laravel Bloom Gate
 
-> **Status:** evaluation prerelease — [v0.1.0-rc.1](https://github.com/kefyusuf/laravel-bloom-gate/releases/tag/v0.1.0-rc.1) is published; M6 is implementation-complete.
+> **Status:** evaluation prerelease — [v0.1.0-rc.2](https://github.com/kefyusuf/laravel-bloom-gate/releases/tag/v0.1.0-rc.2) is published on GitHub and [Packagist](https://packagist.org/packages/kefyusuf/laravel-bloom-gate); M6 is implementation-complete.
 
 The first evaluation candidate's preparation is documented in the
 [release readiness record](docs/verification/2026-10-05-release-readiness.md).
 See the [publication record](docs/verification/2026-10-05-published-candidate.md)
-for the immutable tag and verified source revision.
+for the first immutable tag and verified source revision. The
+[rc.2 publication record](docs/verification/2026-10-06-published-rc2.md) records
+the latest candidate, seven-target release gate and registry installation.
 
 M6 includes coordinated persistence, prepared writers, explicit adoption/recovery,
 online rebuild/abort, coordination diagnostics, and Laravel adapters/commands.
@@ -50,8 +52,8 @@ The public `exists()` result is therefore authoritative-correct.
 ## Install and first filter
 
 PHP 8.3+ and Laravel 12/13 are required. The following installation command
-targets the upcoming `v0.1.0-rc.2` candidate; use it after publication and registry
-indexing are verified. This remains an evaluation prerelease.
+targets the published `v0.1.0-rc.2` candidate. Direct Packagist installation is
+verified. This remains an evaluation prerelease.
 
 ```sh
 composer require kefyusuf/laravel-bloom-gate:0.1.0-rc.2
@@ -160,14 +162,17 @@ appropriate exact-comparison column/query. The package cannot infer this contrac
 
 **M6 — Online Rebuild and Write Coordination — implementation complete**
 
-The package is evaluating the published `v0.1.0-rc.1` candidate. M6 adds
+The package is evaluating the published `v0.1.0-rc.2` candidate. M6 adds
 coordinated prepared writes, explicit adoption, resumable online rebuild/abort,
 evidence-bound lease recovery, and read-only coordination diagnostics. Laravel
 exposes these capabilities through the facade and Artisan commands.
 
-The [Redis/SQLite consumer pilot](docs/verification/2026-10-05-rc-redis-sqlite-pilot.md)
-verifies the published candidate's query and known commit/rollback paths. It does
-not establish production performance or deployment acceptance. No M7 feature
+The [rc.2 publication record](docs/verification/2026-10-06-published-rc2.md)
+verifies Redis with MySQL and PostgreSQL consumer commit/rollback and rebuild
+paths; SQLite remains a reference target. The
+[bounded measurements](docs/verification/2026-10-06-rc2-closure.md) demonstrate
+query avoidance without a latency speedup in the measured local workloads.
+MongoDB and production deployment acceptance remain unverified. No M7 feature
 scope is currently defined.
 
 ## Query integration foundation
