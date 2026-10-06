@@ -4,7 +4,8 @@
 
 Task 2 of the approved [evaluation plan](../plans/2026-10-06-single-host-shared-memory-evaluation.md).
 Baseline: `4fea698662074cd4ab7ba891fdf3a1b5e1e97bfa` (capability PR #87 merged).
-Branch: `test/swoole-coherent-query-gate`. Local safety gate passed; exact-head
+Branch: `test/swoole-coherent-query-gate`, [PR #88](https://github.com/kefyusuf/laravel-bloom-gate/pull/88).
+Local safety gate passed; exact-head
 hosted CI/PR closure must be refreshed before Task 3. This report does not grant
 production support or release permission, and does not claim a performance win.
 Production `src/` and default backend configuration are unchanged.
@@ -61,6 +62,15 @@ same single-row scope in SQL and bitmap, with a scope-specific set fingerprint.
   returning at the first unset bit caused both later-chunk tests to fail; omitting
   dataset count/digest validation caused both publication-proof tests to fail.
   The test source was restored immediately; workspace source was never mutated.
+- Fresh hosted PHPStan caught an absolute native include path that existed in
+  the local container but not on an extension-free runner. The test now includes
+  its sibling fixture by a relative path; native setup copies the companion
+  fixture classes into the test directory. No static-analysis exclusion was added.
+- PHP 8.5 analysis requires the `chr` input to be a byte; the bitmap write masks
+  the already byte-bounded bitwise result with `0xFF` explicitly.
+- Fresh native CI exposed MySQL's temporary initialization server: `mysqladmin
+  ping` can pass before root authentication is ready. Readiness now requires an
+  authenticated SQL query over TCP, which the initialization server cannot serve.
 
 ## Local verification
 
@@ -68,11 +78,14 @@ PHP 8.4.26, OpenSwoole 26.2.0, Laravel 13.34.0 and Octane 2.20.0.
 Native suites run with warning/risky failures enabled, without required skips:
 
 - Capability: 4 tests, 43 assertions passed, including SELECT-only credentials.
-- Query safety: 21 tests/86 assertions passed. Exhaustive probes of all
+- Query safety: 22 tests/93 assertions passed (21-case full suite plus the
+  additional full-generation retention case). Exhaustive probes of all
   1,000,000 seeded keys returned
   `MaybePresent`, with zero false negatives and no SQL membership calls during
   the exhaustive probe phase. Build/enumeration SQL is setup work, not included
   in the membership lookup counter. Fault scenarios validate exact SQL fallback.
+  Two full million-key generations fit the fixed allocation; old storage remains
+  readable while the old descriptor bypasses after replacement.
 - HTTP: 2 tests, 139 assertions passed. Four distinct worker PIDs returned correct
   membership and exact per-request SQL counts for sampled present/absent keys.
   Worker restart retained authorization; parent restart changed the namespace
@@ -82,6 +95,9 @@ Native suites run with warning/risky failures enabled, without required skips:
   The dedicated native gate is separate from optional package test discovery.
 - `git diff --check` passed. Fixture dependencies resolve from the tracked lock;
   an ignored stale root lock was discarded only inside the isolated quality copy.
+- A fresh local stack after the hosted corrections passed all native suites:
+  capability4/43, query21/86 and HTTP2/139, plus full-generation retention1/7.
+  The extension-free PHP 8.5 Composer check passed929/7643 with18 optional skips.
 
 Tables reserve 8,749,104 bytes for chunks, 29,744 for control and 546,864 for
 manifests: **9,325,712 bytes** total, fixed before workers start. These are actual
@@ -103,3 +119,6 @@ Task-owned local stack `lbg-shared-memory-20261006-query` was removed: PHP/MySQL
 containers, network, experiment/MySQL volumes and built image
 `lbg-shared-memory-php:20261006-query`. Reused base images and
 all unrelated resources remain untouched; no worktree was created.
+The fresh reproduction stack `lbg-shared-memory-20261006-query-final` was also
+removed with both containers, network, both volumes and its task-built image.
+Temporary Composer verification containers were removed; reused base images remain.

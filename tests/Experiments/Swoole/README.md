@@ -35,6 +35,8 @@ only a SELECT-only account. Administrator/seeder passwords are generated per run
 outside HTTP workers; their environment must contain none of these credentials.
 The tests verify its actual grants, global seal and
 rejected INSERT/UPDATE/DELETE (MySQL errors 1142 or 1290 only).
+MySQL readiness uses an authenticated TCP SQL query; the temporary initialization
+server or an access-denied `mysqladmin ping` cannot satisfy it.
 
 Task 1 verifies native capability and unpublished control state. Task 2 uses the
 actual package QueryGate/resolver through fixture-only shared-memory ports.

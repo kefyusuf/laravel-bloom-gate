@@ -31,7 +31,7 @@ trap cleanup EXIT
 "${compose[@]}" build php
 "${compose[@]}" up -d --wait
 printf "ALTER USER 'seeder'@'%%' IDENTIFIED BY '%s';\n" "$seed_password" | "${compose[@]}" exec -T mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot'
-"${compose[@]}" exec -T php sh -c 'cp -r /package/tests/Experiments/Swoole/. /experiment/ && mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public tests/Experiments/Swoole && cp *Test.php tests/Experiments/Swoole/ && composer install --no-interaction --no-progress --prefer-dist'
+"${compose[@]}" exec -T php sh -c 'cp -r /package/tests/Experiments/Swoole/. /experiment/ && mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public tests/Experiments/Swoole && cp SharedMemory*.php fixture.php tests/Experiments/Swoole/ && composer install --no-interaction --no-progress --prefer-dist'
 "${compose[@]}" exec -T php php preflight.php
 "${compose[@]}" exec -T -e "DEMO_SEED_PASSWORD=$seed_password" php sh -c 'php seed.php && rm seed.php'
 unset seed_password

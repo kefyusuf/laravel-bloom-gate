@@ -7,6 +7,7 @@ use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\Membership;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
 use Kefyusuf\BloomGate\Core\ProbeAlgorithm;
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedBloom;
 use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedMemoryDomain;
 use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedMemoryQuery;
 
@@ -16,7 +17,7 @@ if (getenv('SHARED_MEMORY_NATIVE_TESTS') !== '1') {
     return;
 }
 
-require_once '/experiment/fixture.php';
+require_once __DIR__.'/fixture.php';
 
 beforeEach(function (): void {
     // RED: the shared domain is not implemented yet. All later checks exercise native storage.
@@ -258,4 +259,19 @@ it('present_keys_never_return_definitely_absent', function (): void {
     }
     expect($i)->toBe(1000000);
     expect($query->sqlCalls())->toBe(0);
+})->group('swoole');
+
+it('two_full_generations_retain_verified_storage', function (): void {
+    $domain = new SharedMemoryDomain;
+    $query = new SharedMemoryQuery($domain);
+    $query->publishDataset();
+    $old = $query->descriptor();
+    $positions = (new BloomProbeGenerator)->generate(NormalizedValue::fromBytes('member-0000000'), $old->layout());
+    $query->publishDataset();
+    expect($domain->chunks->exists('1:488'))->toBeTrue();
+    expect($domain->chunks->exists('2:488'))->toBeTrue();
+    expect((new SharedBloom($domain))->mightContain($old->filterName(), $old->activeVersion(), $positions))->toBeTrue();
+    expect($query->probe($old, $positions)->membership())->toBe(Membership::Bypassed);
+    expect($query->lookup('member-0999999')->exists())->toBeTrue();
+    expect($query->sqlCalls())->toBe(1);
 })->group('swoole');

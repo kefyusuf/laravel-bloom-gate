@@ -87,7 +87,7 @@ final class SharedMemoryDomain
             $count++;
             foreach ($generator->generate($value, $layout)->values() as $position) {
                 $offset = intdiv($position, 8);
-                $bitmap[$offset] = chr(ord($bitmap[$offset]) | (1 << ($position % 8)));
+                $bitmap[$offset] = chr((ord($bitmap[$offset]) | (1 << ($position % 8))) & 0xFF);
             }
         }
         if ($count !== $rows || ! hash_equals($datasetDigest, hash_final($hash))) {
