@@ -158,6 +158,46 @@ is unsafe: a differently cased value can exist in SQL while its Bloom bits are
 absent. Normalize both enumeration and query inputs consistently, or use an
 appropriate exact-comparison column/query. The package cannot infer this contract.
 
+## Optional shared descriptor hints (unreleased)
+
+The development branch supports an optional APCu descriptor cache for the Redis
+driver. This feature is not included in the published `v0.1.0-rc.2` tag.
+Enable it in `config/bloom-gate.php` after installing/enabling APCu for the PHP
+SAPI serving your application:
+
+```php
+'query' => [
+    'descriptor_cache' => [
+        'driver' => 'apcu',
+        'namespace' => 'my-application-production-primary',
+        'ttl' => 60,
+    ],
+],
+```
+
+Use a unique namespace for each application, environment and Redis backend.
+The package also includes the application base path, Redis connection name and
+Bloom keyspace prefix in the cache namespace. Infrastructure settings are bound
+when services are resolved; restart long-lived workers after changing them.
+The default driver is `none`; Memory-backed filters do not use these hints.
+
+A cold lookup resolves the descriptor before probing. A warm lookup performs
+one live atomic Redis probe. Only a cached `control_state_changed` result triggers
+one fresh resolution and probe; all other bypasses immediately use the
+authoritative source. No membership answers, application definitions or enabled
+decisions are cached. Current normalization/source/consistency identities are
+checked on every lookup. The TTL (1–86400 seconds) limits retention after the last
+successful descriptor resolution; warm reads do not extend it. TTL is not a
+safety freshness window: every lookup still validates live Redis state and bits.
+Missing/disabled APCu, invalid payloads, eviction or cache write failures use the
+normal resolver path.
+
+APCu sharing depends on the SAPI and deployment. Separate containers or FPM
+masters may have separate caches; Windows uses a cache per process. Benchmark
+your deployment and hit/miss distribution. Fewer Redis calls do not guarantee
+lower latency than an inexpensive indexed SQL lookup. See the
+[FPM verification record](docs/verification/2026-10-06-apcu-descriptor-cache.md).
+
 ## Current milestone
 
 **M6 — Online Rebuild and Write Coordination — implementation complete**

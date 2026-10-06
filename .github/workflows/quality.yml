@@ -27,6 +27,8 @@ jobs:
           php-version: '8.4'
           coverage: none
           tools: composer:v2
+          extensions: apcu
+          ini-values: apc.enable_cli=1
 
       - name: Validate Composer metadata
         run: composer validate --strict

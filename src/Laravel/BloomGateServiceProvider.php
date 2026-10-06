@@ -39,6 +39,7 @@ use Kefyusuf\BloomGate\Contracts\FilterRegistry;
 use Kefyusuf\BloomGate\Contracts\GenerationContractStore;
 use Kefyusuf\BloomGate\Contracts\ProductionFilterInspector;
 use Kefyusuf\BloomGate\Contracts\ProductionSafetyConfiguration;
+use Kefyusuf\BloomGate\Contracts\QuerySafetyDescriptorCache;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\Redis\RedisStructuredCommandExecutor;
 use Kefyusuf\BloomGate\Contracts\RuntimeCoordinationRequirement;
@@ -46,6 +47,7 @@ use Kefyusuf\BloomGate\Contracts\WriterLeaseInspector;
 use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
+use Kefyusuf\BloomGate\Drivers\Apcu\ApcuQuerySafetyDescriptorCache;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryAuthorizedProbe;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinatedLifecycleStore;
@@ -53,6 +55,7 @@ use Kefyusuf\BloomGate\Drivers\Memory\MemoryCoordinationDomain;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryFilterControlStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryGenerationContractStore;
 use Kefyusuf\BloomGate\Drivers\Memory\MemoryWriterSynchronizationStore;
+use Kefyusuf\BloomGate\Drivers\Memory\NullQuerySafetyDescriptorCache;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisAuthorizedProbe;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisBloomDriver;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisControlStateCodec;
@@ -335,6 +338,36 @@ final class BloomGateServiceProvider extends ServiceProvider
 
     private function registerApplication(): void
     {
+        $this->app->singleton(QuerySafetyDescriptorCache::class,
+            static function (Application $app): QuerySafetyDescriptorCache {
+                $driver = self::config($app)->get('bloom-gate.query.descriptor_cache.driver', 'none');
+
+                if ($driver !== 'none' && $driver !== 'apcu') {
+                    throw new InvalidConfiguration('Descriptor cache driver must be [none] or [apcu].');
+                }
+
+                if ($driver === 'none' || self::driverName($app) === 'memory') {
+                    return new NullQuerySafetyDescriptorCache;
+                }
+
+                $namespace = self::requiredString($app, 'bloom-gate.query.descriptor_cache.namespace');
+                $ttl = self::config($app)->get('bloom-gate.query.descriptor_cache.ttl');
+
+                if (trim($namespace) === '' || ! is_int($ttl) || $ttl < 1 || $ttl > 86400) {
+                    throw new InvalidConfiguration('APCu descriptors require a namespace and a TTL between 1 and 86400 seconds.');
+                }
+
+                return new ApcuQuerySafetyDescriptorCache(
+                    json_encode([
+                        $namespace,
+                        $app->basePath(),
+                        self::redisConnectionName($app),
+                        self::requiredString($app, 'bloom-gate.keyspace.prefix'),
+                    ], JSON_THROW_ON_ERROR),
+                    $ttl,
+                );
+            });
+
         foreach ([
             QuerySafetyDescriptorResolver::class,
             QueryGate::class,

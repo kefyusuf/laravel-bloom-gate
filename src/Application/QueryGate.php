@@ -7,6 +7,7 @@ namespace Kefyusuf\BloomGate\Application;
 use Kefyusuf\BloomGate\Contracts\AuthoritativeSet;
 use Kefyusuf\BloomGate\Contracts\AuthorizedProbe;
 use Kefyusuf\BloomGate\Contracts\FilterRegistry;
+use Kefyusuf\BloomGate\Contracts\QuerySafetyDescriptorCache;
 use Kefyusuf\BloomGate\Core\AuthorizedProbeResult;
 use Kefyusuf\BloomGate\Core\BloomProbeGenerator;
 use Kefyusuf\BloomGate\Core\BypassReason;
@@ -14,8 +15,10 @@ use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\GenerationSemanticContract;
 use Kefyusuf\BloomGate\Core\Membership;
 use Kefyusuf\BloomGate\Core\NormalizedValue;
+use Kefyusuf\BloomGate\Core\QuerySafetyDescriptor;
 use Kefyusuf\BloomGate\Core\SemanticFingerprintCalculator;
 use LogicException;
+use Throwable;
 
 final readonly class QueryGate
 {
@@ -25,6 +28,7 @@ final readonly class QueryGate
         private AuthorizedProbe $authorizedProbe,
         private BloomProbeGenerator $probes,
         private SemanticFingerprintCalculator $fingerprints,
+        private ?QuerySafetyDescriptorCache $descriptorCache = null,
     ) {}
 
     public function exists(
@@ -49,6 +53,8 @@ final readonly class QueryGate
             $this->registry->globalQueryOptimizationEnabled() === false
             || $registered->queryOptimizationEnabled() === false
         ) {
+            $this->forgetDescriptor($name);
+
             return $this->authoritativeBypass(
                 $authoritativeSet,
                 $normalized,
@@ -68,37 +74,51 @@ final readonly class QueryGate
             ),
         );
 
-        $resolution = $this->resolver->resolve(
-            $name,
-            $expectedContract,
-        );
-        $bypassReason = $resolution->bypassReason();
+        $descriptor = $this->cachedDescriptor($name, $expectedContract);
+        $cacheHit = $descriptor !== null;
 
-        if ($bypassReason !== null) {
-            return $this->authoritativeBypass(
-                $authoritativeSet,
-                $normalized,
-                $bypassReason,
-            );
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            if ($descriptor === null) {
+                $resolution = $this->resolver->resolve($name, $expectedContract);
+                $bypassReason = $resolution->bypassReason();
+
+                if ($bypassReason !== null) {
+                    $this->forgetDescriptor($name);
+
+                    return $this->authoritativeBypass($authoritativeSet, $normalized, $bypassReason);
+                }
+
+                $descriptor = $resolution->descriptor();
+
+                if ($descriptor === null) {
+                    throw new LogicException(
+                        'Query safety resolution returned neither descriptor nor bypass reason.',
+                    );
+                }
+            }
+
+            $positions = $this->probes->generate($normalized, $descriptor->layout());
+            $probeResult = $this->authorizedProbe->probe($descriptor, $positions);
+
+            if ($probeResult->membership() !== Membership::Bypassed) {
+                if (! $cacheHit || $attempt > 0) {
+                    $this->storeDescriptor($descriptor);
+                }
+
+                break;
+            }
+
+            $this->forgetDescriptor($name);
+
+            if ($cacheHit && $attempt === 0
+                && $probeResult->bypassReason()?->equals(BypassReason::controlStateChanged())) {
+                $descriptor = null;
+
+                continue;
+            }
+
+            return $this->authorizedProbeBypass($probeResult, $authoritativeSet, $normalized);
         }
-
-        $descriptor = $resolution->descriptor();
-
-        if ($descriptor === null) {
-            throw new LogicException(
-                'Query safety resolution returned neither descriptor nor bypass reason.',
-            );
-        }
-
-        $positions = $this->probes->generate(
-            $normalized,
-            $descriptor->layout(),
-        );
-
-        $probeResult = $this->authorizedProbe->probe(
-            $descriptor,
-            $positions,
-        );
 
         return match ($probeResult->membership()) {
             Membership::DefinitelyAbsent => ExistenceResult::definitelyAbsent(),
@@ -111,6 +131,43 @@ final readonly class QueryGate
                 $normalized,
             ),
         };
+    }
+
+    private function cachedDescriptor(FilterName $name, GenerationSemanticContract $expectedContract): ?QuerySafetyDescriptor
+    {
+        try {
+            $descriptor = $this->descriptorCache?->get($name, $expectedContract);
+        } catch (Throwable) {
+            return null;
+        }
+
+        if ($descriptor !== null
+            && ($descriptor->filterName()->equals($name) === false
+                || $descriptor->semanticContract()->equals($expectedContract) === false)) {
+            $this->forgetDescriptor($name);
+
+            return null;
+        }
+
+        return $descriptor;
+    }
+
+    private function storeDescriptor(QuerySafetyDescriptor $descriptor): void
+    {
+        try {
+            $this->descriptorCache?->put($descriptor);
+        } catch (Throwable) {
+            // Descriptor caching is optional; authorization already succeeded.
+        }
+    }
+
+    private function forgetDescriptor(FilterName $name): void
+    {
+        try {
+            $this->descriptorCache?->forget($name);
+        } catch (Throwable) {
+            // Cache failure cannot prevent authoritative fallback or fresh resolution.
+        }
     }
 
     private function authoritativeBypass(
