@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use OpenSwoole\Table;
 use Swoole\Http\Server;
 
 foreach (['openswoole', 'sockets', 'pcntl', 'pdo_mysql'] as $extension) {
@@ -10,7 +9,7 @@ foreach (['openswoole', 'sockets', 'pcntl', 'pdo_mysql'] as $extension) {
     }
 }
 
-foreach ([Table::class, Swoole\Table::class, Server::class] as $class) {
+foreach (['OpenSwoole\\Table', Swoole\Table::class, Server::class] as $class) {
     if (! class_exists($class)) {
         throw new RuntimeException('Required Octane native type is unavailable: '.$class);
     }
