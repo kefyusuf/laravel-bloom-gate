@@ -1,0 +1,2588 @@
+{
+    "schema_version": 1,
+    "status": "passed",
+    "database": "pgsql",
+    "database_server_version": "17.11",
+    "php": "8.4.26",
+    "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+    "sapi": "fpm-fcgi",
+    "apcu_enabled": true,
+    "expected_script_mode": "eval",
+    "cross_request": {
+        "cold": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 1.429441,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 3,
+                "wall_ns": 527918,
+                "logical_script_bytes": 10752,
+                "groups": {
+                    "snapshot": {
+                        "calls": 1,
+                        "wall_ns": 183551,
+                        "logical_script_bytes": 1872
+                    },
+                    "contract": {
+                        "calls": 1,
+                        "wall_ns": 157867,
+                        "logical_script_bytes": 2173
+                    },
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 186500,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 3,
+                    "cpu_usec": 113,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 31.001467
+        },
+        "warm": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 7,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 0.801635,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 1,
+                "wall_ns": 233209,
+                "logical_script_bytes": 6707,
+                "groups": {
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 233209,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 1,
+                    "cpu_usec": 81,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 19.176365
+        }
+    },
+    "guards": {
+        "changed_control_bounded_retry": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 7,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 1.463548,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 4,
+                "wall_ns": 781773,
+                "logical_script_bytes": 17459,
+                "groups": {
+                    "probe": {
+                        "calls": 2,
+                        "wall_ns": 414229,
+                        "logical_script_bytes": 13414
+                    },
+                    "snapshot": {
+                        "calls": 1,
+                        "wall_ns": 162118,
+                        "logical_script_bytes": 1872
+                    },
+                    "contract": {
+                        "calls": 1,
+                        "wall_ns": 205426,
+                        "logical_script_bytes": 2173
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 4,
+                    "cpu_usec": 172,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 19.497219
+        },
+        "after_retry_warm": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 1.198598,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 1,
+                "wall_ns": 390302,
+                "logical_script_bytes": 6707,
+                "groups": {
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 390302,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 1,
+                    "cpu_usec": 96,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 22.905848
+        },
+        "metadata_mismatch_sql_fallback": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "Bypassed"
+            ],
+            "query_elapsed_ms": 4.092581,
+            "authoritative_queries": 1,
+            "executor": {
+                "calls": 1,
+                "wall_ns": 220608,
+                "logical_script_bytes": 6707,
+                "groups": {
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 220608,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 1,
+                    "cpu_usec": 70,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 19.551474
+        },
+        "after_metadata_cache_evicted": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 1.278483,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 3,
+                "wall_ns": 599945,
+                "logical_script_bytes": 10752,
+                "groups": {
+                    "snapshot": {
+                        "calls": 1,
+                        "wall_ns": 197792,
+                        "logical_script_bytes": 1872
+                    },
+                    "contract": {
+                        "calls": 1,
+                        "wall_ns": 185511,
+                        "logical_script_bytes": 2173
+                    },
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 216642,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 3,
+                    "cpu_usec": 157,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 18.669732
+        },
+        "health_change_sql_fallback": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "Bypassed"
+            ],
+            "query_elapsed_ms": 4.353443,
+            "authoritative_queries": 1,
+            "executor": {
+                "calls": 2,
+                "wall_ns": 431274,
+                "logical_script_bytes": 8579,
+                "groups": {
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 269011,
+                        "logical_script_bytes": 6707
+                    },
+                    "snapshot": {
+                        "calls": 1,
+                        "wall_ns": 162263,
+                        "logical_script_bytes": 1872
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 2,
+                    "cpu_usec": 110,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 19.532992
+        },
+        "after_health_cache_evicted": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "DefinitelyAbsent"
+            ],
+            "query_elapsed_ms": 1.60198,
+            "authoritative_queries": 0,
+            "executor": {
+                "calls": 3,
+                "wall_ns": 730935,
+                "logical_script_bytes": 10752,
+                "groups": {
+                    "snapshot": {
+                        "calls": 1,
+                        "wall_ns": 198856,
+                        "logical_script_bytes": 1872
+                    },
+                    "contract": {
+                        "calls": 1,
+                        "wall_ns": 207037,
+                        "logical_script_bytes": 2173
+                    },
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 325042,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 3,
+                    "cpu_usec": 160,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 19.25472
+        },
+        "live_bitmap_preadd_rollback": {
+            "schema_version": 1,
+            "status": "passed",
+            "database": "pgsql",
+            "database_server_version": "17.11",
+            "php": "8.4.26",
+            "sapi": "fpm-fcgi",
+            "pid": 8,
+            "apcu_enabled": true,
+            "package_reference": "865ff5e1b39f622e478e0bf1d97f752383b4af4c",
+            "descriptor_cache_requested": true,
+            "path": "gate",
+            "requests": 1,
+            "present": 0,
+            "correctness_equal": true,
+            "answers": [
+                false
+            ],
+            "memberships": [
+                "MaybePresent"
+            ],
+            "query_elapsed_ms": 3.104301,
+            "authoritative_queries": 1,
+            "executor": {
+                "calls": 1,
+                "wall_ns": 242794,
+                "logical_script_bytes": 6707,
+                "groups": {
+                    "probe": {
+                        "calls": 1,
+                        "wall_ns": 242794,
+                        "logical_script_bytes": 6707
+                    }
+                },
+                "script_sha256": {
+                    "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                    "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                    "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                }
+            },
+            "lua_transport": {
+                "eval": {
+                    "calls": 1,
+                    "cpu_usec": 68,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                },
+                "evalsha": {
+                    "calls": 0,
+                    "cpu_usec": 0,
+                    "failed_calls": 0,
+                    "rejected_calls": 0
+                }
+            },
+            "limits": "One HTTP request on an idle task-owned Redis server; commandstats reads are outside query timing. Logical script bytes are not physical wire bytes.",
+            "http_elapsed_ms": 17.800028
+        },
+        "noscript_fallback": null,
+        "after_noscript_evalsha_warm": null
+    },
+    "workloads": [
+        {
+            "requests_per_http_request": 1,
+            "present_requests": 0,
+            "paths": {
+                "direct": {
+                    "query_ms": [
+                        2.518294,
+                        3.839167,
+                        3.433858,
+                        3.710551,
+                        3.442123
+                    ],
+                    "http_ms": [
+                        15.416319,
+                        19.208607,
+                        21.532229,
+                        18.725217,
+                        19.131379
+                    ],
+                    "sql_queries": [
+                        1,
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "executor": [
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        7,
+                        8,
+                        7,
+                        8
+                    ],
+                    "median_query_ms": 3.442123,
+                    "median_http_ms": 19.131379
+                },
+                "bypass": {
+                    "query_ms": [
+                        3.138523,
+                        3.64501,
+                        3.222531,
+                        3.891994,
+                        3.434103
+                    ],
+                    "http_ms": [
+                        18.112377,
+                        18.855894,
+                        17.666206,
+                        19.745731,
+                        18.286703
+                    ],
+                    "sql_queries": [
+                        1,
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "executor": [
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        7,
+                        8,
+                        7,
+                        8,
+                        7
+                    ],
+                    "median_query_ms": 3.434103,
+                    "median_http_ms": 18.286703
+                },
+                "uncached": {
+                    "query_ms": [
+                        1.175715,
+                        1.097469,
+                        1.35682,
+                        1.205983,
+                        1.196106
+                    ],
+                    "http_ms": [
+                        19.23471,
+                        16.636926,
+                        19.31146,
+                        20.191736,
+                        18.940869
+                    ],
+                    "sql_queries": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "executor": [
+                        {
+                            "calls": 3,
+                            "wall_ns": 501311,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 175584,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 143822,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 181905,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 496621,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 174964,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 170464,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 151193,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 559387,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 203897,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 178495,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 176995,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 543061,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 190821,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 138112,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 214128,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 559845,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 195596,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 135221,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 229028,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 107,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 123,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 108,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 111,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 165,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        7,
+                        8,
+                        7,
+                        8
+                    ],
+                    "median_query_ms": 1.196106,
+                    "median_http_ms": 19.23471
+                },
+                "cache_cold": {
+                    "query_ms": [
+                        1.167445,
+                        1.147242,
+                        1.276573,
+                        1.078767,
+                        1.492
+                    ],
+                    "http_ms": [
+                        18.615294,
+                        17.189753,
+                        17.200839,
+                        17.940662,
+                        21.597146
+                    ],
+                    "sql_queries": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "executor": [
+                        {
+                            "calls": 3,
+                            "wall_ns": 495901,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 181555,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 150932,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 163414,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 552115,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 168654,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 144592,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 238869,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 598939,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 191226,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 160183,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 247530,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 483409,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 172964,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 150222,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 160223,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3,
+                            "wall_ns": 590238,
+                            "logical_script_bytes": 10752,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 204076,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 169284,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 216878,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 111,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 123,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 133,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 132,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3,
+                                "cpu_usec": 142,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        8,
+                        8,
+                        8,
+                        8
+                    ],
+                    "median_query_ms": 1.167445,
+                    "median_http_ms": 17.940662
+                },
+                "cache_warm": {
+                    "query_ms": [
+                        1.335359,
+                        0.811007,
+                        0.853509,
+                        0.702056,
+                        0.73544
+                    ],
+                    "http_ms": [
+                        17.995144,
+                        15.752526,
+                        18.259465,
+                        16.434018,
+                        20.647529
+                    ],
+                    "sql_queries": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "executor": [
+                        {
+                            "calls": 1,
+                            "wall_ns": 315856,
+                            "logical_script_bytes": 6707,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 315856,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1,
+                            "wall_ns": 227949,
+                            "logical_script_bytes": 6707,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 227949,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1,
+                            "wall_ns": 248720,
+                            "logical_script_bytes": 6707,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 248720,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1,
+                            "wall_ns": 214287,
+                            "logical_script_bytes": 6707,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 214287,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1,
+                            "wall_ns": 238740,
+                            "logical_script_bytes": 6707,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1,
+                                    "wall_ns": 238740,
+                                    "logical_script_bytes": 6707
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 1,
+                                "cpu_usec": 90,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1,
+                                "cpu_usec": 71,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1,
+                                "cpu_usec": 84,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1,
+                                "cpu_usec": 68,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1,
+                                "cpu_usec": 90,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        8,
+                        8,
+                        8,
+                        8
+                    ],
+                    "median_query_ms": 0.811007,
+                    "median_http_ms": 17.995144
+                }
+            }
+        },
+        {
+            "requests_per_http_request": 1000,
+            "present_requests": 100,
+            "paths": {
+                "direct": {
+                    "query_ms": [
+                        454.173421,
+                        491.103239,
+                        719.669844,
+                        450.257368,
+                        463.373714
+                    ],
+                    "http_ms": [
+                        466.857788,
+                        508.615635,
+                        744.109799,
+                        465.316912,
+                        477.685545
+                    ],
+                    "sql_queries": [
+                        1000,
+                        1000,
+                        1000,
+                        1000,
+                        1000
+                    ],
+                    "executor": [
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        7,
+                        8,
+                        7,
+                        8
+                    ],
+                    "median_query_ms": 463.373714,
+                    "median_http_ms": 477.685545
+                },
+                "bypass": {
+                    "query_ms": [
+                        485.513451,
+                        487.458125,
+                        529.77452,
+                        458.854118,
+                        505.46446
+                    ],
+                    "http_ms": [
+                        503.506908,
+                        503.196167,
+                        546.963455,
+                        476.400906,
+                        519.650272
+                    ],
+                    "sql_queries": [
+                        1000,
+                        1000,
+                        1000,
+                        1000,
+                        1000
+                    ],
+                    "executor": [
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 0,
+                            "wall_ns": 0,
+                            "logical_script_bytes": 0,
+                            "groups": [],
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        7,
+                        8,
+                        7,
+                        8,
+                        7
+                    ],
+                    "median_query_ms": 487.458125,
+                    "median_http_ms": 503.506908
+                },
+                "uncached": {
+                    "query_ms": [
+                        657.689934,
+                        682.329407,
+                        674.262083,
+                        686.497259,
+                        623.886729
+                    ],
+                    "http_ms": [
+                        672.391186,
+                        698.504293,
+                        693.692012,
+                        703.552442,
+                        640.786039
+                    ],
+                    "sql_queries": [
+                        108,
+                        108,
+                        108,
+                        108,
+                        108
+                    ],
+                    "executor": [
+                        {
+                            "calls": 3000,
+                            "wall_ns": 509648930,
+                            "logical_script_bytes": 10752000,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1000,
+                                    "wall_ns": 154129145,
+                                    "logical_script_bytes": 1872000
+                                },
+                                "contract": {
+                                    "calls": 1000,
+                                    "wall_ns": 158970152,
+                                    "logical_script_bytes": 2173000
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 196549633,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3000,
+                            "wall_ns": 530799082,
+                            "logical_script_bytes": 10752000,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1000,
+                                    "wall_ns": 160033174,
+                                    "logical_script_bytes": 1872000
+                                },
+                                "contract": {
+                                    "calls": 1000,
+                                    "wall_ns": 163928526,
+                                    "logical_script_bytes": 2173000
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 206837382,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3000,
+                            "wall_ns": 520301549,
+                            "logical_script_bytes": 10752000,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1000,
+                                    "wall_ns": 162744494,
+                                    "logical_script_bytes": 1872000
+                                },
+                                "contract": {
+                                    "calls": 1000,
+                                    "wall_ns": 159383677,
+                                    "logical_script_bytes": 2173000
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 198173378,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3000,
+                            "wall_ns": 530400753,
+                            "logical_script_bytes": 10752000,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1000,
+                                    "wall_ns": 164891382,
+                                    "logical_script_bytes": 1872000
+                                },
+                                "contract": {
+                                    "calls": 1000,
+                                    "wall_ns": 165787243,
+                                    "logical_script_bytes": 2173000
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 199722128,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 3000,
+                            "wall_ns": 479212230,
+                            "logical_script_bytes": 10752000,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1000,
+                                    "wall_ns": 146380088,
+                                    "logical_script_bytes": 1872000
+                                },
+                                "contract": {
+                                    "calls": 1000,
+                                    "wall_ns": 149585281,
+                                    "logical_script_bytes": 2173000
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 183246861,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 3000,
+                                "cpu_usec": 83249,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3000,
+                                "cpu_usec": 88864,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3000,
+                                "cpu_usec": 85960,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3000,
+                                "cpu_usec": 86157,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 3000,
+                                "cpu_usec": 79005,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        7,
+                        8,
+                        7,
+                        8
+                    ],
+                    "median_query_ms": 674.262083,
+                    "median_http_ms": 693.692012
+                },
+                "cache_cold": {
+                    "query_ms": [
+                        319.41672,
+                        320.156336,
+                        306.446469,
+                        280.534972,
+                        287.77852
+                    ],
+                    "http_ms": [
+                        335.556443,
+                        333.59451,
+                        323.383074,
+                        296.683965,
+                        303.083181
+                    ],
+                    "sql_queries": [
+                        108,
+                        108,
+                        108,
+                        108,
+                        108
+                    ],
+                    "executor": [
+                        {
+                            "calls": 1002,
+                            "wall_ns": 201962579,
+                            "logical_script_bytes": 6711045,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 210767,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 152042,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 201599770,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1002,
+                            "wall_ns": 200288103,
+                            "logical_script_bytes": 6711045,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 196892,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 165447,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 199925764,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1002,
+                            "wall_ns": 191156253,
+                            "logical_script_bytes": 6711045,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 202517,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 435961,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 190517775,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1002,
+                            "wall_ns": 174725539,
+                            "logical_script_bytes": 6711045,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 183492,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 152801,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 174389246,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1002,
+                            "wall_ns": 179506116,
+                            "logical_script_bytes": 6711045,
+                            "groups": {
+                                "snapshot": {
+                                    "calls": 1,
+                                    "wall_ns": 200947,
+                                    "logical_script_bytes": 1872
+                                },
+                                "contract": {
+                                    "calls": 1,
+                                    "wall_ns": 165814,
+                                    "logical_script_bytes": 2173
+                                },
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 179139355,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 1002,
+                                "cpu_usec": 43936,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1002,
+                                "cpu_usec": 47259,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1002,
+                                "cpu_usec": 45249,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1002,
+                                "cpu_usec": 38422,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1002,
+                                "cpu_usec": 38050,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        8,
+                        8,
+                        8,
+                        8
+                    ],
+                    "median_query_ms": 306.446469,
+                    "median_http_ms": 323.383074
+                },
+                "cache_warm": {
+                    "query_ms": [
+                        302.718063,
+                        308.038429,
+                        347.884093,
+                        283.414172,
+                        306.38937
+                    ],
+                    "http_ms": [
+                        317.18615,
+                        322.515591,
+                        369.18958,
+                        301.410428,
+                        320.068486
+                    ],
+                    "sql_queries": [
+                        108,
+                        108,
+                        108,
+                        108,
+                        108
+                    ],
+                    "executor": [
+                        {
+                            "calls": 1000,
+                            "wall_ns": 191162901,
+                            "logical_script_bytes": 6707000,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 191162901,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1000,
+                            "wall_ns": 196575114,
+                            "logical_script_bytes": 6707000,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 196575114,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1000,
+                            "wall_ns": 209035316,
+                            "logical_script_bytes": 6707000,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 209035316,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1000,
+                            "wall_ns": 175381895,
+                            "logical_script_bytes": 6707000,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 175381895,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        },
+                        {
+                            "calls": 1000,
+                            "wall_ns": 195397748,
+                            "logical_script_bytes": 6707000,
+                            "groups": {
+                                "probe": {
+                                    "calls": 1000,
+                                    "wall_ns": 195397748,
+                                    "logical_script_bytes": 6707000
+                                }
+                            },
+                            "script_sha256": {
+                                "snapshot": "b951062c51e2f21f99ed7bec6b8059ad5203b5b4221bc9d05d304f89736addce",
+                                "contract": "a60120aa3b7c9441aa817353a79a9194aa8a897781fc63c76c426662278228f9",
+                                "probe": "a7b8ec0f79e1a8e78748ba5808155e099349d8e92cc4226c49f582f386794a84"
+                            }
+                        }
+                    ],
+                    "lua_transport": [
+                        {
+                            "eval": {
+                                "calls": 1000,
+                                "cpu_usec": 44048,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1000,
+                                "cpu_usec": 43479,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1000,
+                                "cpu_usec": 47517,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1000,
+                                "cpu_usec": 38967,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        },
+                        {
+                            "eval": {
+                                "calls": 1000,
+                                "cpu_usec": 45964,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            },
+                            "evalsha": {
+                                "calls": 0,
+                                "cpu_usec": 0,
+                                "failed_calls": 0,
+                                "rejected_calls": 0
+                            }
+                        }
+                    ],
+                    "pid": [
+                        8,
+                        8,
+                        8,
+                        8,
+                        8
+                    ],
+                    "median_query_ms": 306.38937,
+                    "median_http_ms": 320.068486
+                }
+            }
+        }
+    ],
+    "warmup_repetitions": 1,
+    "measured_repetitions": 5,
+    "limits": [
+        "Dedicated disposable FPM\/APCu\/Redis\/MySQL\/PostgreSQL task services; no concurrency or production-load claim.",
+        "Query timing excludes Laravel bootstrap\/PDO connection; HTTP timing includes request startup and response transfer.",
+        "No timing threshold assertion; correctness and actual Redis\/SQL counts are asserted.",
+        "Lua transport counters are idle-server INFO deltas outside query timing; logical script lengths do not measure wire bytes.",
+        "APCu persists across independent HTTP requests; cache clear is restricted to this isolated fixture pool."
+    ]
+}

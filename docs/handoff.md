@@ -15,8 +15,16 @@ exact-source PR checks passed. Refresh live PR/main state before continuing.
 See the [verification record](verification/2026-10-06-apcu-descriptor-cache.md)
 and README configuration; default descriptor caching remains disabled.
 
-Further performance increments are EVALSHA with NOSCRIPT fallback, immutable
-script/reflection reuse, and separately scoped batching. No local bitmap cache,
+The next increment implements EVALSHA with one canonical NOSCRIPT fallback,
+tested with live PhpRedis and Predis and archive-backed MySQL/PostgreSQL FPM
+consumers. Measured source: `a8bf6f8ee9043942a43087c084cb5c739002463a`.
+See the [verification record](verification/2026-10-06-redis-evalsha.md).
+Warm commands use digest reuse; timing controls varied, so no isolated latency
+gain is claimed. Redis ACLs must permit EVALSHA as documented in the README.
+Refresh live PR/main state before continuing.
+
+Further performance increments are immutable script/reflection reuse and
+separately scoped batching. No local bitmap cache,
 Redis Cluster qualification, concurrency qualification or new release is
 included. Use failing test -> narrow fix -> commit/branch -> green PR merge.
 
