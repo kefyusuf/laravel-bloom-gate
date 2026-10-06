@@ -8,6 +8,7 @@ use Kefyusuf\BloomGate\Contracts\WriterSynchronizationStore;
 use Kefyusuf\BloomGate\Core\FilterName;
 use Kefyusuf\BloomGate\Core\SynchronizationEpoch;
 use Kefyusuf\BloomGate\Core\SynchronizationState;
+use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisCoordinationCodec;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisKeyspace;
 use Kefyusuf\BloomGate\Drivers\Redis\RedisWriterSynchronizationStore;
@@ -93,6 +94,43 @@ final class RedisWriterSynchronizationContractFixture implements WriterSynchroni
         if ($result !== 1) {
             throw new RuntimeException('Expected Redis active-writer count fixture seed to succeed.');
         }
+    }
+
+    public function removeActiveWriterCount(FilterName $name, ?SynchronizationEpoch $epoch): void
+    {
+        $this->executor->evaluate(
+            $epoch === null ? "return redis.call('DEL', KEYS[1])" : "return redis.call('HDEL', KEYS[1], ARGV[1])",
+            [$this->keyspace->syncCountsKey($name)],
+            $epoch === null ? [] : [$this->codec->encodeCountField($epoch)],
+        );
+    }
+
+    public function corruptActiveWriterCount(FilterName $name, SynchronizationEpoch $epoch): void
+    {
+        $this->executor->evaluate(
+            "redis.call('HSET', KEYS[1], ARGV[1], '-1'); return 1",
+            [$this->keyspace->syncCountsKey($name)],
+            [$this->codec->encodeCountField($epoch)],
+        );
+    }
+
+    public function corruptLease(FilterName $name, WriterLeaseToken $token): void
+    {
+        $this->executor->evaluate(
+            "redis.call('HSET', KEYS[1], ARGV[1], 'invalid-lease'); return 1",
+            [$this->keyspace->syncLeasesKey($name)],
+            [$token->value()],
+        );
+    }
+
+    public function rawWriterState(FilterName $name): array
+    {
+        $result = [];
+        foreach (['counts' => $this->keyspace->syncCountsKey($name), 'leases' => $this->keyspace->syncLeasesKey($name)] as $field => $key) {
+            $result[$field] = $this->executor->evaluateStructured("return redis.call('HGETALL', KEYS[1])", [$key], []);
+        }
+
+        return $result;
     }
 
     /**

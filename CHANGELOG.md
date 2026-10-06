@@ -13,6 +13,8 @@ The format follows Keep a Changelog principles and the project uses Semantic Ver
 
 ### Fixed
 
+- Writer drain counts reject inconsistent lease/count evidence in Memory and
+  Redis, including missing count records, without repairing persisted state.
 - Standalone consumer verification failures now return nonzero after Laravel
   bootstrap instead of relying on its uncaught exception handler.
 

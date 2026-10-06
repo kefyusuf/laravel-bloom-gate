@@ -139,13 +139,14 @@ final class RedisWriterSynchronizationStoreEvidenceTest extends TestCase
             self::addToAssertionCount(1);
         }
 
-        self::assertSame(
-            0,
-            $this->store->activeWriterCount(
-                $this->filterName(),
-                SynchronizationEpoch::fromInt(1),
-            ),
-        );
+        self::assertSame(['A|1|2,1', 'none'], $this->executor->evaluateStructured(
+            "return {redis.call('HGET', KEYS[1], ARGV[1]), redis.call('TYPE', KEYS[2]).ok}",
+            [
+                $this->keyspace->syncLeasesKey($this->filterName()),
+                $this->keyspace->syncCountsKey($this->filterName()),
+            ],
+            [$token->value()],
+        ));
     }
 
     public function test_malformed_counter_blocks_release_without_mutating_lease_or_counter(): void

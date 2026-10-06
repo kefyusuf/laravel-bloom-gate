@@ -18,6 +18,7 @@ use Kefyusuf\BloomGate\Core\SynchronizationTargetSet;
 use Kefyusuf\BloomGate\Core\WriterLeaseState;
 use Kefyusuf\BloomGate\Core\WriterLeaseToken;
 use Kefyusuf\BloomGate\Tests\Contract\Support\WriterSynchronizationStoreContractFixture;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 abstract class WriterSynchronizationStoreContractTestCase extends TestCase
@@ -428,6 +429,111 @@ abstract class WriterSynchronizationStoreContractTestCase extends TestCase
         $this->expectException(CoordinationStateCorrupt::class);
 
         $fixture->store()->release($name, $token);
+    }
+
+    /** @return iterable<string, array{bool, string}> */
+    public static function inconsistentWriterCountEvidence(): iterable
+    {
+        foreach ([false, true] as $prepared) {
+            foreach (['missing key', 'missing field', 'zero count', 'excess count', 'orphan epoch', 'malformed unrelated count', 'malformed lease'] as $corruption) {
+                yield ($prepared ? 'prepared ' : 'acquired ').$corruption => [$prepared, $corruption];
+            }
+        }
+    }
+
+    #[DataProvider('inconsistentWriterCountEvidence')]
+    public function test_active_writer_count_rejects_inconsistent_evidence_without_repair(bool $prepared, string $corruption): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $epoch = SynchronizationEpoch::fromInt(1);
+        $otherEpoch = SynchronizationEpoch::fromInt(2);
+        $token = $this->token('a');
+        $store = $fixture->store();
+        $store->acquire($name, $token);
+        if ($prepared) {
+            $store->markPrepared($name, $token);
+        }
+
+        switch ($corruption) {
+            case 'missing key':
+                $fixture->removeActiveWriterCount($name, null);
+                break;
+            case 'missing field':
+                $fixture->setActiveWriterCount($name, $otherEpoch, 0);
+                $fixture->removeActiveWriterCount($name, $epoch);
+                break;
+            case 'zero count':
+                $fixture->setActiveWriterCount($name, $epoch, 0);
+                break;
+            case 'excess count':
+                $fixture->setActiveWriterCount($name, $epoch, 2);
+                break;
+            case 'orphan epoch':
+                $fixture->setActiveWriterCount($name, $otherEpoch, 1);
+                $epoch = $otherEpoch;
+                break;
+            case 'malformed unrelated count':
+                $fixture->corruptActiveWriterCount($name, $otherEpoch);
+                break;
+            case 'malformed lease':
+                $fixture->corruptLease($name, $token);
+                break;
+        }
+
+        $before = $fixture->rawWriterState($name);
+        try {
+            $store->activeWriterCount($name, $epoch);
+            self::fail('Inconsistent writer evidence must not prove that an epoch drained.');
+        } catch (CoordinationStateCorrupt) {
+            self::addToAssertionCount(1);
+        } finally {
+            self::assertEquals($before, $fixture->rawWriterState($name));
+        }
+    }
+
+    public function test_active_writer_count_rejects_positive_count_without_any_lease(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $epoch = SynchronizationEpoch::fromInt(1);
+        $fixture->setActiveWriterCount($name, $epoch, 1);
+        $before = $fixture->rawWriterState($name);
+
+        try {
+            $fixture->store()->activeWriterCount($name, $epoch);
+            self::fail('A positive count without leases must be rejected as corrupt.');
+        } catch (CoordinationStateCorrupt) {
+            self::addToAssertionCount(1);
+        } finally {
+            self::assertEquals($before, $fixture->rawWriterState($name));
+        }
+    }
+
+    public function test_active_writer_count_accepts_empty_epochs_and_released_tombstones_without_mutation(): void
+    {
+        $fixture = $this->validFixture();
+        $name = $this->filterName();
+        $epoch = SynchronizationEpoch::fromInt(1);
+        $otherEpoch = SynchronizationEpoch::fromInt(2);
+        $store = $fixture->store();
+        $empty = $fixture->rawWriterState($name);
+        self::assertSame(0, $store->activeWriterCount($name, $epoch));
+        self::assertEquals($empty, $fixture->rawWriterState($name));
+
+        $fixture->setActiveWriterCount($name, $otherEpoch, 0);
+        $zero = $fixture->rawWriterState($name);
+        self::assertSame(0, $store->activeWriterCount($name, $otherEpoch));
+        self::assertEquals($zero, $fixture->rawWriterState($name));
+
+        $token = $this->token('b');
+        $store->acquire($name, $token);
+        $store->release($name, $token);
+        $released = $fixture->rawWriterState($name);
+        self::assertSame(0, $store->activeWriterCount($name, $epoch));
+        self::assertSame(0, $store->activeWriterCount($name, SynchronizationEpoch::fromInt(3)));
+        self::assertSame(WriterLeaseState::Released, $store->readLease($name, $token)?->state());
+        self::assertEquals($released, $fixture->rawWriterState($name));
     }
 
     protected function validFixture(): WriterSynchronizationStoreContractFixture
