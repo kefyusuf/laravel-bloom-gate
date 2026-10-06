@@ -77,7 +77,7 @@ final readonly class QueryGate
         $descriptor = $this->cachedDescriptor($name, $expectedContract);
         $cacheHit = $descriptor !== null;
 
-        for ($attempt = 0; $attempt < 2; $attempt++) {
+        foreach ([0, 1] as $attempt) {
             if ($descriptor === null) {
                 $resolution = $this->resolver->resolve($name, $expectedContract);
                 $bypassReason = $resolution->bypassReason();
@@ -120,17 +120,11 @@ final readonly class QueryGate
             return $this->authorizedProbeBypass($probeResult, $authoritativeSet, $normalized);
         }
 
-        return match ($probeResult->membership()) {
-            Membership::DefinitelyAbsent => ExistenceResult::definitelyAbsent(),
-            Membership::MaybePresent => ExistenceResult::maybePresent(
-                $authoritativeSet->exists($normalized),
-            ),
-            Membership::Bypassed => $this->authorizedProbeBypass(
-                $probeResult,
-                $authoritativeSet,
-                $normalized,
-            ),
-        };
+        if ($probeResult->membership() === Membership::DefinitelyAbsent) {
+            return ExistenceResult::definitelyAbsent();
+        }
+
+        return ExistenceResult::maybePresent($authoritativeSet->exists($normalized));
     }
 
     private function cachedDescriptor(FilterName $name, GenerationSemanticContract $expectedContract): ?QuerySafetyDescriptor
