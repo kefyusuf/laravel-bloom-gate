@@ -695,9 +695,11 @@ final class MemoryRedisCoordinationParityTest extends TestCase
                     'lease' => $this->leaseTrace(
                         $harness->writer()->acquire($name, $token),
                     ),
-                    'count' => $harness->writer()->activeWriterCount(
-                        $name,
-                        SynchronizationEpoch::fromInt(1),
+                    'count_outcome' => $this->outcome(
+                        fn () => $harness->writer()->activeWriterCount(
+                            $name,
+                            SynchronizationEpoch::fromInt(1),
+                        ),
                     ),
                 ];
             },
@@ -708,7 +710,7 @@ final class MemoryRedisCoordinationParityTest extends TestCase
                     'epoch' => 1,
                     'targets' => [1, 2],
                 ],
-                'count' => 0,
+                'count_outcome' => 'corrupt',
             ],
         );
     }
