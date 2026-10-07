@@ -15,7 +15,11 @@ function measurementHttp(string $path, string $key = 'absent'): array
 {
     $body = file_get_contents('http://127.0.0.1:8000/'.$path.'?key='.rawurlencode($key), false,
         stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true, 'header' => 'Connection: close']]));
-    expect($http_response_header[0] ?? '')->toContain('200 OK');
+    if (! str_contains($http_response_header[0] ?? '', '200 OK')) {
+        $server = $GLOBALS['measurement_server'] ?? null;
+        throw new RuntimeException('Measurement HTTP failed: '.($http_response_header[0] ?? '').' '.
+            ($server instanceof Process ? $server->getOutput().$server->getErrorOutput() : ''));
+    }
     if ($body === false) {
         throw new RuntimeException('Measurement HTTP request failed.');
     }
@@ -64,6 +68,11 @@ afterAll(function (): void {
 });
 
 it('four real HTTP paths agree on sealed membership across all workers', function (): void {
+    $info = measurementHttp('measurement-info');
+    expect($info['workers'])->toBe(4);
+    expect($info['manifest']['rows'])->toBe(1000000);
+    expect($info['writer_credentials_present'])->toBeFalse();
+    expect($info['shared_bytes'])->toBeGreaterThan(0);
     foreach (['direct', 'bypass', 'redis', 'shared'] as $path) {
         $workers = [];
         foreach (range(0, 23) as $i) {

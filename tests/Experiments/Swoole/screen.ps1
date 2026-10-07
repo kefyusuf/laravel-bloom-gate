@@ -177,6 +177,9 @@ try {
     Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', 'measure.php', '/experiment/screen-report.json')) | Set-Content (Join-Path $results "$Task-verdict.json")
     Write-Host (Get-Content (Join-Path $results "$Task-verdict.json") -Raw)
 } catch {
+    if ($owned) {
+        & $docker @compose exec -T php sh -c 'cat /experiment/measurement-server.log 2>/dev/null || true' | Set-Content (Join-Path $results "$Task-server.log")
+    }
     [ordered]@{ verdict = 'INCONCLUSIVE'; reasons = @($_.Exception.Message); source_ref = (git rev-parse HEAD); calibration = @($calibration); completed_cells = @($cells) } | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $results "$Task-aborted.json")
     throw
 } finally {
