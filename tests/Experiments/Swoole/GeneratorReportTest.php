@@ -197,3 +197,25 @@ it('applies qualification completeness through the collector CLI', function (): 
         unlink($path);
     }
 });
+
+it('checks negative-control safety through the CLI before positive cells exist', function (): void {
+    $path = tempnam(sys_get_temp_dir(), 'generator-preflight-');
+    if ($path === false) {
+        throw new RuntimeException('Unable to allocate preflight input.');
+    }
+    try {
+        $run = validGeneratorQualification();
+        unset($run['profiles']);
+        file_put_contents($path, json_encode($run, JSON_THROW_ON_ERROR));
+        $process = new Process(['php', __DIR__.'/generator-evaluate.php', $path, '--negative-control']);
+        $process->mustRun();
+        expect(json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR))->toMatchArray([
+            'verdict' => 'VALID_NEGATIVE_CONTROL', 'reasons' => []]);
+        $run['negative_control']['cell']['total_errors'] = 1;
+        file_put_contents($path, json_encode($run, JSON_THROW_ON_ERROR));
+        $process->mustRun();
+        expect(json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR))->toMatchArray(['verdict' => 'INCONCLUSIVE']);
+    } finally {
+        unlink($path);
+    }
+});

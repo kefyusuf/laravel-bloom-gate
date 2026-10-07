@@ -12,9 +12,12 @@ if ($body === false) {
 }
 try {
     $input = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-    $result = ($argv[2] ?? null) === '--qualification'
-        ? GeneratorReport::evaluateQualification($input)
-        : GeneratorReport::evaluateCell($input);
+    $result = match ($argv[2] ?? null) {
+        '--qualification' => GeneratorReport::evaluateQualification($input),
+        '--negative-control' => GeneratorReport::evaluateNegativeControl($input),
+        null => GeneratorReport::evaluateCell($input),
+        default => ['verdict' => 'INCONCLUSIVE', 'reasons' => ['Unknown evaluation mode.']],
+    };
 } catch (JsonException) {
     $result = ['verdict' => 'INCONCLUSIVE', 'reasons' => ['Malformed JSON.']];
 }

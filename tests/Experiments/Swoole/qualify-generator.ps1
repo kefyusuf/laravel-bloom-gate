@@ -164,6 +164,10 @@ try {
     }
     $negative = Invoke-Profile 1200 150 128 2 5 'negative-128-vus'
     if ($negative.cell.dropped_iterations -le 0 -or $negative.evaluation.verdict -ne 'INCONCLUSIVE' -or $negative.evaluation.reasons[0] -ne 'dropped_iterations must be zero.') { throw 'The deliberate fixed-VU deficit was not rejected as lost scheduled work.' }
+    Write-Json (Join-Path $results "$Task-negative-control-check.json") @{ identity = $identity; negative_control = $negative }
+    $controlCheck = Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', '/fixture/generator-evaluate.php', "/results/$Task-negative-control-check.json", '--negative-control')) | ConvertFrom-Json -AsHashtable
+    Write-Json (Join-Path $results "$Task-negative-control-validation.json") $controlCheck
+    if ($controlCheck.verdict -ne 'VALID_NEGATIVE_CONTROL') { throw ($controlCheck.reasons -join ' ') }
     foreach ($block in 1..3) {
         foreach ($delay in @(0, 25, 100, 150)) {
             $profile = Invoke-Profile 4800 $delay 1024 30 60 "block-$block-delay-$delay" $block
