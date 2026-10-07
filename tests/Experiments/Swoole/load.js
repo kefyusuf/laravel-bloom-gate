@@ -38,7 +38,7 @@ export default function () {
   const measurementStart = exec.scenario.startTime + warmup * 1000;
   const startedAt = Date.now();
   const measured = startedAt >= measurementStart && startedAt < measurementStart + duration * 1000;
-  // Diagnostic cohorts only: indices are not scheduled slots when any work drops.
+  // Completeness cohorts only: never select latency by index; any drop invalidates interpretation.
   const scheduled = index >= rate * warmup && index < rate * (warmup + duration);
   const offset = startedAt - measurementStart;
   const record = (name, amount = 1) => {
@@ -108,6 +108,10 @@ export function handleSummary(data) {
     controlled_delay_ms: controlledDelay,
     offered_rate: rate, absent_percent: 90, warmup_seconds: warmup, duration_seconds: duration,
     window_basis: 'scenario-start-time',
+    measurement_contract: 'scheduled-completeness-actual-window-v1',
+    execution_topology: __ENV.EXECUTION_TOPOLOGY || 'unverified',
+    builtin_iterations: data.metrics.iterations ? count('iterations') : null,
+    builtin_http_requests: data.metrics.http_reqs ? count('http_reqs') : null,
     elapsed_seconds: elapsed, unfinished_iterations: count('started_iterations') - count('completed_iterations'),
     dropped_iterations: count('dropped_iterations'),
     generator_saturated: count('dropped_iterations') > 0,
@@ -118,7 +122,8 @@ export function handleSummary(data) {
     p99_ms: trend('measured_http_ms')['p(99)'], query_ms: trend('measured_query_ms') };
   for (const name of Object.keys(counters)) cell[name] = count(name);
   for (const name of Object.keys(totals)) cell[`total_${name}`] = count(`total_${name}`);
-  const indexObserved = count('dropped_iterations') === 0 && cell.total_started_iterations > 0
+  const indexObserved = cell.execution_topology === 'single-local-constant-arrival'
+    && count('dropped_iterations') === 0 && cell.total_started_iterations > 0
     && cell.total_started_iterations === cell.total_completed_iterations
     && data.metrics.iterations && count('iterations') === cell.total_completed_iterations
     && data.metrics.http_reqs && count('http_reqs') === cell.total_completed_iterations;

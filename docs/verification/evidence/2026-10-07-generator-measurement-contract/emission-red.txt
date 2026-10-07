@@ -1,0 +1,38 @@
+✔ retains warmup work crossing into the actual window without relabeling latency (7.9295ms)
+✔ does not interpret indices as scheduled work when builtin completion evidence is absent (0.8364ms)
+✔ reports exclusive terminal and late crossings while preserving actual-window counts (0.8311ms)
+✔ any drop prevents scheduled-index interpretation even with matching completed totals (1.0802ms)
+✖ emits the versioned contract with explicit builtin observations rather than inferred zeroes (1.1974ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.7481
+
+✖ failing tests:
+
+test at tests\Experiments\Swoole\load-window.test.cjs:88:1
+✖ emits the versioned contract with explicit builtin observations rather than inferred zeroes (1.1974ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + undefined
+  - 'scheduled-completeness-actual-window-v1'
+
+      at TestContext.<anonymous> (E:\projects\laravel-bloom-gate\tests\Experiments\Swoole\load-window.test.cjs:92:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'scheduled-completeness-actual-window-v1',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,24 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorReportTest
+  ⨯ it admits explained clock-window crossings while retaining nominal…  0.99s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it admits explaine…
+  Failed asserting that two strings are identical.
+  -'PASS'
+  +'INCONCLUSIVE'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:72
+     68▕         'scheduled_started' => 288000, 'scheduled_completed' => 288000,
+     69▕         'warmup_entered' => 6, 'extra_entered' => 0, 'scheduled_outside' => 3,
+     70▕         'scheduled_early' => 0, 'scheduled_late' => 3];
+     71▕     $cell['responses'] = $cell['started_iterations'] = $cell['completed_iterations'] = 288003;
+  ➜  72▕     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('PASS');
+     73▕ });
+     74▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:72
+
+
+  Tests:    1 failed (1 assertions)
+  Duration: 6.28s

@@ -2,6 +2,17 @@
 
 ## Latest continuation
 
+The versioned measurement contract now separates nominal completeness (existing
+±1 count tolerance) from actual-window performance (unchanged ≥95% throughput
+and latency). Mandatory audit/builtin evidence must reconcile; legacy cells
+cannot gain new PASS outcomes. Default qualification requires three complete
+blocks × four delays plus a safe deliberately deficient negative control. See
+the [contract record](verification/2026-10-07-generator-measurement-contract.md).
+Local checks passed 96 measurement tests/110 assertions and five Node tests;
+no new timing ran. Refresh the new PR's final review/CI/merge state before using
+its source. Next: freeze the reviewed source and run one full qualification
+attempt, stopping on first failure. SQL/application comparisons remain separate.
+
 PR #93 adds diagnostic-only cohort crossings with admission unchanged. Frozen
 source `ddffa1d9d3ec9ba901255d48b5e2e294149d2449` ran one short same-budget cell:
 96,001 total, zero drops/early responses, 72,003 actual-window requests versus

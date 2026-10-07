@@ -15,7 +15,8 @@ function observe(starts, supplied = {}) {
   let clock = 0;
   let present = false;
   const context = vm.createContext({
-    __ENV: { RATE: '10', WARMUP: '1', DURATION: '1', PATH_MODE: 'generator', OUTPUT: 'window-test' },
+    __ENV: { RATE: '10', WARMUP: '1', DURATION: '1', PATH_MODE: 'generator', OUTPUT: 'window-test',
+      EXECUTION_TOPOLOGY: 'single-local-constant-arrival' },
     Counter: Metric, Trend: Metric, exec: execution, Date: { now: () => clock },
     http: { get(url) {
       present = url.includes('key=member-');
@@ -82,4 +83,17 @@ test('any drop prevents scheduled-index interpretation even with matching comple
   });
   assert.equal(cell.window_audit.index_interpretation, 'unavailable');
   assert.equal(cell.dropped_iterations, 1);
+});
+
+test('emits the versioned contract with explicit builtin observations rather than inferred zeroes', () => {
+  const { cell } = observe([[0, 100000], [10, 101000]], {
+    iterations: { values: { count: 2 } }, http_reqs: { values: { count: 2 } },
+  });
+  assert.equal(cell.measurement_contract, 'scheduled-completeness-actual-window-v1');
+  assert.equal(cell.execution_topology, 'single-local-constant-arrival');
+  assert.equal(cell.builtin_iterations, 2);
+  assert.equal(cell.builtin_http_requests, 2);
+  const missing = observe([[0, 100000]]).cell;
+  assert.equal(missing.builtin_iterations, null);
+  assert.equal(missing.builtin_http_requests, null);
 });

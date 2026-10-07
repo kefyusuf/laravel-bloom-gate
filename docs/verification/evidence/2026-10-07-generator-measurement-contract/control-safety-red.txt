@@ -1,0 +1,62 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorReportTest
+  ⨯ it rejects a negative control contaminated by errors or missing com… 0.70s
+  ⨯ it rejects a negative control contaminated by errors or missing completion evidence with ('early responses')
+  ⨯ it rejects a negative control contaminated by errors or missing completion evidence with ('missing builtin')
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects a negat…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:173
+    169▕         'early responses' => $run['negative_control']['cell']['total_delay_mismatches'] = 1,
+    170▕         'missing builtin' => $run['negative_control']['cell']['builtin_iterations'] = null,
+    171▕         default => throw new InvalidArgumentException('Unknown negative-control test case.'),
+    172▕     };
+  ➜ 173▕     expect(GeneratorReport::evaluateQualification($run)['verdict'])->toBe('INCONCLUSIVE');
+    174▕ })->with(['errors', 'early responses', 'missing builtin']);
+    175▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:173
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects a negat…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:173
+    169▕         'early responses' => $run['negative_control']['cell']['total_delay_mismatches'] = 1,
+    170▕         'missing builtin' => $run['negative_control']['cell']['builtin_iterations'] = null,
+    171▕         default => throw new InvalidArgumentException('Unknown negative-control test case.'),
+    172▕     };
+  ➜ 173▕     expect(GeneratorReport::evaluateQualification($run)['verdict'])->toBe('INCONCLUSIVE');
+    174▕ })->with(['errors', 'early responses', 'missing builtin']);
+    175▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:173
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects a negat…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:173
+    169▕         'early responses' => $run['negative_control']['cell']['total_delay_mismatches'] = 1,
+    170▕         'missing builtin' => $run['negative_control']['cell']['builtin_iterations'] = null,
+    171▕         default => throw new InvalidArgumentException('Unknown negative-control test case.'),
+    172▕     };
+  ➜ 173▕     expect(GeneratorReport::evaluateQualification($run)['verdict'])->toBe('INCONCLUSIVE');
+    174▕ })->with(['errors', 'early responses', 'missing builtin']);
+    175▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:173
+
+
+  Tests:    3 failed (3 assertions)
+  Duration: 4.17s

@@ -1,0 +1,23 @@
+
+   PASS  Tests\Experiments\Swoole\GeneratorReportTest
+  ✓ it admits only independently counted generation within the fixed en… 0.55s
+  ✓ it rejects scheduled work lost before the receiver can count it
+  ✓ it rejects unobserved resource safety even when every request arrived
+  ✓ it rejects impossible percentile ordering
+  ✓ it rejects a measurement window selected by successful iteration number
+  ✓ it admits explained clock-window crossings while retaining nominal completeness
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('legacy')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('audit')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('lost nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('pending nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unexplained actual')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible extra')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible split')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin mismatch')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('topology')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unavailable index')
+  ✓ it admits qualification only after all four delays pass in three distinct blocks
+
+  Tests:    18 passed (18 assertions)
+  Duration: 4.74s

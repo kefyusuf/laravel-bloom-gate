@@ -1,0 +1,11 @@
+
+   PASS  Tests\Experiments\Swoole\GeneratorReportTest
+  ✓ it admits only independently counted generation within the fixed en… 0.50s
+  ✓ it rejects scheduled work lost before the receiver can count it
+  ✓ it rejects unobserved resource safety even when every request arrived
+  ✓ it rejects impossible percentile ordering
+  ✓ it rejects a measurement window selected by successful iteration number
+  ✓ it admits explained clock-window crossings while retaining nominal completeness
+
+  Tests:    6 passed (6 assertions)
+  Duration: 4.20s

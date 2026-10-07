@@ -40,13 +40,15 @@ function Get-Info {
 function Inspect-Container([string]$Name) {
     return (Invoke-Docker @('inspect', $Name) | ConvertFrom-Json -AsHashtable -NoEnumerate)[0]
 }
-function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$Duration, [string]$Label) {
+function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$Duration, [string]$Label, [int]$Block = 0) {
     $name = "$Task-$Label"
     $before = Get-Info
     $loadCommand = 'while true; do printf "%s " "$(date +%s)"; tr "\n" "," < /sys/fs/cgroup/cpu.stat; printf " memory_current "; cat /sys/fs/cgroup/memory.current; sleep 1; done > /results/${OUTPUT}-generator-cgroup.txt & exec k6 run --paused --address 0.0.0.0:6565 --quiet /fixture/load.js'
     Invoke-Docker ($compose + @('run', '-d', '--entrypoint', 'sh', '--name', "$project-load", '--no-deps',
         '-e', "RATE=$Rate", '-e', "VUS=$Vus", '-e', "CONTROLLED_DELAY_MS=$Delay",
         '-e', "WARMUP=$Warmup", '-e', "DURATION=$Duration", '-e', 'PATH_MODE=generator',
+        '-e', 'EXECUTION_TOPOLOGY=single-local-constant-arrival',
+        '-e', "BLOCK=$Block",
         '-e', "OUTPUT=$name", 'k6', '-c', $loadCommand)) | Out-Null
     $generator = Inspect-Container "$project-load"
     if ($generator.Image -ne $script:k6Image -or $generator.HostConfig.NanoCpus -ne 4000000000 -or $generator.HostConfig.Memory -ne 4294967296) { throw 'Generator image/budget differs from the frozen profile.' }
@@ -162,14 +164,22 @@ try {
     }
     $negative = Invoke-Profile 1200 150 128 2 5 'negative-128-vus'
     if ($negative.cell.dropped_iterations -le 0 -or $negative.evaluation.verdict -ne 'INCONCLUSIVE' -or $negative.evaluation.reasons[0] -ne 'dropped_iterations must be zero.') { throw 'The deliberate fixed-VU deficit was not rejected as lost scheduled work.' }
-    foreach ($delay in @(0, 25, 100, 150)) {
-        $profile = Invoke-Profile 4800 $delay 1024 30 60 "delay-$delay"
-        $profiles += $profile
-        if ($profile.evaluation.verdict -ne 'PASS') { throw ($profile.evaluation.reasons -join ' ') }
+    foreach ($block in 1..3) {
+        foreach ($delay in @(0, 25, 100, 150)) {
+            $profile = Invoke-Profile 4800 $delay 1024 30 60 "block-$block-delay-$delay" $block
+            $profiles += $profile
+            if ($profile.evaluation.verdict -ne 'PASS') { throw ($profile.evaluation.reasons -join ' ') }
+        }
     }
     if ((git rev-parse HEAD) -ne $identity.source_ref -or (git status --porcelain)) { throw 'Qualification sources changed during the run.' }
-    Write-Json (Join-Path $results "$Task-outcome.json") @{ verdict = 'PASS'; identity = $identity; negative_control = $negative; profiles = $profiles;
-        scope = 'Generator qualification only: fixed 4800 RPS, 0/25/100/150 ms, budgets and source. No SQL/application speed result.' }
+    $outcomePath = Join-Path $results "$Task-outcome.json"
+    $outcome = @{ verdict = 'PENDING'; identity = $identity; negative_control = $negative; profiles = $profiles;
+        scope = 'Generator qualification only: three blocks of fixed 4800 RPS, 0/25/100/150 ms, budgets and source. No SQL/application speed result.' }
+    Write-Json $outcomePath $outcome
+    $aggregate = Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', '/fixture/generator-evaluate.php', "/results/$Task-outcome.json", '--qualification')) | ConvertFrom-Json -AsHashtable
+    if ($aggregate.verdict -ne 'PASS') { throw ($aggregate.reasons -join ' ') }
+    $outcome.verdict = 'PASS'
+    Write-Json $outcomePath $outcome
 } catch {
     Write-Json (Join-Path $results "$Task-outcome.json") @{ verdict = 'INCONCLUSIVE'; reasons = @($_.Exception.Message); identity = $identity; negative_control = $negative; profiles = $profiles }
     throw

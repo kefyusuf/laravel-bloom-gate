@@ -1,0 +1,28 @@
+{
+  "baseline_ref": "b1584276af14e93fce3df3eda0e1ff9b27a41914",
+  "scope": "Local checked source digests; no new live timing or qualification",
+  "encoding": "UTF-8/LF; logs omit ANSI and trailing whitespace",
+  "sources": {
+    "tests/Experiments/Swoole/GeneratorReport.php": "f72258ff02f68c59c8bb152640f0458820417b3b83e85868b723e44dc806407d",
+    "tests/Experiments/Swoole/GeneratorReportTest.php": "00a1640e2a492879bea1d194599f9230987e62b9312c7eeb601fcda3b547d7a1",
+    "tests/Experiments/Swoole/generator-evaluate.php": "48ce1d055aeebe9f93a26bacf34e62735342244d4426d9ea6058974128d9e7d6",
+    "tests/Experiments/Swoole/load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+    "tests/Experiments/Swoole/load-window.test.cjs": "a3c0d35256ddabc3a769c62642759214c71b98e97b6910b14c82e84931c1dc7b",
+    "tests/Experiments/Swoole/qualify-generator.ps1": "c35c807118da6fbcc2c1ee2dfd6db46148596b3dadf98f5de0c6e30814fe1967"
+  },
+  "artifacts": {
+    "completeness-red.txt": "1e37ccc9b184c14be479fcf0873ff5ba90c6857d6ab876428cb666966a764406",
+    "completeness-green.txt": "67e052f93a917e306fd2c2f5a2a6a192dfa7723708c2dfc55298f1821a029901",
+    "emission-red.txt": "8327609311d3752092da114c85978ec75007b747baa37327a86ec7447a438f9e",
+    "emission-green.txt": "8be478976874930170bd8046c32c1f7b79dbb367f2d6419becb6baf61c3506f9",
+    "matrix-red.txt": "8a95c9ecdc402fb9bbee0c140eab33847d26898bd88ce5dfc00691ecb0119bd6",
+    "matrix-green.txt": "57080091e4087dbf59aa42a53b21a990f0ba7b2dfd6a046c8ffddaf9434f1a0a",
+    "negative-red.txt": "be44d4dbac72346558f59ede955e968814684f97dbf4c4f3820c2268a9e116ea",
+    "negative-green.txt": "a5be752b6f0b4344e83846c6adb2ed093b5a7ec6d06ce01135c91c158760aa33",
+    "control-safety-red.txt": "1cc198d7f56512f8ae457e0ba6446328450df8be2849897924736d7d62d1971b",
+    "quality-green.txt": "72f077e2a8ecf254d3055ab7b8172d1ae0645b4e281b079c8cbc6b96194aeadd",
+    "node-final.txt": "0ff92e17715ae93a685c76851675055b6d539109fc35ec559fcc2856e93fa1ab",
+    "collector-parser.txt": "d15454030da5e5922b882d316e085ffdeec5427d3f36120c90dcd3b2926c8145",
+    "k6-inspect.txt": "796882c9065c524f779a2b25dec2a43bb88d29b631579cef47d494be1c8d6619"
+  }
+}
