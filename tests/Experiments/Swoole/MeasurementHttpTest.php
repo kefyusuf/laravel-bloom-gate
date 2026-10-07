@@ -70,7 +70,11 @@ afterAll(function (): void {
 it('four real HTTP paths agree on sealed membership across all workers', function (): void {
     $info = measurementHttp('measurement-info');
     expect($info['workers'])->toBe(4);
-    expect($info['manifest']['rows'])->toBe(1000000);
+    $manifest = $info['manifest'];
+    if (! is_array($manifest)) {
+        throw new RuntimeException('Missing measured manifest.');
+    }
+    expect($manifest['rows'])->toBe(1000000);
     expect($info['writer_credentials_present'])->toBeFalse();
     expect($info['shared_bytes'])->toBeGreaterThan(0);
     foreach (['direct', 'bypass', 'redis', 'shared'] as $path) {

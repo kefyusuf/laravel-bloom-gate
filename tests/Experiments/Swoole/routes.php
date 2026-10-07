@@ -27,7 +27,13 @@ if (getenv('SHARED_MEMORY_MEASURE') === '1') {
         $database = SharedSqlSet::database();
         $seal = capabilitySql($database, 'SELECT @@global.read_only, @@global.super_read_only')->fetch(PDO::FETCH_NUM);
         $settings = app(Server::class)->setting;
-        if (! is_array($settings) || ! is_int($settings['worker_num'] ?? null)) {
+        if (! is_array($settings)) {
+            throw new RuntimeException('Measurement worker settings are unavailable.');
+        }
+        $setting = $settings['worker_num'] ?? null;
+        $workers = is_int($setting) || is_string($setting)
+            ? filter_var($setting, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : false;
+        if (! is_int($workers)) {
             throw new RuntimeException('Measurement worker count is unavailable.');
         }
 
@@ -36,7 +42,7 @@ if (getenv('SHARED_MEMORY_MEASURE') === '1') {
             'octane' => InstalledVersions::getPrettyVersion('laravel/octane'),
             'apcu_enabled' => apcu_enabled(), 'seal' => $seal, 'manifest' => $manifest,
             'manifest_digest' => $domain->manifestDigest($state['version']), 'filter' => $domain->name->value(),
-            'workers' => $settings['worker_num'],
+            'workers' => $workers,
             'shared_bytes' => $domain->chunks->getMemorySize() + $domain->control->getMemorySize() + $domain->manifests->getMemorySize(),
             'writer_credentials_present' => getenv('MYSQL_ROOT_PASSWORD') !== false
                 || getenv('SHARED_MEMORY_SQL_ROOT_PASSWORD') !== false || getenv('DEMO_SEED_PASSWORD') !== false];
