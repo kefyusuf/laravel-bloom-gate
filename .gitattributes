@@ -10,3 +10,4 @@
 /phpstan.neon.dist export-ignore
 /pint.json export-ignore
 /tests/Experiments/Swoole/*.sh text eol=lf
+/tests/Experiments/Swoole/K6Boundary/*.patch text eol=lf whitespace=-space-before-tab

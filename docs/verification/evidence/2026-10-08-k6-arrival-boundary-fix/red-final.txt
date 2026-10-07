@@ -1,0 +1,56 @@
+=== RUN   TestBoundaryTruncationDoesNotOfferTerminalSlot
+    lbg_arrival_boundary_test.go:132:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:132
+            Error:          Not equal:
+                            expected: 4800
+                            actual  : 4801
+            Test:           TestBoundaryTruncationDoesNotOfferTerminalSlot
+            Messages:       the one-second open schedule must offer exactly 4800 slots
+--- FAIL: TestBoundaryTruncationDoesNotOfferTerminalSlot (0.00s)
+=== RUN   TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+    lbg_arrival_boundary_test.go:138:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:138
+            Error:          Not equal:
+                            expected: 4800
+                            actual  : 4806
+            Test:           TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+            Messages:       late cancellation delivery must not extend the nominal open schedule
+--- FAIL: TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots (0.00s)
+=== RUN   TestBoundaryFullNominalScheduleDoesNotExtendOnDelayedCancellation
+    lbg_arrival_boundary_test.go:144:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:144
+            Error:          Not equal:
+                            expected: 432000
+                            actual  : 432006
+            Test:           TestBoundaryFullNominalScheduleDoesNotExtendOnDelayedCancellation
+            Messages:       the full nominal schedule must not offer additional terminal slots
+--- FAIL: TestBoundaryFullNominalScheduleDoesNotExtendOnDelayedCancellation (0.12s)
+=== RUN   TestBoundaryCancellationAfterTimerSelectionStopsDispatch
+    lbg_arrival_boundary_test.go:152:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:152
+            Error:          Not equal:
+                            expected: 3
+                            actual  : 5
+            Test:           TestBoundaryCancellationAfterTimerSelectionStopsDispatch
+            Messages:       a selected timer must not dispatch work after regular cancellation
+--- FAIL: TestBoundaryCancellationAfterTimerSelectionStopsDispatch (0.00s)
+=== RUN   TestBoundaryFractionalScheduleIncludesLastEligibleSlot
+--- PASS: TestBoundaryFractionalScheduleIncludesLastEligibleSlot (0.00s)
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/0:1/2
+    lbg_arrival_boundary_test.go:167:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:167
+            Error:          Not equal:
+                            expected: 5
+                            actual  : 6
+            Test:           TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/0:1/2
+            Messages:       each half must own five of the ten global slots
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/1/2:1
+--- FAIL: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule (0.00s)
+    --- FAIL: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/0:1/2 (0.00s)
+    --- PASS: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/1/2:1 (0.00s)
+=== RUN   TestBoundaryUnavailableVUsRemainDroppedWork
+--- PASS: TestBoundaryUnavailableVUsRemainDroppedWork (0.00s)
+FAIL
+FAIL    go.k6.io/k6/lib/executor    1.943s
+FAIL

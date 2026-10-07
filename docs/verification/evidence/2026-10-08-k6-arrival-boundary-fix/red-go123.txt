@@ -1,0 +1,6 @@
+go: downloading go1.23.7 (windows/amd64)
+# go.k6.io/k6/lib/executor
+# [go.k6.io/k6/lib/executor]
+vet.exe: open lib\executor\lbg_arrival_boundary_test.go: The system cannot find the file specified.
+FAIL    go.k6.io/k6/lib/executor [build failed]
+FAIL

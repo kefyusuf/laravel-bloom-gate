@@ -1,0 +1,8 @@
+=== RUN   TestBoundaryTruncationDoesNotOfferTerminalSlot
+--- PASS: TestBoundaryTruncationDoesNotOfferTerminalSlot (0.00s)
+=== RUN   TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+--- PASS: TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots (0.00s)
+=== RUN   TestBoundaryCancellationAfterTimerSelectionStopsDispatch
+--- PASS: TestBoundaryCancellationAfterTimerSelectionStopsDispatch (0.00s)
+PASS
+ok      go.k6.io/k6/lib/executor    5.865s

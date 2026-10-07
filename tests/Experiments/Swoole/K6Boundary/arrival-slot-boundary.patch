@@ -1,0 +1,41 @@
+diff --git a/lib/executor/constant_arrival_rate.go b/lib/executor/constant_arrival_rate.go
+--- a/lib/executor/constant_arrival_rate.go
++++ b/lib/executor/constant_arrival_rate.go
+@@ -194,6 +194,15 @@
+ func (car ConstantArrivalRate) Run(parentCtx context.Context, out chan<- metrics.SampleContainer) (err error) {
+ 	gracefulStop := car.config.GetGracefulStop()
+ 	duration := car.config.Duration.TimeDuration()
++	// Bound the global half-open schedule independently of timer delivery and
++	// integer-nanosecond period truncation. Keep striped offsets and drop accounting.
++	slotCount := new(big.Int).Mul(big.NewInt(car.config.Rate.Int64), big.NewInt(int64(duration)))
++	slotCount.Add(slotCount, big.NewInt(int64(car.config.TimeUnit.TimeDuration())-1))
++	slotCount.Quo(slotCount, big.NewInt(int64(car.config.TimeUnit.TimeDuration())))
++	if !slotCount.IsInt64() {
++		return fmt.Errorf("constant arrival schedule exceeds the supported slot count")
++	}
++	slotLimit := slotCount.Int64()
+ 	preAllocatedVUs := car.config.GetPreAllocatedVUs(car.executionState.ExecutionTuple)
+ 	maxVUs := car.config.GetMaxVUs(car.executionState.ExecutionTuple)
+ 	// TODO: refactor and simplify
+@@ -324,11 +333,14 @@
+ 	droppedIterationMetric := car.executionState.Test.BuiltinMetrics.DroppedIterations
+ 	shownWarning := false
+ 	metricTags := car.getMetricTags(nil)
+-	for li, gi := 0, start; ; li, gi = li+1, gi+offsets[li%len(offsets)] {
++	for li, gi := 0, start; gi >= 0 && gi < slotLimit; li, gi = li+1, gi+offsets[li%len(offsets)] {
+ 		t := notScaledTickerPeriod*time.Duration(gi) - time.Since(startTime)
+ 		timer.Reset(t)
+ 		select {
+ 		case <-timer.C:
++			if regDurationCtx.Err() != nil {
++				return nil
++			}
+ 			if vusPool.TryRunIteration() {
+ 				continue
+ 			}
+@@ -366,4 +378,5 @@
+ 			return nil
+ 		}
+ 	}
++	return nil
+ }

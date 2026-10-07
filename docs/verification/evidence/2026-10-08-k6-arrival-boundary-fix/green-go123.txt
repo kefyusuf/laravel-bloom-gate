@@ -1,0 +1,66 @@
+=== RUN   TestBoundaryTruncationDoesNotOfferTerminalSlot
+--- PASS: TestBoundaryTruncationDoesNotOfferTerminalSlot (0.00s)
+=== RUN   TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+--- PASS: TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots (0.00s)
+=== RUN   TestBoundaryFullNominalScheduleDoesNotExtendOnDelayedCancellation
+--- PASS: TestBoundaryFullNominalScheduleDoesNotExtendOnDelayedCancellation (0.12s)
+=== RUN   TestBoundaryCancellationAfterTimerSelectionStopsDispatch
+--- PASS: TestBoundaryCancellationAfterTimerSelectionStopsDispatch (0.00s)
+=== RUN   TestBoundaryFractionalScheduleIncludesLastEligibleSlot
+--- PASS: TestBoundaryFractionalScheduleIncludesLastEligibleSlot (0.00s)
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/0:1/2
+=== RUN   TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/1/2:1
+--- PASS: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule (0.00s)
+    --- PASS: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/0:1/2 (0.00s)
+    --- PASS: TestBoundaryStripedSegmentsPartitionTheGlobalSchedule/1/2:1 (0.00s)
+=== RUN   TestBoundaryUnavailableVUsRemainDroppedWork
+--- PASS: TestBoundaryUnavailableVUsRemainDroppedWork (0.00s)
+PASS
+ok      go.k6.io/k6/lib/executor    1.483s
+=== RUN   TestConstantArrivalRateRunNotEnoughAllocatedVUsWarn
+=== PAUSE TestConstantArrivalRateRunNotEnoughAllocatedVUsWarn
+=== RUN   TestConstantArrivalRateRunCorrectRate
+=== PAUSE TestConstantArrivalRateRunCorrectRate
+=== RUN   TestConstantArrivalRateRunCorrectTiming
+    constant_arrival_rate_test.go:118: this test is very flaky on the Windows GitHub Action runners...
+--- SKIP: TestConstantArrivalRateRunCorrectTiming (0.00s)
+=== RUN   TestConstantArrivalRateDroppedIterations
+=== PAUSE TestConstantArrivalRateDroppedIterations
+=== RUN   TestConstantArrivalRateGlobalIters
+=== PAUSE TestConstantArrivalRateGlobalIters
+=== RUN   TestConstantArrivalRateActiveVUs
+=== PAUSE TestConstantArrivalRateActiveVUs
+=== CONT  TestConstantArrivalRateRunNotEnoughAllocatedVUsWarn
+=== CONT  TestConstantArrivalRateGlobalIters
+=== RUN   TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_0:1/4
+=== PAUSE TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_0:1/4
+=== RUN   TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_1/4:3/4
+=== PAUSE TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_1/4:3/4
+=== RUN   TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_3/4:1
+=== CONT  TestConstantArrivalRateDroppedIterations
+=== PAUSE TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_3/4:1
+=== CONT  TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_0:1/4
+=== CONT  TestConstantArrivalRateRunCorrectRate
+=== CONT  TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_1/4:3/4
+=== CONT  TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_3/4:1
+=== CONT  TestConstantArrivalRateActiveVUs
+--- PASS: TestConstantArrivalRateDroppedIterations (0.95s)
+--- PASS: TestConstantArrivalRateActiveVUs (0.95s)
+--- PASS: TestConstantArrivalRateGlobalIters (0.00s)
+    --- PASS: TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_3/4:1 (0.85s)
+    --- PASS: TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_1/4:3/4 (0.95s)
+    --- PASS: TestConstantArrivalRateGlobalIters/0,1/4,3/4,1_0:1/4 (1.00s)
+--- PASS: TestConstantArrivalRateRunCorrectRate (5.20s)
+--- PASS: TestConstantArrivalRateRunNotEnoughAllocatedVUsWarn (5.64s)
+PASS
+ok      go.k6.io/k6/lib/executor    6.981s
+k6-boundary.exe v1.3.0 (commit/5870e99ae8, go1.23.7, windows/amd64)
+{
+  "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+  "mode": "Patched",
+  "go": "go version go1.23.7 windows/amd64",
+  "runtime_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+  "binary_sha256": "c4ba93cf93b063bcd05b6b913669c88752fea797c4662a78a54627fa7ca1e0da",
+  "instrumented_clock": false
+}
