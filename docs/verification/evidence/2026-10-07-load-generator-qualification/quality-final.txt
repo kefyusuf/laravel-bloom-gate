@@ -1,0 +1,77 @@
+
+  ..
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    PASS   ........................................................... 2 files
+
+Note: Using configuration file /app/phpstan.neon.dist.
+   0/385 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0% 385/385 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+
+ [OK] No errors
+
+Composer could not detect the root package (kefyusuf/laravel-bloom-gate) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version
+
+   PASS  Tests\Experiments\Swoole\MeasurementReportTest
+  ✓ it accepts a complete paired screen only when all three runs beat S… 0.44s
+  ✓ it rejects a generator-limited calibration even when the paired tim… 0.02s
+  ✓ it rejects a generator-limited calibration even when the paired timings would pass with ([0, true])
+  ✓ it rejects incomplete or biased measurement evidence with ('source')
+  ✓ it rejects incomplete or biased measurement evidence with ('images')
+  ✓ it rejects incomplete or biased measurement evidence with ('rate')
+  ✓ it rejects incomplete or biased measurement evidence with ('workers')
+  ✓ it rejects incomplete or biased measurement evidence with ('unknown')
+  ✓ it rejects incomplete or biased measurement evidence with ('drops')
+  ✓ it rejects incomplete or biased measurement evidence with ('integrity')
+  ✓ it rejects incomplete or biased measurement evidence with ('samples')
+  ✓ it rejects incomplete or biased measurement evidence with ('cell')
+  ✓ it rejects incomplete or biased measurement evidence with ('duplicate')
+  ✓ it rejects incomplete or biased measurement evidence with ('dataset')
+  ✓ it rejects incomplete or biased measurement evidence with ('warmup')
+  ✓ it rejects incomplete or biased measurement evidence with ('duration')
+  ✓ it rejects incomplete or biased measurement evidence with ('parity')
+  ✓ it rejects incomplete or biased measurement evidence with ('negative')
+  ✓ it rejects incomplete or biased measurement evidence with ('errors')
+  ✓ it rejects incomplete or biased measurement evidence with ('saturation')
+  ✓ it rejects incomplete or biased measurement evidence with ('drift')
+  ✓ it rejects incomplete or biased measurement evidence with ('distribution')
+  ✓ it rejects incomplete or biased measurement evidence with ('capacity')
+  ✓ it rejects incomplete or biased measurement evidence with ('nan')
+  ✓ it rejects incomplete or biased measurement evidence with ('negative-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('fractional-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('boolean')
+  ✓ it rejects incomplete or biased measurement evidence with ('quantiles')
+  ✓ it rejects incomplete or biased measurement evidence with ('rps-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('path')
+  ✓ it rejects incomplete or biased measurement evidence with ('redis-hints')
+  ✓ it rejects incomplete or biased measurement evidence with ('redis-script')
+  ✓ it rejects incomplete or biased measurement evidence with ('order')
+  ✓ it rejects incomplete or biased measurement evidence with ('window')
+  ✓ it rejects incomplete or biased measurement evidence with ('warmup-mismatch')
+  ✓ it rejects incomplete or biased measurement evidence with ('overcount')
+  ✓ it rejects incomplete or biased measurement evidence with ('declared-load')
+  ✓ it rejects incomplete or biased measurement evidence with ('started')
+  ✓ it rejects incomplete or biased measurement evidence with ('unfinished')
+  ✓ it rejects incomplete or biased measurement evidence with ('completed')
+  ✓ it rejects incomplete or biased measurement evidence with ('unaccounted')
+  ✓ it rejects incomplete or biased measurement evidence with ('elapsed')
+  ✓ it rejects incomplete or biased measurement evidence with ('zero-rps')
+  ✓ it rejects incomplete or biased measurement evidence with ('sql-underload')
+  ✓ it includes the exact latency and control-drift boundaries
+  ✓ it rejects a malformed root without throwing with (null)
+  ✓ it rejects a malformed root without throwing with ([])
+  ✓ it rejects a malformed root without throwing with ('not-an-object')
+  ✓ it rejects a malformed root without throwing with (42)
+  ✓ it rejects a SQL-only win as a Redis-removal benefit
+  ✓ it requires throughput parity in every repetition
+  ✓ it uses observed counts and time instead of rounded RPS at the throughput boundary
+  ✓ it includes exact ninety-five percent observed throughput
+
+   PASS  Tests\Experiments\Swoole\GeneratorReportTest
+  ✓ it admits only independently counted generation within the fixed en… 0.13s
+  ✓ it rejects scheduled work lost before the receiver can count it
+  ✓ it rejects unobserved resource safety even when every request arrived
+  ✓ it rejects impossible percentile ordering
+
+  Tests:    57 passed (59 assertions)
+  Duration: 4.24s

@@ -1,0 +1,23 @@
+
+  ...⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorReportTest > it rejects…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at /package/tests/Experiments/Swoole/GeneratorReportTest.php:52
+     48▕ it('rejects impossible percentile ordering', function (): void {
+     49▕     $cell = validGeneratorCell();
+     50▕     $cell['p50_ms'] = 250;
+     51▕     $cell['p99_ms'] = 151;
+  ➜  52▕     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
+     53▕ });
+     54▕
+
+  1   /package/tests/Experiments/Swoole/GeneratorReportTest.php:52
+
+
+  Tests:    1 failed, 3 passed (4 assertions)
+  Duration: 4.70s

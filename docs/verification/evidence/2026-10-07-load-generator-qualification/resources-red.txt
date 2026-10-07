@@ -1,0 +1,23 @@
+
+  ..⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects unobser…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:45
+     41▕
+     42▕ it('rejects unobserved resource safety even when every request arrived', function (): void {
+     43▕     $cell = validGeneratorCell();
+     44▕     unset($cell['resources']);
+  ➜  45▕     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
+     46▕ });
+     47▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:45
+
+
+  Tests:    1 failed, 2 passed (3 assertions)
+  Duration: 4.75s

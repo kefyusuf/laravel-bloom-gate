@@ -1,0 +1,23 @@
+
+  .⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects schedul…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:39
+     35▕
+     36▕ it('rejects scheduled work lost before the receiver can count it', function (): void {
+     37▕     $cell = validGeneratorCell();
+     38▕     $cell['dropped_iterations'] = 1;
+  ➜  39▕     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
+     40▕ });
+     41▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:39
+
+
+  Tests:    1 failed, 1 passed (2 assertions)
+  Duration: 4.98s

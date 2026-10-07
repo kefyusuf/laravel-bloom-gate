@@ -1,0 +1,50 @@
+[
+  {
+    "BlockIO": "8.57MB / 0B",
+    "CPUPerc": "98.31%",
+    "Container": "lbg-generator-20261007-qualify-load",
+    "ID": "863d85441636",
+    "MemPerc": "1.30%",
+    "MemUsage": "53.22MiB / 4GiB",
+    "Name": "lbg-generator-20261007-qualify-load",
+    "NetIO": "244kB / 150kB",
+    "PIDs": "17",
+    "epoch_ms": 1791384238568
+  },
+  {
+    "BlockIO": "1.82MB / 0B",
+    "CPUPerc": "12.71%",
+    "Container": "lbg-generator-20261007-qualify-php-1",
+    "ID": "525592643fc3",
+    "MemPerc": "6.19%",
+    "MemUsage": "15.85MiB / 256MiB",
+    "Name": "lbg-generator-20261007-qualify-php-1",
+    "NetIO": "151kB / 243kB",
+    "PIDs": "10",
+    "epoch_ms": 1791384238573
+  },
+  {
+    "BlockIO": "8.57MB / 0B",
+    "CPUPerc": "37.77%",
+    "Container": "lbg-generator-20261007-qualify-load",
+    "ID": "863d85441636",
+    "MemPerc": "1.62%",
+    "MemUsage": "66.32MiB / 4GiB",
+    "Name": "lbg-generator-20261007-qualify-load",
+    "NetIO": "1.68MB / 791kB",
+    "PIDs": "17",
+    "epoch_ms": 1791384242959
+  },
+  {
+    "BlockIO": "1.82MB / 0B",
+    "CPUPerc": "17.46%",
+    "Container": "lbg-generator-20261007-qualify-php-1",
+    "ID": "525592643fc3",
+    "MemPerc": "6.29%",
+    "MemUsage": "16.1MiB / 256MiB",
+    "Name": "lbg-generator-20261007-qualify-php-1",
+    "NetIO": "793kB / 1.68MB",
+    "PIDs": "10",
+    "epoch_ms": 1791384242959
+  }
+]

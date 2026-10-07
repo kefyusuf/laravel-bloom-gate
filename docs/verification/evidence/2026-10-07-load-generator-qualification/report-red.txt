@@ -1,0 +1,20 @@
+
+  ⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it admits o…  Error
+  Class "Kefyusuf\BloomGate\Tests\Experiments\Swoole\GeneratorReport" not found
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:33
+     29▕             'receiver_restarts' => 0, 'receiver_running' => true]];
+     30▕ }
+     31▕
+     32▕ it('admits only independently counted generation within the fixed envelope', function (): void {
+  ➜  33▕     expect(GeneratorReport::evaluateCell(validGeneratorCell())['verdict'])->toBe('PASS');
+     34▕ });
+     35▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:33
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 4.12s
