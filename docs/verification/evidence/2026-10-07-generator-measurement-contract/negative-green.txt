@@ -1,0 +1,34 @@
+
+   PASS  Tests\Experiments\Swoole\GeneratorReportTest
+  ✓ it admits only independently counted generation within the fixed en… 0.47s
+  ✓ it rejects scheduled work lost before the receiver can count it
+  ✓ it rejects unobserved resource safety even when every request arrived
+  ✓ it rejects impossible percentile ordering
+  ✓ it rejects a measurement window selected by successful iteration number
+  ✓ it admits explained clock-window crossings while retaining nominal completeness
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('legacy')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('audit')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('lost nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('pending nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unexplained actual')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible extra')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible split')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin mismatch')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('topology')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unavailable index')
+  ✓ it admits qualification only after all four delays pass in three distinct blocks
+  ✓ it rejects qualification without its deliberately deficient negative control
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('partial')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('duplicate cell')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('duplicate artifact')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('negative reused')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('source')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('budget')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('failed cell')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('invalid block')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('invalid delay')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('control passed')
+
+  Tests:    29 passed (29 assertions)
+  Duration: 3.81s

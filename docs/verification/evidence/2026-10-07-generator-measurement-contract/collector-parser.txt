@@ -1,0 +1,1 @@
+PowerShell parser PASS; three block collector prepared; no timing invoked

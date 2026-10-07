@@ -1,0 +1,21 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorReportTest
+  ⨯ it admits qualification only after all four delays pass in three di… 0.54s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it admits q…  Error
+  Call to undefined method Kefyusuf\BloomGate\Tests\Experiments\Swoole\GeneratorReport::evaluateQualification()
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:126
+    122▕     return ['identity' => $identity, 'profiles' => $profiles];
+    123▕ }
+    124▕
+    125▕ it('admits qualification only after all four delays pass in three distinct blocks', function (): void {
+  ➜ 126▕     expect(GeneratorReport::evaluateQualification(validGeneratorQualification())['verdict'])->toBe('PASS');
+    127▕ });
+    128▕
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:126
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 4.15s

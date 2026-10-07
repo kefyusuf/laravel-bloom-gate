@@ -11,7 +11,10 @@ if ($body === false) {
     throw new RuntimeException('Cell is unavailable.');
 }
 try {
-    $result = GeneratorReport::evaluateCell(json_decode($body, true, 512, JSON_THROW_ON_ERROR));
+    $input = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+    $result = ($argv[2] ?? null) === '--qualification'
+        ? GeneratorReport::evaluateQualification($input)
+        : GeneratorReport::evaluateCell($input);
 } catch (JsonException) {
     $result = ['verdict' => 'INCONCLUSIVE', 'reasons' => ['Malformed JSON.']];
 }
