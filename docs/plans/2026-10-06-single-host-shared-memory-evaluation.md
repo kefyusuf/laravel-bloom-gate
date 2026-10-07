@@ -149,8 +149,12 @@ Deliverable: a reproducible decision report, not a production driver.
 
 The first Task 3 increment delivers only the tested report contract; see the
 [contract record](../verification/2026-10-07-measurement-report-contract.md).
-The load generator, equal HTTP paths and live performance screen remain pending.
-- [ ] Observe those failures; implement load.js/measure.php and the identical
+The next increment's real collector and equal paths are in PR #90. The actual
+attempt ended INCONCLUSIVE at generator-limited SQL calibration; see the
+[live record](../verification/2026-10-07-swoole-live-screen.md). No paired speed
+comparison, conditional matrix, PostgreSQL confirmation or soak was completed.
+The single targeted metadata correction was used; no third attempt was run.
+- [x] Observe those failures; implement load.js/measure.php and the identical
   HTTP direct/bypass/Redis/local paths. Redis retains live authorization; record
   whether APCu descriptor hints are actually available in this runtime.
 - [ ] Calibrate direct-SQL capacity and run the initial MySQL screen: 90% absent,

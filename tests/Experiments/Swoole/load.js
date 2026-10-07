@@ -15,6 +15,8 @@ const finished = new Trend('measured_finished_ms', true);
 const measuredStart = new Trend('measured_start_epoch_ms');
 
 export const options = {
+  // Do not create a time series for each synthetic lookup key.
+  systemTags: ['status', 'method', 'name', 'group', 'check', 'error', 'error_code', 'scenario', 'expected_response'],
   scenarios: { arrival: { executor: 'constant-arrival-rate', rate, timeUnit: '1s',
     duration: `${warmup + duration}s`, preAllocatedVUs: 128, maxVUs: 128, gracefulStop: '15s' } },
   summaryTrendStats: ['min', 'med', 'p(95)', 'p(99)', 'max'],
@@ -32,7 +34,7 @@ export default function () {
     counters.started_iterations.add(1);
     measuredStart.add(Date.now());
   }
-  const reply = http.get(`http://php:8000/measure/${path}?key=${key}`, { timeout: '10s' });
+  const reply = http.get(`http://php:8000/measure/${path}?key=${key}`, { timeout: '10s', tags: { name: `measure/${path}` } });
   if (!measured) return;
   counters.completed_iterations.add(1);
   counters.responses.add(1);

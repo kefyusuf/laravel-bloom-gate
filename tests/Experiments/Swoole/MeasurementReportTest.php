@@ -45,6 +45,17 @@ it('accepts a complete paired screen only when all three runs beat SQL and Redis
     expect(MeasurementReport::evaluate(validMeasurementReport())['verdict'])->toBe('GO');
 });
 
+it('rejects a generator-limited calibration even when the paired timings would pass', function (array $limit): void {
+    $report = validMeasurementReport();
+    $report['calibration'] = [$limit];
+    $result = MeasurementReport::evaluate($report);
+    expect($result['verdict'])->toBe('INCONCLUSIVE');
+    expect($result['reasons'])->toContain('Generator-limited calibration cannot establish SQL capacity.');
+})->with([
+    [['dropped_iterations' => 1, 'generator_saturated' => false]],
+    [['dropped_iterations' => 0, 'generator_saturated' => true]],
+]);
+
 it('rejects incomplete or biased measurement evidence', function (string $defect): void {
     $report = validMeasurementReport();
     switch ($defect) {

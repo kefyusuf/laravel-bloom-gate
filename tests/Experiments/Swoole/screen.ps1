@@ -56,6 +56,7 @@ function Invoke-Cell([int]$Rate, [int]$Warmup, [int]$Duration, [int]$Block, [str
         $running = Invoke-Docker @('inspect', '--format', '{{.State.Running}}', "$project-load")
     } while ($running -eq 'true')
     $exitCode = Invoke-Docker @('inspect', '--format', '{{.State.ExitCode}}', "$project-load")
+    $samples | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $results "$name-resources.json")
     Invoke-Docker @('logs', "$project-load") | Set-Content (Join-Path $results "$name.log")
     Invoke-Docker @('rm', "$project-load") | Out-Null
     if ($exitCode -ne '0') { throw 'Load generator failed; no performance verdict may be inferred.' }
@@ -77,6 +78,8 @@ function Invoke-Cell([int]$Rate, [int]$Warmup, [int]$Duration, [int]$Block, [str
 }
 
 $owned = $false
+$calibration = @()
+$cells = @()
 try {
     if (-not $OwnedPreparedStack) {
         if (& $docker ps -aq --filter "label=com.docker.compose.project=$project") { throw 'Refusing to reuse an existing stack.' }
@@ -158,7 +161,9 @@ try {
     foreach ($rate in @(100, 200, 400, 800, 1200, 1600, 2400, 3200, 4800)) {
         $cell = Invoke-Cell $rate 10 20 0 'direct' "calibration-$rate"
         $calibration += $cell
-        if ($cell.errors -gt 0 -or $cell.parity_failures -gt 0 -or $cell.dropped_iterations -gt 0 -or $cell.generator_saturated -or $cell.rps -lt $rate * 0.95) { break }
+        if ($cell.dropped_iterations -gt 0 -or $cell.generator_saturated) { throw 'Generator-limited calibration cannot establish SQL capacity.' }
+        if ($cell.errors -gt 0 -or $cell.parity_failures -gt 0) { throw 'Calibration errors prevent a performance conclusion.' }
+        if ($cell.rps -lt $rate * 0.95) { break }
         $capacity = $rate
     }
     if ($capacity -eq 0 -or $capacity -eq 4800) { throw 'SQL sustainable capacity was not bounded.' }
@@ -183,7 +188,7 @@ try {
     if ($owned) {
         & $docker @compose exec -T php sh -c 'cat /experiment/measurement-server.log 2>/dev/null || true' | Set-Content (Join-Path $results "$Task-server.log")
     }
-    [ordered]@{ verdict = 'INCONCLUSIVE'; reasons = @($_.Exception.Message); source_ref = (git rev-parse HEAD); calibration = @($calibration); completed_cells = @($cells) } | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $results "$Task-aborted.json")
+    [ordered]@{ verdict = 'INCONCLUSIVE'; reasons = @($_.Exception.Message); source_ref = (git rev-parse HEAD); identity = $script:identity; runtime_observations = $info; observed_image_ids = $script:imageIds; fixture_sources = $sources; calibration = @($calibration); completed_cells = @($cells) } | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $results "$Task-aborted.json")
     throw
 } finally {
     if ($owned) {

@@ -27,6 +27,16 @@ final class MeasurementReport
     {
         $identity = self::object($report['identity'] ?? null);
         self::identity($identity);
+        if (array_key_exists('calibration', $report)) {
+            $calibration = $report['calibration'];
+            self::require(is_array($calibration) && array_is_list($calibration) && $calibration !== [], 'Calibration observations are required.');
+            foreach ($calibration as $observation) {
+                $observed = self::object($observation);
+                self::require(self::count($observed, 'dropped_iterations') === 0
+                    && ($observed['generator_saturated'] ?? null) === false,
+                    'Generator-limited calibration cannot establish SQL capacity.');
+            }
+        }
         $capacity = self::count($report, 'sql_capacity');
         $rate = (int) floor($capacity * 0.8);
         self::require($rate > 0, 'SQL capacity must permit a positive screen rate.');

@@ -85,6 +85,8 @@ HTTP quantiles, Redis wire counts and CPU/RSS observations under
 same task; it must never adopt another stack.
 
 A fixed SQL arrival-rate ladder establishes a conservative tested capacity.
+Generator saturation or dropped iterations during calibration aborts the attempt;
+the preceding passing rate cannot be treated as a SQL capacity boundary.
 The initial screen runs at 80% of that capacity with 90% absent inputs, three
 rotated blocks and SQL controls before/after each block. Each cell includes
 30 seconds of warmup, at least 60 seconds of measurement and 10,000 responses.
