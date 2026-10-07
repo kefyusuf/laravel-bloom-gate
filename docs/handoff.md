@@ -2,6 +2,18 @@
 
 ## Latest continuation
 
+PR #93 adds diagnostic-only cohort crossings with admission unchanged. Frozen
+source `ddffa1d9d3ec9ba901255d48b5e2e294149d2449` ran one short same-budget cell:
+96,001 total, zero drops/early responses, 72,003 actual-window requests versus
+72,000 nominal cohort. Six warmup crossings minus three late measurement
+starts explain this new net +3. Outcome remains **DIAGNOSTIC_ONLY**; PR92's +2
+cannot be retrospectively decomposed. See the
+[boundary audit](verification/2026-10-07-generator-window-boundary-audit.md).
+Next, explicitly separate scheduled completeness from actual-window performance
+in a reviewed measurement contract before any full qualification. Do not widen
+the current ±1 guard or infer a clock fault. Refresh PR #93's final review/CI/
+merge state before relying on delivery. No full matrix/application run occurred.
+
 PR #92 implements monotonic response deadlines, actual-time measurement windows
 and bounded observer coverage. One frozen short diagnostic at measured source
 `072e9b8373d8dcbd651cc50915349d5cdf5ffeb2` completed 96,001 requests with

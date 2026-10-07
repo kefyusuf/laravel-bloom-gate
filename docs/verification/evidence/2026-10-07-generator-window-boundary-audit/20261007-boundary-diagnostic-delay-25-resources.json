@@ -1,0 +1,122 @@
+[
+  {
+    "BlockIO": "1.5MB / 0B",
+    "CPUPerc": "155.86%",
+    "Container": "lbg-generator-20261007-boundary-load",
+    "ID": "c4015b68f090",
+    "MemPerc": "9.29%",
+    "MemUsage": "380.6MiB / 4GiB",
+    "Name": "lbg-generator-20261007-boundary-load",
+    "NetIO": "2.14MB / 1.65MB",
+    "PIDs": "19",
+    "epoch_ms": 1791397658259
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "80.80%",
+    "Container": "lbg-generator-20261007-boundary-php-1",
+    "ID": "c54e79a3b022",
+    "MemPerc": "11.90%",
+    "MemUsage": "30.47MiB / 256MiB",
+    "Name": "lbg-generator-20261007-boundary-php-1",
+    "NetIO": "1.65MB / 2.14MB",
+    "PIDs": "11",
+    "epoch_ms": 1791397658262
+  },
+  {
+    "BlockIO": "1.5MB / 0B",
+    "CPUPerc": "167.29%",
+    "Container": "lbg-generator-20261007-boundary-load",
+    "ID": "c4015b68f090",
+    "MemPerc": "9.67%",
+    "MemUsage": "395.9MiB / 4GiB",
+    "Name": "lbg-generator-20261007-boundary-load",
+    "NetIO": "8.94MB / 6.72MB",
+    "PIDs": "19",
+    "epoch_ms": 1791397662628
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "69.74%",
+    "Container": "lbg-generator-20261007-boundary-php-1",
+    "ID": "c54e79a3b022",
+    "MemPerc": "12.00%",
+    "MemUsage": "30.71MiB / 256MiB",
+    "Name": "lbg-generator-20261007-boundary-php-1",
+    "NetIO": "6.72MB / 8.93MB",
+    "PIDs": "11",
+    "epoch_ms": 1791397662628
+  },
+  {
+    "BlockIO": "1.5MB / 0B",
+    "CPUPerc": "178.84%",
+    "Container": "lbg-generator-20261007-boundary-load",
+    "ID": "c4015b68f090",
+    "MemPerc": "10.59%",
+    "MemUsage": "433.9MiB / 4GiB",
+    "Name": "lbg-generator-20261007-boundary-load",
+    "NetIO": "15.7MB / 11.8MB",
+    "PIDs": "19",
+    "epoch_ms": 1791397667990
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "74.08%",
+    "Container": "lbg-generator-20261007-boundary-php-1",
+    "ID": "c54e79a3b022",
+    "MemPerc": "12.11%",
+    "MemUsage": "31.01MiB / 256MiB",
+    "Name": "lbg-generator-20261007-boundary-php-1",
+    "NetIO": "12.9MB / 17.3MB",
+    "PIDs": "11",
+    "epoch_ms": 1791397667990
+  },
+  {
+    "BlockIO": "1.5MB / 0B",
+    "CPUPerc": "175.28%",
+    "Container": "lbg-generator-20261007-boundary-load",
+    "ID": "c4015b68f090",
+    "MemPerc": "10.82%",
+    "MemUsage": "443.3MiB / 4GiB",
+    "Name": "lbg-generator-20261007-boundary-load",
+    "NetIO": "24MB / 18MB",
+    "PIDs": "19",
+    "epoch_ms": 1791397672340
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "74.13%",
+    "Container": "lbg-generator-20261007-boundary-php-1",
+    "ID": "c54e79a3b022",
+    "MemPerc": "12.05%",
+    "MemUsage": "30.84MiB / 256MiB",
+    "Name": "lbg-generator-20261007-boundary-php-1",
+    "NetIO": "18MB / 24MB",
+    "PIDs": "11",
+    "epoch_ms": 1791397672340
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "0.00%",
+    "Container": "lbg-generator-20261007-boundary-load",
+    "ID": "c4015b68f090",
+    "MemPerc": "0.00%",
+    "MemUsage": "0B / 0B",
+    "Name": "lbg-generator-20261007-boundary-load",
+    "NetIO": "0B / 0B",
+    "PIDs": "0",
+    "epoch_ms": 1791397677707
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "75.73%",
+    "Container": "lbg-generator-20261007-boundary-php-1",
+    "ID": "c54e79a3b022",
+    "MemPerc": "12.00%",
+    "MemUsage": "30.71MiB / 256MiB",
+    "Name": "lbg-generator-20261007-boundary-php-1",
+    "NetIO": "23.1MB / 30.8MB",
+    "PIDs": "11",
+    "epoch_ms": 1791397677707
+  }
+]
