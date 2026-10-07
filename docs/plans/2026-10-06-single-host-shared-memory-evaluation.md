@@ -132,16 +132,24 @@ workers and publication/failure scenarios, with no Redis call on the local path.
 - [x] Verify all 1,000,000 seeded values have no Bloom false negatives, compare
   HTTP results with sealed-dataset expectations and assert exact SQL fallback
   behavior for selected positive/negative/corrupted-state cases.
-- [ ] Run project checks and live native tests, then commit/PR/review/merge.
+- [x] Run project checks and live native tests, then commit/PR/review/merge.
   A safety failure stops Task 3 rather than being waived for benchmark speed.
+
+Task 2 closed in PR #88, merge `bbccf82dfb7bdc09e6eeb0b9812e64a284f741a9`.
+Its tested head `3846d5a539b9baa1926ce8505e9fc887251d2f33` passed native
+capability (4/43), query (22/93), HTTP (2/139) and all required hosted checks.
 
 ## Task 3: Performance screen and conditional qualification
 
 Deliverable: a reproducible decision report, not a production driver.
 
-- [ ] Write report-validation tests rejecting absent source metadata, mismatched
+- [x] Write report-validation tests rejecting absent source metadata, mismatched
   offered rates/worker counts, unknown response membership, dropped samples,
   disabled integrity checks and fewer than 10,000 measured responses per cell.
+
+The first Task 3 increment delivers only the tested report contract; see the
+[contract record](../verification/2026-10-07-measurement-report-contract.md).
+The load generator, equal HTTP paths and live performance screen remain pending.
 - [ ] Observe those failures; implement load.js/measure.php and the identical
   HTTP direct/bypass/Redis/local paths. Redis retains live authorization; record
   whether APCu descriptor hints are actually available in this runtime.

@@ -63,12 +63,14 @@
         "analyse": "phpstan analyse --memory-limit=1G",
         "test": "pest --exclude-group=redis",
         "test:fast": "pest tests/Arch tests/Unit tests/Contract tests/Integration tests/Feature --exclude-group=redis",
+        "test:measurement": "pest tests/Experiments/Swoole/MeasurementReportTest.php --fail-on-warning --fail-on-risky",
         "test:redis": "pest --group=redis",
         "test:all": "pest",
         "check": [
             "@lint",
             "@analyse",
-            "@test:fast"
+            "@test:fast",
+            "@test:measurement"
         ]
     },
     "minimum-stability": "stable",

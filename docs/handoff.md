@@ -10,10 +10,16 @@ Task 1's capability fixture merged in PR #87 at
 `4fea698662074cd4ab7ba891fdf3a1b5e1e97bfa` after independent review and all
 exact-head checks (native CI `37481211118`, 4 tests/43 assertions).
 See the [capability record](verification/2026-10-06-shared-memory-capability.md).
-Task 2 is implemented on `test/swoole-coherent-query-gate`; see the
+Task 2 merged in PR #88 at `bbccf82dfb7bdc09e6eeb0b9812e64a284f741a9`; see the
 [query safety record](verification/2026-10-06-shared-memory-query-safety.md).
-Local native query/HTTP tests and package quality checks pass; refresh its
-exact-commit PR/CI before Task 3. This is an immutable synthetic-data experiment,
+Tested head `3846d5a539b9baa1926ce8505e9fc887251d2f33` passed native CI
+`37489630317` (capability 4/43, query 22/93, HTTP 2/139), package quality,
+consumer, Redis and every release-validation matrix job. Task 3's first increment
+adds a fail-closed [measurement report contract](verification/2026-10-07-measurement-report-contract.md)
+on `test/swoole-performance-screen`. It validates comparable evidence and the
+three-run decision; invented test timings are not a performance result. Next,
+implement the real equal HTTP paths and collector, calibrate SQL, then run the
+approved screen. Live equal-load performance remains pending. This is an immutable synthetic-data experiment,
 not a change to ADR-0003 production support or an authorization to publish a
 new backend. Task 2 proves actual QueryGate behavior and selected SQL call counts,
 with exhaustive authorized probes of the million seeded keys. Concurrent equal

@@ -5,8 +5,10 @@
 Task 2 of the approved [evaluation plan](../plans/2026-10-06-single-host-shared-memory-evaluation.md).
 Baseline: `4fea698662074cd4ab7ba891fdf3a1b5e1e97bfa` (capability PR #87 merged).
 Branch: `test/swoole-coherent-query-gate`, [PR #88](https://github.com/kefyusuf/laravel-bloom-gate/pull/88).
-Local safety gate passed; exact-head
-hosted CI/PR closure must be refreshed before Task 3. This report does not grant
+PR #88 merged at `bbccf82dfb7bdc09e6eeb0b9812e64a284f741a9` after all required
+checks passed on head `3846d5a539b9baa1926ce8505e9fc887251d2f33`.
+Native CI `37489630317` passed capability 4/43, query 22/93 and HTTP 2/139.
+This report does not grant
 production support or release permission, and does not claim a performance win.
 Production `src/` and default backend configuration are unchanged.
 
