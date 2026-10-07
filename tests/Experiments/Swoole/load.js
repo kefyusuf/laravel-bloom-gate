@@ -16,6 +16,11 @@ const latency = new Trend('measured_http_ms', true);
 const query = new Trend('measured_query_ms', true);
 const finished = new Trend('measured_finished_ms', true);
 const measuredStart = new Trend('measured_start_epoch_ms');
+const audit = Object.fromEntries(['scheduled_started', 'scheduled_completed', 'warmup_entered',
+  'scheduled_outside', 'scheduled_early', 'scheduled_late', 'extra_entered']
+  .map(n => [n, new Counter(`audit_${n}`)]));
+const startOffset = new Trend('audit_start_offset_ms');
+const crossingOffset = new Trend('audit_crossing_offset_ms');
 const totals = Object.fromEntries(['started_iterations', 'completed_iterations', 'errors',
   'parity_failures', 'false_negatives', 'unknown_membership', 'delay_mismatches']
   .map(n => [n, new Counter(`total_${n}`)]));
@@ -33,13 +38,25 @@ export default function () {
   const measurementStart = exec.scenario.startTime + warmup * 1000;
   const startedAt = Date.now();
   const measured = startedAt >= measurementStart && startedAt < measurementStart + duration * 1000;
+  // Diagnostic cohorts only: indices are not scheduled slots when any work drops.
+  const scheduled = index >= rate * warmup && index < rate * (warmup + duration);
+  const offset = startedAt - measurementStart;
   const record = (name, amount = 1) => {
     if (totals[name]) totals[name].add(amount);
     if (measured && counters[name]) counters[name].add(amount);
   };
   if (index === 0) {
-    for (const counter of [...Object.values(counters), ...Object.values(totals)]) counter.add(0);
+    for (const counter of [...Object.values(counters), ...Object.values(totals), ...Object.values(audit)]) counter.add(0);
   }
+  startOffset.add(offset);
+  if (scheduled) audit.scheduled_started.add(1);
+  if (index < rate * warmup && measured) audit.warmup_entered.add(1);
+  if (index >= rate * (warmup + duration) && measured) audit.extra_entered.add(1);
+  if (scheduled && !measured) {
+    audit.scheduled_outside.add(1);
+    audit[offset < 0 ? 'scheduled_early' : 'scheduled_late'].add(1);
+  }
+  if (scheduled !== measured) crossingOffset.add(offset);
   const present = index % 10 === 0;
   const mixed = Math.imul(index ^ 0x9e3779b9, 0x85ebca6b) >>> 0;
   const selected = ((mixed ^ (mixed >>> 16)) >>> 0) % 1000000;
@@ -51,6 +68,7 @@ export default function () {
   const suffix = path === 'generator' ? `&delay=${controlledDelay}` : '';
   const reply = http.get(`http://php:8000/measure/${path}?key=${key}${suffix}`, { timeout: '10s', tags: { name: `measure/${path}` } });
   record('completed_iterations');
+  if (scheduled) audit.scheduled_completed.add(1);
   record('responses');
   record(present ? 'present_responses' : 'absent_responses');
   if (measured) {
@@ -100,5 +118,15 @@ export function handleSummary(data) {
     p99_ms: trend('measured_http_ms')['p(99)'], query_ms: trend('measured_query_ms') };
   for (const name of Object.keys(counters)) cell[name] = count(name);
   for (const name of Object.keys(totals)) cell[`total_${name}`] = count(`total_${name}`);
+  const indexObserved = count('dropped_iterations') === 0 && cell.total_started_iterations > 0
+    && cell.total_started_iterations === cell.total_completed_iterations
+    && data.metrics.iterations && count('iterations') === cell.total_completed_iterations
+    && data.metrics.http_reqs && count('http_reqs') === cell.total_completed_iterations;
+  cell.window_audit = {
+    index_interpretation: indexObserved ? 'zero-drop-local-only' : 'unavailable',
+    start_offset_ms: trend('audit_start_offset_ms'),
+    crossing_offset_ms: trend('audit_crossing_offset_ms'),
+  };
+  for (const name of Object.keys(audit)) cell.window_audit[name] = count(`audit_${name}`);
   return { [`/results/${__ENV.OUTPUT}.json`]: JSON.stringify({ cell, metrics: data.metrics }, null, 2) };
 }

@@ -39,5 +39,8 @@ jobs:
       - name: Run fast quality gate
         run: composer check
 
+      - name: Verify load window boundaries
+        run: node --test tests/Experiments/Swoole/load-window.test.cjs
+
       - name: Verify Testbench CLI boot
         run: vendor/bin/testbench --version
