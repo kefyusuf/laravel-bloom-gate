@@ -2,11 +2,55 @@
 
 declare(strict_types=1);
 
+use Composer\InstalledVersions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\MeasurementRuntime;
 use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedMemoryQuery;
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\SharedSqlSet;
 use Laravel\Octane\Swoole\WorkerState;
 use Swoole\Http\Server;
+
+if (getenv('SHARED_MEMORY_MEASURE') === '1') {
+    require_once __DIR__.'/MeasurementRuntime.php';
+    Route::get('/measurement-info', function (): array {
+        $domain = ParentRuntime::$domain ?? throw new RuntimeException('No measurement domain.');
+        $state = $domain->state() ?? throw new RuntimeException('No coherent measurement generation.');
+        $json = $domain->manifests->get((string) $state['version'], 'json');
+        if (! is_string($json)) {
+            throw new RuntimeException('No sealed measurement manifest.');
+        }
+        $manifest = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        if (! is_array($manifest)) {
+            throw new RuntimeException('Invalid measurement manifest.');
+        }
+        $database = SharedSqlSet::database();
+        $seal = capabilitySql($database, 'SELECT @@global.read_only, @@global.super_read_only')->fetch(PDO::FETCH_NUM);
+        $settings = app(Server::class)->setting;
+        if (! is_array($settings) || ! is_int($settings['worker_num'] ?? null)) {
+            throw new RuntimeException('Measurement worker count is unavailable.');
+        }
+
+        return ['php' => PHP_VERSION, 'swoole' => phpversion('openswoole'),
+            'laravel' => InstalledVersions::getPrettyVersion('laravel/framework'),
+            'octane' => InstalledVersions::getPrettyVersion('laravel/octane'),
+            'apcu_enabled' => apcu_enabled(), 'seal' => $seal, 'manifest' => $manifest,
+            'manifest_digest' => $domain->manifestDigest($state['version']), 'filter' => $domain->name->value(),
+            'workers' => $settings['worker_num'],
+            'shared_bytes' => $domain->chunks->getMemorySize() + $domain->control->getMemorySize() + $domain->manifests->getMemorySize(),
+            'writer_credentials_present' => getenv('MYSQL_ROOT_PASSWORD') !== false
+                || getenv('SHARED_MEMORY_SQL_ROOT_PASSWORD') !== false || getenv('DEMO_SEED_PASSWORD') !== false];
+    });
+    Route::get('/measure/{path}', function (Request $request, string $path): array {
+        $key = $request->query('key');
+        if (! is_string($key)) {
+            throw new InvalidArgumentException('A membership key is required.');
+        }
+        $domain = ParentRuntime::$domain ?? throw new RuntimeException('No measurement domain.');
+
+        return MeasurementRuntime::worker($domain)->lookup($path, $key);
+    });
+}
 
 Route::get('/query', function (Request $request): array {
     $key = $request->query('key');
