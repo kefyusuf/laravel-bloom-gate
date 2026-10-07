@@ -1,0 +1,22 @@
+
+  ⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorDeadlineTest > i…  Error
+  Class "Kefyusuf\BloomGate\Tests\Experiments\Swoole\GeneratorDeadline" not found
+
+  at /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:15
+     11▕ it('holds the response until its monotonic deadline even when the timer wakes early', function (): void {
+     12▕     $now = 0;
+     13▕     $callbacks = [];
+     14▕     $sent = [];
+  ➜  15▕     GeneratorDeadline::after(25, function () use (&$now): int {
+     16▕         return $now;
+     17▕     }, function (int $milliseconds, Closure $callback) use (&$callbacks): void {
+     18▕         $callbacks[] = $callback;
+     19▕     }, function () use (&$sent, &$now): void {
+
+  1   /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:15
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 6.23s

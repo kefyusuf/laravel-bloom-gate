@@ -1,0 +1,21 @@
+ Network lbg-generator-20261007-deadline_default Creating
+ Network lbg-generator-20261007-deadline_default Creating
+ Network lbg-generator-20261007-deadline_default Created
+ Network lbg-generator-20261007-deadline_default Created
+ Container lbg-generator-20261007-deadline-php-1 Creating
+ Container lbg-generator-20261007-deadline-php-1 Created
+ Container lbg-generator-20261007-deadline-php-1 Starting
+ Container lbg-generator-20261007-deadline-php-1 Started
+ Container lbg-generator-20261007-deadline-php-1 Waiting
+ Container lbg-generator-20261007-deadline-php-1 Healthy
+ Container lbg-generator-20261007-deadline-load Creating
+ Container lbg-generator-20261007-deadline-load Created
+diagnostic-delay-25 responses=72002 drops=0 p99=27.37018891 verdict=INCONCLUSIVE
+ Container lbg-generator-20261007-deadline-php-1 Stopping
+ Container lbg-generator-20261007-deadline-php-1 Stopped
+ Container lbg-generator-20261007-deadline-php-1 Removing
+ Container lbg-generator-20261007-deadline-php-1 Removed
+ Network lbg-generator-20261007-deadline_default Removing
+ Network lbg-generator-20261007-deadline_default Removed
+Untagged: lbg-generator-php:20261007-deadline
+Deleted: sha256:0d619a259359bff6441f340c454f0dc3a7fd2dd2d44274af76fcba262b03ab4f

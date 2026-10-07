@@ -1,0 +1,122 @@
+[
+  {
+    "BlockIO": "233kB / 0B",
+    "CPUPerc": "164.56%",
+    "Container": "lbg-generator-20261007-deadline-load",
+    "ID": "95c457496fa3",
+    "MemPerc": "7.81%",
+    "MemUsage": "320MiB / 4GiB",
+    "Name": "lbg-generator-20261007-deadline-load",
+    "NetIO": "2.15MB / 1.65MB",
+    "PIDs": "20",
+    "epoch_ms": 1791387654961
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "81.11%",
+    "Container": "lbg-generator-20261007-deadline-php-1",
+    "ID": "0c74a2652298",
+    "MemPerc": "11.83%",
+    "MemUsage": "30.27MiB / 256MiB",
+    "Name": "lbg-generator-20261007-deadline-php-1",
+    "NetIO": "1.65MB / 2.14MB",
+    "PIDs": "11",
+    "epoch_ms": 1791387654964
+  },
+  {
+    "BlockIO": "233kB / 0B",
+    "CPUPerc": "193.12%",
+    "Container": "lbg-generator-20261007-deadline-load",
+    "ID": "95c457496fa3",
+    "MemPerc": "9.73%",
+    "MemUsage": "398.6MiB / 4GiB",
+    "Name": "lbg-generator-20261007-deadline-load",
+    "NetIO": "10.5MB / 7.89MB",
+    "PIDs": "20",
+    "epoch_ms": 1791387660339
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "75.36%",
+    "Container": "lbg-generator-20261007-deadline-php-1",
+    "ID": "0c74a2652298",
+    "MemPerc": "11.92%",
+    "MemUsage": "30.53MiB / 256MiB",
+    "Name": "lbg-generator-20261007-deadline-php-1",
+    "NetIO": "6.73MB / 8.96MB",
+    "PIDs": "11",
+    "epoch_ms": 1791387660339
+  },
+  {
+    "BlockIO": "233kB / 0B",
+    "CPUPerc": "177.09%",
+    "Container": "lbg-generator-20261007-deadline-load",
+    "ID": "95c457496fa3",
+    "MemPerc": "9.97%",
+    "MemUsage": "408.5MiB / 4GiB",
+    "Name": "lbg-generator-20261007-deadline-load",
+    "NetIO": "17.3MB / 13MB",
+    "PIDs": "20",
+    "epoch_ms": 1791387664717
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "76.29%",
+    "Container": "lbg-generator-20261007-deadline-php-1",
+    "ID": "0c74a2652298",
+    "MemPerc": "12.04%",
+    "MemUsage": "30.82MiB / 256MiB",
+    "Name": "lbg-generator-20261007-deadline-php-1",
+    "NetIO": "13MB / 17.3MB",
+    "PIDs": "11",
+    "epoch_ms": 1791387664717
+  },
+  {
+    "BlockIO": "233kB / 0B",
+    "CPUPerc": "191.49%",
+    "Container": "lbg-generator-20261007-deadline-load",
+    "ID": "95c457496fa3",
+    "MemPerc": "10.29%",
+    "MemUsage": "421.3MiB / 4GiB",
+    "Name": "lbg-generator-20261007-deadline-load",
+    "NetIO": "24.2MB / 18.1MB",
+    "PIDs": "20",
+    "epoch_ms": 1791387669110
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "76.00%",
+    "Container": "lbg-generator-20261007-deadline-php-1",
+    "ID": "0c74a2652298",
+    "MemPerc": "11.87%",
+    "MemUsage": "30.39MiB / 256MiB",
+    "Name": "lbg-generator-20261007-deadline-php-1",
+    "NetIO": "18.1MB / 24.2MB",
+    "PIDs": "11",
+    "epoch_ms": 1791387669110
+  },
+  {
+    "BlockIO": "233kB / 0B",
+    "CPUPerc": "179.66%",
+    "Container": "lbg-generator-20261007-deadline-load",
+    "ID": "95c457496fa3",
+    "MemPerc": "10.31%",
+    "MemUsage": "422.3MiB / 4GiB",
+    "Name": "lbg-generator-20261007-deadline-load",
+    "NetIO": "30.9MB / 23.1MB",
+    "PIDs": "20",
+    "epoch_ms": 1791387674479
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "23.31%",
+    "Container": "lbg-generator-20261007-deadline-php-1",
+    "ID": "0c74a2652298",
+    "MemPerc": "9.82%",
+    "MemUsage": "25.14MiB / 256MiB",
+    "Name": "lbg-generator-20261007-deadline-php-1",
+    "NetIO": "23.5MB / 31.3MB",
+    "PIDs": "11",
+    "epoch_ms": 1791387674479
+  }
+]

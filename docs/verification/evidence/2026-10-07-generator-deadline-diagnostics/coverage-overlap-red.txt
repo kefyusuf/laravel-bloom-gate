@@ -1,0 +1,25 @@
+
+  ...⨯.
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorObservationTest > it re…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'OBSERVED'
+
+
+  at /package/tests/Experiments/Swoole/GeneratorObservationTest.php:27
+     23▕
+     24▕ it('rejects a failed poll overlapping the measurement start', function (): void {
+     25▕     $timeline = array_map(static fn (int $time): array => ['status' => 'observed', 'epoch_ms' => $time], [1000, 2000, 3000, 4000, 5000, 6000]);
+     26▕     $timeline[] = ['status' => 'unavailable', 'epoch_ms' => 1900, 'observation_end_epoch_ms' => 2100];
+  ➜  27▕     expect(GeneratorObservation::evaluate($timeline, [1000, 2000, 3000, 4000, 5000, 6000], 2000, 5000)['verdict'])->toBe('INCONCLUSIVE');
+     28▕ });
+     29▕
+     30▕ it('rejects missing generator CPU observations', function (): void {
+     31▕     $timeline = array_map(static fn (int $time): array => ['status' => 'observed', 'epoch_ms' => $time], [1000, 2000, 3000, 4000, 5000, 6000]);
+
+  1   /package/tests/Experiments/Swoole/GeneratorObservationTest.php:27
+
+
+  Tests:    1 failed, 4 passed (5 assertions)
+  Duration: 4.32s

@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
+use Kefyusuf\BloomGate\Tests\Experiments\Swoole\GeneratorDeadline;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
 use Swoole\Table;
 use Swoole\Timer;
 
+require_once __DIR__.'/GeneratorDeadline.php';
+
 // Standalone synthetic receiver: it imports no Laravel, package, SQL or Redis code.
 $counts = new Table(16);
-foreach (['started', 'completed', 'failed'] as $name) {
+foreach (['started', 'completed', 'failed', 'timer_rearms', 'timer_failures'] as $name) {
     $counts->column($name, Table::TYPE_INT);
 }
 $counts->column('pid', Table::TYPE_INT);
@@ -50,6 +53,7 @@ $server->on('request', function (Request $request, Response $response) use ($cou
         $response->end(json_encode(['started' => $counts->get('all', 'started'),
             'completed' => $counts->get('all', 'completed'), 'failed' => $counts->get('all', 'failed'),
             'workers' => $workers, 'worker_pids' => $pids, 'worker_requests' => $traffic,
+            'timer_rearms' => $counts->get('all', 'timer_rearms'), 'timer_failures' => $counts->get('all', 'timer_failures'),
             'php' => PHP_VERSION, 'swoole' => phpversion('openswoole')], JSON_THROW_ON_ERROR));
 
         return;
@@ -80,8 +84,22 @@ $server->on('request', function (Request $request, Response $response) use ($cou
     if ($delay === '0') {
         $finish();
     } else {
-        // One millisecond covers native timer tick quantization; requested delay is a lower bound.
-        Timer::after((int) $delay + 1, $finish);
+        $scheduled = false;
+        GeneratorDeadline::after((int) $delay, static fn (): int => hrtime(true),
+            function (int $milliseconds, Closure $callback) use ($counts, $response, &$scheduled): void {
+                if (Timer::after($milliseconds, $callback) <= 0) {
+                    $counts->incr('all', 'timer_failures');
+                    $counts->incr('all', 'failed');
+                    $response->status(500);
+                    $response->end('{}');
+
+                    return;
+                }
+                if ($scheduled) {
+                    $counts->incr('all', 'timer_rearms');
+                }
+                $scheduled = true;
+            }, $finish);
     }
 });
 $server->start();

@@ -1,0 +1,23 @@
+
+  ....⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorReportTest > it rejects…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at /package/tests/Experiments/Swoole/GeneratorReportTest.php:58
+     54▕
+     55▕ it('rejects a measurement window selected by successful iteration number', function (): void {
+     56▕     $cell = validGeneratorCell();
+     57▕     $cell['window_basis'] = 'successful-iteration-index';
+  ➜  58▕     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
+     59▕ });
+     60▕
+
+  1   /package/tests/Experiments/Swoole/GeneratorReportTest.php:58
+
+
+  Tests:    1 failed, 4 passed (5 assertions)
+  Duration: 5.01s

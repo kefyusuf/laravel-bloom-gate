@@ -1,0 +1,28 @@
+{
+  "source_ref": "072e9b8373d8dcbd651cc50915349d5cdf5ffeb2",
+  "encoding": "UTF-8 normalized to LF; logs omit ANSI and trailing whitespace; digests cover exact tracked content",
+  "artifacts": {
+    "20261007-deadline-diagnostic-delay-25-cell.json": "843375c8c86325caebb25cc1a018828b63b52796f6f5473995e56e6af15f358d",
+    "20261007-deadline-diagnostic-delay-25-coverage.json": "8658acc23dbc6d5dd32540b11bcdb90aae7bb5288b6ca2077cbffa52c67db92b",
+    "20261007-deadline-diagnostic-delay-25-generator-cgroup.txt": "d7296fa89628b02c763fb04c4511203a728a6bc755b05d06f9034e1e45e82aa7",
+    "20261007-deadline-diagnostic-delay-25-resources.json": "4b3307fadd16e14efbe35125fa5362e909bcc97c6fe214f8222bcee68fdc8eef",
+    "20261007-deadline-diagnostic-delay-25-timeline.jsonl": "1d46cbcf4d62e20d40b6dc4d1174b9aba78f9405c3a3b5adccd08c64277833a7",
+    "20261007-deadline-diagnostic-delay-25.json": "ba236de2e8b36081a30b80928c3b393acfd2cbd8e9bd92af53dab64eb302aa5a",
+    "20261007-deadline-diagnostic-delay-25.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "20261007-deadline-outcome.json": "814e812c0ed9269343737d3ab99d7d8334e8dd2c18478a86471999286787954a",
+    "deadline-red.txt": "db2a9ad7e30fa266ecd27484ab4a6e2baab66cc7a5b9291e43ad57bb02d9af4a",
+    "deadline-green.txt": "8969095471594a760356dd9daff6f2ed2cdd11c3daab67d0975529840ef6b22d",
+    "lifetime-red.txt": "03885611625463e41438989f4fbb8d4f43572553457f00c3c5b5089cca3ac98b",
+    "lifetime-observer-green.txt": "90dd78407b740eebd766da985216b0272091e694e2d6b13da8aead89148dbd7b",
+    "window-red.txt": "cfe948eeb7f9e2a52462a2ca67e3793da7b656792d7a4c0274ccb9d924d24362",
+    "window-green.txt": "78db2840e18269c4af2ab31d19250ab08db3f298e9474a47d1777283a34e731f",
+    "observer-red.txt": "30311aa5205b401f900ec4a2cfe351a358ac4b3adbb3fce6b93bee090051d7cd",
+    "coverage-red.txt": "2d235c07946dd5fb33e9330d52ea5d170791b95fb3d526eef73462b46919057e",
+    "coverage-green.txt": "1dc1fb58685e374772d65f7815c3895642f331d54a5265dda13d0f478905dd2f",
+    "coverage-overlap-red.txt": "f786fa706d7eb8e931d99337247674754002241421198f6cd4a35e4a930869e6",
+    "coverage-overlap-green.txt": "4c6a42ba8c89863b5c32bef8418e5ef4d1455b2a3f98515f6c5ef32796cb01eb",
+    "native-final.txt": "e0c07122dcc5162180df86256e32175fd6598fdd2c658badc34bea7c168ad5a0",
+    "quality-final.txt": "82a732b8ebea7918290f95756eb2ef9c7041b89a3b23e24bb7b9d57401dbba97",
+    "live-run.txt": "8487190f53bd2832b6c343b26bc1bfc55fb8a3962f74d6d90f51fc9af9fbec3f"
+  }
+}

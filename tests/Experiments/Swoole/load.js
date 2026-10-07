@@ -30,7 +30,9 @@ export const options = {
 
 export default function () {
   const index = exec.scenario.iterationInTest;
-  const measured = index >= rate * warmup;
+  const measurementStart = exec.scenario.startTime + warmup * 1000;
+  const startedAt = Date.now();
+  const measured = startedAt >= measurementStart && startedAt < measurementStart + duration * 1000;
   const record = (name, amount = 1) => {
     if (totals[name]) totals[name].add(amount);
     if (measured && counters[name]) counters[name].add(amount);
@@ -44,7 +46,7 @@ export default function () {
   const key = present ? `member-${String(selected).padStart(7, '0')}` : `absent-${selected}`;
   record('started_iterations');
   if (measured) {
-    measuredStart.add(Date.now());
+    measuredStart.add(measurementStart);
   }
   const suffix = path === 'generator' ? `&delay=${controlledDelay}` : '';
   const reply = http.get(`http://php:8000/measure/${path}?key=${key}${suffix}`, { timeout: '10s', tags: { name: `measure/${path}` } });
@@ -87,6 +89,7 @@ export function handleSummary(data) {
   const cell = { block: Number(__ENV.BLOCK || 0), path: __ENV.CELL_PATH || path, workers: 4, vus,
     controlled_delay_ms: controlledDelay,
     offered_rate: rate, absent_percent: 90, warmup_seconds: warmup, duration_seconds: duration,
+    window_basis: 'scenario-start-time',
     elapsed_seconds: elapsed, unfinished_iterations: count('started_iterations') - count('completed_iterations'),
     dropped_iterations: count('dropped_iterations'),
     generator_saturated: count('dropped_iterations') > 0,
