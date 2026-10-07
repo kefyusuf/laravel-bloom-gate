@@ -1,0 +1,38 @@
+{
+  "verdict": "INCONCLUSIVE",
+  "reasons": [
+    "Direct-SQL calibration reached the fixed 128-VU load-generator limit at 1200 offered requests/second: one dropped iteration. SQL capacity is not established.",
+    "Independent review rejected continuing at 80% of the previous passing rate. The current-task load container was deliberately stopped with exit 137, preserving the raw abort record.",
+    "Only one SQL control cell completed; the three-block four-path screen, PostgreSQL confirmation and soak were not completed."
+  ],
+  "measured_source_ref": "7ec3490e3009b1bc6efc453567755c2af25098e2",
+  "identity": {
+    "source_ref": "7ec3490e3009b1bc6efc453567755c2af25098e2",
+    "source_digest": "da98ffc389ccbfaa10d953bfa1d275a2771365d9b18e8ac4d51572a912392936",
+    "lock_digest": "b9677dc611320213efde21031283b1642111e6b01a681fbe01971044e92fc2b3",
+    "dataset_digest": "9ee8cb5c216392aacf242289162d07bc7292f5c06ffa373a51d4f7d1e10fae00",
+    "runtime": "8.4.26 / OpenSwoole 26.2.0 / Laravel v13.34.0 / Octane v2.20.0",
+    "images": {
+      "php": "sha256:e74d5ba2586404d9ed99b6e87b139c9db21950e5b16c40a9d5ddcc15f1647e8b",
+      "mysql": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+      "redis": "sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0",
+      "k6": "sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+    },
+    "sql_connection": "worker-local-reused",
+    "redis_profile": "standalone-primary-durable-v1",
+    "redis_apcu": true,
+    "redis_evalsha": true,
+    "sealed": true,
+    "integrity_checks": true
+  },
+  "sql_capacity": null,
+  "completed_http_responses": 92404,
+  "measured_http_errors": 0,
+  "measured_parity_failures": 0,
+  "measured_false_negatives": 0,
+  "correction_used": "One targeted worker_num metadata compatibility correction before the rerun; no third performance attempt.",
+  "raw_abort_preserved": "20261007-rerun-aborted.json",
+  "post_stop_changes": "Generator-limited calibration now throws before screen cells; report validator rejects generator-limited calibration; stable name tags exclude unique URL series. These changes have no new live performance result.",
+  "production_support_changed": false,
+  "conditional_qualification": "Not entered: initial GO absent."
+}

@@ -142,6 +142,33 @@ final class SharedMemoryDomain
         return $row;
     }
 
+    /** Parent-only verified export; admission never trusts a raw native Table copy. */
+    public function exportBitmap(): string
+    {
+        if (getmypid() !== $this->publisherPid) {
+            throw new LogicException('Only the publishing parent may export a generation.');
+        }
+        $before = $this->state() ?? throw new BloomStorageCorrupt('No coherent export state.');
+        $descriptor = $this->managed($before['version']);
+        $length = (int) ceil($descriptor->layout()->bitCount() / 8);
+        $bitmap = '';
+        for ($chunk = 0; $chunk < (int) ceil($length / 4096); $chunk++) {
+            $bitmap .= $this->readChunk($before['version'], $chunk, $length);
+        }
+        $json = $this->manifests->get((string) $before['version'], 'json');
+        if (! is_string($json)) {
+            throw new BloomStorageCorrupt('Missing export manifest.');
+        }
+        $manifest = json_decode($json, true);
+        if (! is_array($manifest) || ! is_string($manifest['build'] ?? null)
+            || ! hash_equals($manifest['build'], hash('sha256', $bitmap))
+            || $before !== $this->state() || $before['manifest'] !== $this->manifestDigest($before['version'])) {
+            throw new BloomStorageCorrupt('Export identity or full build integrity changed.');
+        }
+
+        return $bitmap;
+    }
+
     public function manifestDigest(int $version): string
     {
         $row = $this->manifests->get((string) $version);

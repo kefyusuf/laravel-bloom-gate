@@ -1,0 +1,13 @@
+{
+  "verdict": "INCONCLUSIVE",
+  "reasons": [
+    "Measurement startup failed."
+  ],
+  "source_ref": "1ca79b8150093c551fd4b9a01a137a02068458d3",
+  "calibration": [
+    null
+  ],
+  "completed_cells": [
+    null
+  ]
+}

@@ -64,3 +64,38 @@ the HTTP/exhaustive checks use the full sealed dataset.
 No HTTP performance claim is made by these tests. See the
 [query safety record](../../../docs/verification/2026-10-06-shared-memory-query-safety.md)
 and [runtime provenance](../../../docs/verification/evidence/2026-10-06-shared-memory-provenance.json).
+
+The native runner also verifies the four measurement paths and rejects damaged
+bitmap admission into Redis. These gates run in CI without load timing.
+
+For the approved manual MySQL screen, commit the reviewed source first, then run
+from PowerShell 7 with Docker Desktop:
+
+```powershell
+./tests/Experiments/Swoole/screen.ps1 -Task unique-lowercase-label
+```
+
+The collector uses identical four-worker HTTP paths, a reused worker-local SQL
+connection, real Redis authorization with APCu descriptor hints, and a sealed
+million-row factory dataset. It installs the tracked fixture lock, verifies the
+installed source hashes and running image identities, and retains raw counters,
+HTTP quantiles, Redis wire counts and CPU/RSS observations under
+`.build/swoole-measurement`. Only current-task resources are removed on exit.
+`-OwnedPreparedStack` is reserved for resources the caller created during the
+same task; it must never adopt another stack.
+
+A fixed SQL arrival-rate ladder establishes a conservative tested capacity.
+Generator saturation or dropped iterations during calibration aborts the attempt;
+the preceding passing rate cannot be treated as a SQL capacity boundary.
+The initial screen runs at 80% of that capacity with 90% absent inputs, three
+rotated blocks and SQL controls before/after each block. Each cell includes
+30 seconds of warmup, at least 60 seconds of measurement and 10,000 responses.
+Elapsed throughput includes response drain; HTTP latency uses k6 response
+duration. Errors, dropped work, generator saturation, missing observations or
+control drift invalidate the screen. The report evaluator determines GO,
+NO-GO or INCONCLUSIVE; a unit-test verdict is never live performance evidence.
+An aborted collector preserves its reason and completed observations.
+
+GO authorizes only the already approved remaining matrix, PostgreSQL confirmation
+and soak. NO-GO or INCONCLUSIVE stops this runtime attempt. Neither result changes
+production support or authorizes a release.

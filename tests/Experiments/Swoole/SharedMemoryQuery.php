@@ -49,7 +49,7 @@ final class SharedSqlSet implements AuthoritativeSet
 {
     public int $calls = 0;
 
-    public function __construct(private readonly ?string $scope = null) {}
+    public function __construct(private readonly ?string $scope = null, private readonly ?PDO $connection = null) {}
 
     public function identity(): AuthoritativeSetIdentity
     {
@@ -66,7 +66,7 @@ final class SharedSqlSet implements AuthoritativeSet
     public function exists(NormalizedValue $value): bool
     {
         $this->calls++;
-        $statement = self::database()->prepare('SELECT 1 FROM members WHERE member_key = ?'.($this->scope === null ? '' : ' AND member_key = ?').' LIMIT 1');
+        $statement = ($this->connection ?? self::database())->prepare('SELECT 1 FROM members WHERE member_key = ?'.($this->scope === null ? '' : ' AND member_key = ?').' LIMIT 1');
         if ($statement === false) {
             throw new RuntimeException('SQL prepare failed.');
         }
@@ -106,10 +106,10 @@ final class SharedMemoryQuery implements FilterDefinition, FilterRegistry
 
     private readonly QueryGate $gate;
 
-    public function __construct(private readonly SharedMemoryDomain $domain, ?string $sqlScope = null)
+    public function __construct(private readonly SharedMemoryDomain $domain, ?string $sqlScope = null, ?SharedSqlSet $set = null)
     {
         $this->normalization = new SharedNormalizer;
-        $this->set = new SharedSqlSet($sqlScope);
+        $this->set = $set ?? new SharedSqlSet($sqlScope);
         $this->authorized = new SharedProbe($domain);
         $this->resolver = new QuerySafetyDescriptorResolver(new SharedSnapshots($domain), new SharedContracts($domain));
         $this->gate = new QueryGate($this, $this->resolver, $this->authorized, new BloomProbeGenerator, new SemanticFingerprintCalculator);

@@ -1,6 +1,20 @@
-# Project handoff — 2026-10-06
+# Project handoff — 2026-10-07
 
 ## Latest continuation
+
+Task 3 now has real equal HTTP paths and a manual collector in
+[PR #90](https://github.com/kefyusuf/laravel-bloom-gate/pull/90). Its actual
+MySQL attempt is **INCONCLUSIVE**: the fixed 128-VU generator dropped one
+iteration during 1,200-RPS SQL calibration. The previous passing rate cannot
+establish SQL capacity. See the [live screen record](verification/2026-10-07-swoole-live-screen.md)
+and tracked raw artifacts. Measured source is `7ec3490e3009b1bc6efc453567755c2af25098e2`;
+later collector hardening has no new timing result. One targeted metadata
+compatibility correction was used; no third performance attempt, conditional
+matrix, PostgreSQL confirmation or soak is authorized by this outcome.
+92,404 completed calibration/control responses had no observed parity failure,
+false negative or HTTP error, but no paired speed comparison completed.
+Stop this runtime attempt and retain the proven backend. Refresh exact-head
+review/CI/merge state before considering PR #90 delivered.
 
 The user approved the Redis-free single-host evaluation; plan PR #86 merged at
 `ad6fc04e5319d009bbda2b0e06600342afef57ac`. See
@@ -20,13 +34,14 @@ in [PR #89](https://github.com/kefyusuf/laravel-bloom-gate/pull/89), implementat
 source `9898be1efb8f68dbded019947e31910add7fc0cb`. Its independent review and
 hosted quality/native/consumer/Redis/anchor checks passed. Refresh the final
 PR/main state before continuing. It validates comparable evidence and the
-three-run decision; invented test timings are not a performance result. Next,
-implement the real equal HTTP paths and collector, calibrate SQL, then run the
-approved screen. Live equal-load performance remains pending. This is an immutable synthetic-data experiment,
+three-run decision; invented test timings are not a performance result. The
+real equal HTTP paths and collector were implemented in PR #90, and the
+attempt stopped INCONCLUSIVE as recorded above. This is an immutable synthetic-data experiment,
 not a change to ADR-0003 production support or an authorization to publish a
 new backend. Task 2 proves actual QueryGate behavior and selected SQL call counts,
 with exhaustive authorized probes of the million seeded keys. Concurrent equal
-offered-load HTTP performance remains unmeasured and belongs to Task 3.
+offered-load comparative performance remains unqualified; Task 3 stopped
+INCONCLUSIVE as recorded above.
 
 For synthetic application checks, use the [blank Laravel factory demo](verification/2026-10-06-factory-demo.md).
 It owns its demo data, dependency installation and Docker stack. Do not inspect

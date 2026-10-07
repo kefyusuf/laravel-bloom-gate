@@ -1,0 +1,594 @@
+{
+  "cell": {
+    "block": 0,
+    "path": "direct",
+    "workers": 4,
+    "offered_rate": 400,
+    "absent_percent": 90,
+    "warmup_seconds": 10,
+    "duration_seconds": 20,
+    "elapsed_seconds": 20,
+    "unfinished_iterations": 0,
+    "dropped_iterations": 0,
+    "generator_saturated": false,
+    "rps": 400,
+    "measurement_start_epoch_ms": 1791380164511,
+    "measurement_end_epoch_ms": 1791380184511,
+    "p50_ms": 1.2965045000000002,
+    "p95_ms": 1.9246923499999984,
+    "p99_ms": 27.759817590000047,
+    "query_ms": {
+      "p(99)": 0.42246396,
+      "max": 5.859706,
+      "min": 0.12913,
+      "med": 0.191659,
+      "p(95)": 0.3078124999999999
+    },
+    "started_iterations": 8000,
+    "completed_iterations": 8000,
+    "responses": 8000,
+    "present_responses": 800,
+    "absent_responses": 7200,
+    "errors": 0,
+    "parity_failures": 0,
+    "false_negatives": 0,
+    "unknown_membership": 0,
+    "sql_calls": 8000,
+    "redis_calls": 0,
+    "redis_wire_evalsha": 57,
+    "redis_wire_eval": 0,
+    "identity": {
+      "source_ref": "7ec3490e3009b1bc6efc453567755c2af25098e2",
+      "source_digest": "da98ffc389ccbfaa10d953bfa1d275a2771365d9b18e8ac4d51572a912392936",
+      "lock_digest": "b9677dc611320213efde21031283b1642111e6b01a681fbe01971044e92fc2b3",
+      "dataset_digest": "9ee8cb5c216392aacf242289162d07bc7292f5c06ffa373a51d4f7d1e10fae00",
+      "runtime": "8.4.26 / OpenSwoole 26.2.0 / Laravel v13.34.0 / Octane v2.20.0",
+      "images": {
+        "php": "sha256:e74d5ba2586404d9ed99b6e87b139c9db21950e5b16c40a9d5ddcc15f1647e8b",
+        "mysql": "sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d",
+        "redis": "sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0",
+        "k6": "sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+      },
+      "sql_connection": "worker-local-reused",
+      "redis_profile": "standalone-primary-durable-v1",
+      "redis_apcu": true,
+      "redis_evalsha": true,
+      "sealed": true,
+      "integrity_checks": true
+    }
+  },
+  "metrics": {
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 128,
+        "min": 128,
+        "max": 128
+      }
+    },
+    "started_iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 8000,
+        "rate": 266.66847955010223
+      }
+    },
+    "measured_finished_ms": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 9999.5,
+        "p(95)": 18997.199999999997,
+        "p(99)": 19798.02,
+        "max": 19997,
+        "min": 1
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 2.2166158,
+        "p(99)": 25.474346840000173,
+        "max": 116.801579,
+        "min": 0.909113,
+        "med": 1.5104045
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0.006161449999999994,
+        "p(99)": 0.1766915000000002,
+        "max": 24.48196,
+        "min": 0.00177,
+        "med": 0.00349
+      }
+    },
+    "errors": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "present_responses": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 800,
+        "rate": 26.666847955010223
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0.563528,
+        "med": 1.3276965,
+        "p(95)": 1.9469574499999998,
+        "p(99)": 25.104694370000026,
+        "max": 116.580953
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 1151998,
+        "rate": 38400.19438809483
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 1.2618685,
+        "p(95)": 1.8539955499999998,
+        "p(99)": 25.023971460000027,
+        "max": 116.53474,
+        "min": 0.446159
+      }
+    },
+    "redis_calls": {
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "type": "counter"
+    },
+    "unknown_membership": {
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "type": "counter"
+    },
+    "http_req_connecting": {
+      "values": {
+        "p(95)": 0,
+        "p(99)": 0.12735631000000014,
+        "max": 24.395455,
+        "min": 0,
+        "med": 0
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "measured_http_ms": {
+      "values": {
+        "min": 0.807656,
+        "med": 1.2965045000000002,
+        "p(95)": 1.9246923499999984,
+        "p(99)": 27.759817590000047,
+        "max": 116.580953
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "responses": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 266.66847955010223,
+        "count": 8000
+      }
+    },
+    "http_req_duration": {
+      "contains": "time",
+      "values": {
+        "min": 0.563528,
+        "med": 1.3276965,
+        "p(95)": 1.9469574499999998,
+        "p(99)": 25.104694370000026,
+        "max": 116.580953
+      },
+      "type": "trend"
+    },
+    "http_reqs": {
+      "contains": "default",
+      "values": {
+        "count": 12000,
+        "rate": 400.00271932515335
+      },
+      "type": "counter"
+    },
+    "completed_iterations": {
+      "values": {
+        "count": 8000,
+        "rate": 266.66847955010223
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 3885887,
+        "rate": 129530.44724918851
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "measured_start_epoch_ms": {
+      "values": {
+        "p(95)": 1791380183508.2,
+        "p(99)": 1791380184309.02,
+        "max": 1791380184508,
+        "min": 1791380164511,
+        "med": 1791380174510
+      },
+      "type": "trend",
+      "contains": "default"
+    },
+    "http_req_sending": {
+      "values": {
+        "min": 0.00535,
+        "med": 0.00951,
+        "p(95)": 0.034492499999999995,
+        "p(99)": 0.04789330000000001,
+        "max": 0.575683
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "measured_query_ms": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0.3078124999999999,
+        "p(99)": 0.42246396,
+        "max": 5.859706,
+        "min": 0.12913,
+        "med": 0.191659
+      }
+    },
+    "parity_failures": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0.011771,
+        "med": 0.045048500000000005,
+        "p(95)": 0.078976,
+        "p(99)": 0.10991071000000006,
+        "max": 0.838056
+      }
+    },
+    "sql_calls": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 8000,
+        "rate": 266.66847955010223
+      }
+    },
+    "false_negatives": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 12000
+      }
+    },
+    "absent_responses": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 7200,
+        "rate": 240.00163159509202
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 0,
+        "max": 8
+      }
+    },
+    "iterations": {
+      "contains": "default",
+      "values": {
+        "rate": 400.00271932515335,
+        "count": 12000
+      },
+      "type": "counter"
+    }
+  },
+  "resource_samples": [
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "20.57%",
+      "Container": "lbg-shared-memory-20261007-rerun-load",
+      "ID": "e5a37c64d8cf",
+      "MemPerc": "5.35%",
+      "MemUsage": "54.73MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-load",
+      "NetIO": "396kB / 239kB",
+      "PIDs": "17",
+      "epoch_ms": 1791380157047
+    },
+    {
+      "BlockIO": "11.1MB / 131MB",
+      "CPUPerc": "57.50%",
+      "Container": "lbg-shared-memory-20261007-rerun-php-1",
+      "ID": "8d576a96eda8",
+      "MemPerc": "18.24%",
+      "MemUsage": "186.7MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-php-1",
+      "NetIO": "115MB / 32.4MB",
+      "PIDs": "18",
+      "epoch_ms": 1791380157047
+    },
+    {
+      "BlockIO": "72.1MB / 511MB",
+      "CPUPerc": "8.86%",
+      "Container": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "ID": "7f897ab83759",
+      "MemPerc": "49.08%",
+      "MemUsage": "502.6MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "NetIO": "23.7MB / 87.4MB",
+      "PIDs": "41",
+      "epoch_ms": 1791380157047
+    },
+    {
+      "BlockIO": "8.98MB / 4.05MB",
+      "CPUPerc": "2.41%",
+      "Container": "lbg-shared-memory-20261007-rerun-redis-1",
+      "ID": "c50313321530",
+      "MemPerc": "1.68%",
+      "MemUsage": "17.22MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-redis-1",
+      "NetIO": "4.09MB / 4.05MB",
+      "PIDs": "6",
+      "epoch_ms": 1791380157047
+    },
+    {
+      "BlockIO": "184kB / 0B",
+      "CPUPerc": "27.98%",
+      "Container": "lbg-shared-memory-20261007-rerun-load",
+      "ID": "e5a37c64d8cf",
+      "MemPerc": "8.36%",
+      "MemUsage": "85.65MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-load",
+      "NetIO": "1.55MB / 912kB",
+      "PIDs": "17",
+      "epoch_ms": 1791380164424
+    },
+    {
+      "BlockIO": "11.1MB / 131MB",
+      "CPUPerc": "70.86%",
+      "Container": "lbg-shared-memory-20261007-rerun-php-1",
+      "ID": "8d576a96eda8",
+      "MemPerc": "18.27%",
+      "MemUsage": "187.1MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-php-1",
+      "NetIO": "116MB / 33.9MB",
+      "PIDs": "18",
+      "epoch_ms": 1791380164424
+    },
+    {
+      "BlockIO": "72.1MB / 511MB",
+      "CPUPerc": "5.67%",
+      "Container": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "ID": "7f897ab83759",
+      "MemPerc": "49.02%",
+      "MemUsage": "502MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "NetIO": "24.1MB / 87.7MB",
+      "PIDs": "41",
+      "epoch_ms": 1791380164424
+    },
+    {
+      "BlockIO": "8.98MB / 4.05MB",
+      "CPUPerc": "2.84%",
+      "Container": "lbg-shared-memory-20261007-rerun-redis-1",
+      "ID": "c50313321530",
+      "MemPerc": "1.65%",
+      "MemUsage": "16.93MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-redis-1",
+      "NetIO": "4.09MB / 4.05MB",
+      "PIDs": "6",
+      "epoch_ms": 1791380164424
+    },
+    {
+      "BlockIO": "184kB / 0B",
+      "CPUPerc": "22.95%",
+      "Container": "lbg-shared-memory-20261007-rerun-load",
+      "ID": "e5a37c64d8cf",
+      "MemPerc": "12.52%",
+      "MemUsage": "128.2MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-load",
+      "NetIO": "2.54MB / 1.49MB",
+      "PIDs": "17",
+      "epoch_ms": 1791380171792
+    },
+    {
+      "BlockIO": "11.1MB / 131MB",
+      "CPUPerc": "49.09%",
+      "Container": "lbg-shared-memory-20261007-rerun-php-1",
+      "ID": "8d576a96eda8",
+      "MemPerc": "17.14%",
+      "MemUsage": "175.5MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-php-1",
+      "NetIO": "117MB / 35.7MB",
+      "PIDs": "18",
+      "epoch_ms": 1791380171792
+    },
+    {
+      "BlockIO": "72.3MB / 511MB",
+      "CPUPerc": "4.77%",
+      "Container": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "ID": "7f897ab83759",
+      "MemPerc": "48.97%",
+      "MemUsage": "501.4MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "NetIO": "24.5MB / 88MB",
+      "PIDs": "41",
+      "epoch_ms": 1791380171792
+    },
+    {
+      "BlockIO": "8.98MB / 4.05MB",
+      "CPUPerc": "2.62%",
+      "Container": "lbg-shared-memory-20261007-rerun-redis-1",
+      "ID": "c50313321530",
+      "MemPerc": "1.73%",
+      "MemUsage": "17.74MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-redis-1",
+      "NetIO": "4.1MB / 4.05MB",
+      "PIDs": "6",
+      "epoch_ms": 1791380171792
+    },
+    {
+      "BlockIO": "1.49MB / 0B",
+      "CPUPerc": "42.07%",
+      "Container": "lbg-shared-memory-20261007-rerun-load",
+      "ID": "e5a37c64d8cf",
+      "MemPerc": "17.95%",
+      "MemUsage": "183.8MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-load",
+      "NetIO": "3.86MB / 2.26MB",
+      "PIDs": "17",
+      "epoch_ms": 1791380179177
+    },
+    {
+      "BlockIO": "11.1MB / 131MB",
+      "CPUPerc": "64.58%",
+      "Container": "lbg-shared-memory-20261007-rerun-php-1",
+      "ID": "8d576a96eda8",
+      "MemPerc": "18.19%",
+      "MemUsage": "186.3MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-php-1",
+      "NetIO": "118MB / 37.1MB",
+      "PIDs": "18",
+      "epoch_ms": 1791380179177
+    },
+    {
+      "BlockIO": "72.3MB / 511MB",
+      "CPUPerc": "10.44%",
+      "Container": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "ID": "7f897ab83759",
+      "MemPerc": "49.11%",
+      "MemUsage": "502.9MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "NetIO": "24.9MB / 88.4MB",
+      "PIDs": "41",
+      "epoch_ms": 1791380179177
+    },
+    {
+      "BlockIO": "8.98MB / 4.05MB",
+      "CPUPerc": "0.20%",
+      "Container": "lbg-shared-memory-20261007-rerun-redis-1",
+      "ID": "c50313321530",
+      "MemPerc": "1.68%",
+      "MemUsage": "17.23MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-redis-1",
+      "NetIO": "4.11MB / 4.06MB",
+      "PIDs": "6",
+      "epoch_ms": 1791380179177
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "lbg-shared-memory-20261007-rerun-load",
+      "ID": "e5a37c64d8cf",
+      "MemPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "Name": "lbg-shared-memory-20261007-rerun-load",
+      "NetIO": "0B / 0B",
+      "PIDs": "0",
+      "epoch_ms": 1791380186537
+    },
+    {
+      "BlockIO": "11.1MB / 131MB",
+      "CPUPerc": "0.71%",
+      "Container": "lbg-shared-memory-20261007-rerun-php-1",
+      "ID": "8d576a96eda8",
+      "MemPerc": "17.98%",
+      "MemUsage": "184.1MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-php-1",
+      "NetIO": "119MB / 38.4MB",
+      "PIDs": "18",
+      "epoch_ms": 1791380186537
+    },
+    {
+      "BlockIO": "72.3MB / 511MB",
+      "CPUPerc": "0.35%",
+      "Container": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "ID": "7f897ab83759",
+      "MemPerc": "48.99%",
+      "MemUsage": "501.7MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-mysql-1",
+      "NetIO": "25.2MB / 88.7MB",
+      "PIDs": "41",
+      "epoch_ms": 1791380186537
+    },
+    {
+      "BlockIO": "8.98MB / 4.05MB",
+      "CPUPerc": "2.49%",
+      "Container": "lbg-shared-memory-20261007-rerun-redis-1",
+      "ID": "c50313321530",
+      "MemPerc": "1.59%",
+      "MemUsage": "16.32MiB / 1GiB",
+      "Name": "lbg-shared-memory-20261007-rerun-redis-1",
+      "NetIO": "4.12MB / 4.06MB",
+      "PIDs": "6",
+      "epoch_ms": 1791380186537
+    }
+  ]
+}

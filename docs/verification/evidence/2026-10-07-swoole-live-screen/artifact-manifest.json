@@ -1,0 +1,23 @@
+{
+  "digest_format": "SHA-256 of UTF-8 text after CRLF to LF normalization",
+  "artifacts": {
+    "20261007-metadata-red-failed-operation.log": "f437cf8948f9fd6f8822adc3c27721822a7af99e78b0d686bccf4a9301698836",
+    "20261007-rerun-aborted.json": "69b006af7088146244c31ac4fc54eafe0a51806c265c559b3f6521176512361e",
+    "20261007-rerun-block-1-control-before.json": "ec0cc76b89e39756e431d9e6bef3d58deecc0e0cbe5bf9968ffeead18bd3597e",
+    "20261007-rerun-calibration-100.json": "6d3813ef69816493ffe30e7967df0f18061c34b4155ee8dd37a62859aa7512eb",
+    "20261007-rerun-calibration-1200.json": "0bcd507ff9c1de68aad51b8d8a7ee43c225e5cce621014920892cf5abd07b5ba",
+    "20261007-rerun-calibration-200.json": "579dbbe93c673310fa8d07c8ed69a3d1995025aef2e4a122adf6cc4b3f301697",
+    "20261007-rerun-calibration-400.json": "8490c1fc6cbe0e303cf1cd17d42d9c7cc3df112cc463c49fc4657fe7b55777a2",
+    "20261007-rerun-calibration-800.json": "910821c32c60ffe85f84e1efd76a0835d843f23b33c587b251c5dade645ebfbd",
+    "20261007-rerun-native.log": "ad6b3ee5aa4cf4a8f55a1695723f4a4fd0deafa3203b1c87b2592c048face5b9",
+    "20261007-rerun-preflight.json": "cb80564554b94feb4c0b0af093842139427700da6f0e0a28bb590a40c400e6f4",
+    "20261007-rerun-seed.json": "25f596eda6ad83db3f0ca2b563d5d2639c9c5b89af4f1106f9fefde887a1bfaf",
+    "20261007-screen-aborted.json": "6837d45800672d1b15b9f5c6d8e9db2f7aebd2e464f08ddf048e17045bcf9ed2",
+    "calibration-stop-green.log": "9cd5bc7f0e189abec77010e218462d1da37601b498884972eba34fc656324d16",
+    "calibration-stop-red.log": "f2218360bee4ebece157cc2c466be54954b3b8352f225d89f4460889f5762e3b",
+    "outcome.json": "b7a46b6a31bfb6dbec355dcdb259b7cd6b3c62617acb9b636b1af671c845af0b",
+    "post-stop-generator-smoke.json": "6a89ef1b255570daee72a222bd8a3d476253a9517982c909234c047e678e109c",
+    "smoke-error.json": "1998776413cd411f81b4ef01a62afc37000c2540990a359b04fb7440c2064350",
+    "worker-type-red.log": "8a3c3d0f0fecabd85d7c6186c7cbdc80c555125c8e4c51f13644cb0c939ee04c"
+  }
+}
