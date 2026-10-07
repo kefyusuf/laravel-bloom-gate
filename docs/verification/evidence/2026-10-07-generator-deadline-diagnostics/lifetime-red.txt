@@ -1,0 +1,35 @@
+
+  .⨯⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorDeadlineTest > it relea…
+  Failed asserting that stdClass Object #471 () is null.
+
+  at /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:46
+     42▕         static function (int $milliseconds, Closure $callback): void {
+     43▕             // External timer allocation failed and retained no callback.
+     44▕         }, static function () use ($state): void {});
+     45▕     unset($state);
+  ➜  46▕     expect($reference->get())->toBeNull();
+     47▕ })->with(['completed' => [0], 'failed allocation' => [25]]);
+     48▕
+
+  1   /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:46
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorDeadlineTest > it relea…
+  Failed asserting that stdClass Object #472 () is null.
+
+  at /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:46
+     42▕         static function (int $milliseconds, Closure $callback): void {
+     43▕             // External timer allocation failed and retained no callback.
+     44▕         }, static function () use ($state): void {});
+     45▕     unset($state);
+  ➜  46▕     expect($reference->get())->toBeNull();
+     47▕ })->with(['completed' => [0], 'failed allocation' => [25]]);
+     48▕
+
+  1   /package/tests/Experiments/Swoole/GeneratorDeadlineTest.php:46
+
+
+  Tests:    2 failed, 1 passed (4 assertions)
+  Duration: 4.91s

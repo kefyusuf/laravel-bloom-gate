@@ -1,0 +1,22 @@
+
+  ⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Package\tests\Experiments\Swoole\GeneratorObser…  RuntimeException
+  Unavailable observation was not retained.
+
+  at /package/tests/Experiments/Swoole/GeneratorObserverTest.php:18
+     14▕         $observer->run();
+     15▕         expect($observer->getExitCode())->toBe(1);
+     16▕         $body = file_get_contents($output);
+     17▕         if ($body === false || $body === '') {
+  ➜  18▕             throw new RuntimeException('Unavailable observation was not retained.');
+     19▕         }
+     20▕         $row = json_decode(trim($body), true, 512, JSON_THROW_ON_ERROR);
+     21▕         expect($row)->toMatchArray(['status' => 'unavailable', 'k6' => null, 'receiver' => null]);
+     22▕     } finally {
+
+  1   /package/tests/Experiments/Swoole/GeneratorObserverTest.php:18
+
+
+  Tests:    1 failed (1 assertions)
+  Duration: 4.10s

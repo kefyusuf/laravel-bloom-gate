@@ -2,6 +2,18 @@
 
 ## Latest continuation
 
+PR #92 implements monotonic response deadlines, actual-time measurement windows
+and bounded observer coverage. One frozen short diagnostic at measured source
+`072e9b8373d8dcbd651cc50915349d5cdf5ffeb2` completed 96,001 requests with
+zero final-summary drops and zero early responses; minimum receiver duration
+was 25.001918 ms. Outcome is **DIAGNOSTIC_ONLY**, not capacity PASS. See the
+[diagnostic record](verification/2026-10-07-generator-deadline-diagnostics.md).
+The measured count was 72,002 against nominal 72,000: assess clock/window
+boundaries before full qualification without weakening the existing ±1 guard.
+The four full delay profiles and three repetitions remain unrun. No application
+comparison or production migration occurred. Refresh PR #92's review/CI/merge
+state before relying on delivery. PR91's evidence below remains historical.
+
 Independent fixed-budget generator qualification in
 [PR #91](https://github.com/kefyusuf/laravel-bloom-gate/pull/91) stopped
 **INCONCLUSIVE** at the first delayed positive profile. At 4,800 RPS/1,024 VUs,
