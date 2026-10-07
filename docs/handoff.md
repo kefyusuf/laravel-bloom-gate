@@ -2,6 +2,23 @@
 
 ## Latest continuation
 
+Offline pinned-k6 v1.3.0 analysis follows PR #95's failed qualification. At
+4,800 RPS, integer-nanosecond period truncation places slot 432,000 at
+89.999856 seconds, before the 90-second deadline. It can explain one extra
+eligible slot, not all six observed requests. The executor lacks an explicit
+slot cap and its timer/deadline selection permits a terminal race; this is a
+source-level mechanism, not a proved cause of the retained run. Existing
+aggregate observations do not contain per-request index/time pairs or the
+executor's monotonic deadline decisions. See the
+[offline analysis](verification/2026-10-08-k6-terminal-start-analysis.md).
+Keep PR #95 INCONCLUSIVE and its ±1 guard unchanged. Next: deterministic
+executor-boundary reproduction and a reviewed correction plan before fresh
+timing; do not hide extra work in a script return or substitute a closed-model
+executor. No new load, Docker stack, production change or qualification occurred.
+All 29 retained artifact hashes and five existing actual-script tests were
+verified. Refresh this documentation PR's review/CI/merge state before relying
+on its delivery.
+
 One corrected frozen qualification at source
 `9a0d211b2aca0f81782175533fc70e411fe26473` stopped **INCONCLUSIVE** after
 2/12 positive cells. Early negative safety passed; block 1 / 0 ms passed;
