@@ -1,0 +1,20 @@
+{
+  "source_ref": "ddffa1d9d3ec9ba901255d48b5e2e294149d2449",
+  "encoding": "UTF-8 normalized to LF; logs omit ANSI and trailing whitespace; digests cover exact tracked content",
+  "artifacts": {
+    "20261007-boundary-diagnostic-delay-25-cell.json": "1ad08f94d7b71aec82900245bca986efd4fbffba53cab3fc83c20d81d32fe0aa",
+    "20261007-boundary-diagnostic-delay-25-coverage.json": "8658acc23dbc6d5dd32540b11bcdb90aae7bb5288b6ca2077cbffa52c67db92b",
+    "20261007-boundary-diagnostic-delay-25-generator-cgroup.txt": "2f90ced651d7697cf66d40e82e947a0c9f138fc98bd96ee2b29aceb8eb5795b6",
+    "20261007-boundary-diagnostic-delay-25-resources.json": "c3110627abb39d403f8c6858f25bb01b47d071f5959ddc8bd650b34fdda5393a",
+    "20261007-boundary-diagnostic-delay-25-timeline.jsonl": "3764e476bb3e792fe791d8dcbabd73aa98c686538dbea815549e8fdec608875b",
+    "20261007-boundary-diagnostic-delay-25.json": "b7b44f1e6a984bc662f7f6ae176c8ebfa4b2b9ae4bb990a9f5b8afc568e56ce0",
+    "20261007-boundary-diagnostic-delay-25.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "20261007-boundary-outcome.json": "3b7932ea0fb8950389216dca58e5e5fe64d2acde7bbc349b36166654f9ba6dc0",
+    "boundary-red.txt": "d82a60ef30cad3d9f28e7d86ff5c20a5a87f232689e9895b145cbc436cb561bb",
+    "boundary-green.txt": "74c1205824a890ee88bc7a469864d077c011fb844379a5136550c78c52ece52e",
+    "interpretation-red.txt": "1401d44dadede9ab6cf29346711ffcb2e9ec42fc0aea4bdb2a8deb8576f6371e",
+    "interpretation-green.txt": "0fbc70c91c9933de92a278cd8f3178c730cff42d0ceef8f3914421e3595c4e62",
+    "k6-inspect-green.txt": "eba6c97e9e83f22607b5a6282e58c3dd124d766d27b31bb6b1fbc2b8ffdeafb9",
+    "live-run.txt": "b7026017eef9d3c969ea63060d6ef82e525d3618662d62ae63903bca794bc454"
+  }
+}

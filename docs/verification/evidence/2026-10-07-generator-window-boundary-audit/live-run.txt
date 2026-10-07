@@ -1,0 +1,21 @@
+ Network lbg-generator-20261007-boundary_default Creating
+ Network lbg-generator-20261007-boundary_default Creating
+ Network lbg-generator-20261007-boundary_default Created
+ Network lbg-generator-20261007-boundary_default Created
+ Container lbg-generator-20261007-boundary-php-1 Creating
+ Container lbg-generator-20261007-boundary-php-1 Created
+ Container lbg-generator-20261007-boundary-php-1 Starting
+ Container lbg-generator-20261007-boundary-php-1 Started
+ Container lbg-generator-20261007-boundary-php-1 Waiting
+ Container lbg-generator-20261007-boundary-php-1 Healthy
+ Container lbg-generator-20261007-boundary-load Creating
+ Container lbg-generator-20261007-boundary-load Created
+diagnostic-delay-25 responses=72003 drops=0 p99=27.84317082 verdict=INCONCLUSIVE
+ Container lbg-generator-20261007-boundary-php-1 Stopping
+ Container lbg-generator-20261007-boundary-php-1 Stopped
+ Container lbg-generator-20261007-boundary-php-1 Removing
+ Container lbg-generator-20261007-boundary-php-1 Removed
+ Network lbg-generator-20261007-boundary_default Removing
+ Network lbg-generator-20261007-boundary_default Removed
+Untagged: lbg-generator-php:20261007-boundary
+Deleted: sha256:47d3a2f2c9b3946e68a01bbe2505cf01310ae7226f42e5503466910fde78f588
