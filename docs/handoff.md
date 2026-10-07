@@ -16,7 +16,10 @@ Tested head `3846d5a539b9baa1926ce8505e9fc887251d2f33` passed native CI
 `37489630317` (capability 4/43, query 22/93, HTTP 2/139), package quality,
 consumer, Redis and every release-validation matrix job. Task 3's first increment
 adds a fail-closed [measurement report contract](verification/2026-10-07-measurement-report-contract.md)
-on `test/swoole-performance-screen`. It validates comparable evidence and the
+in [PR #89](https://github.com/kefyusuf/laravel-bloom-gate/pull/89), implementation
+source `9898be1efb8f68dbded019947e31910add7fc0cb`. Its independent review and
+hosted quality/native/consumer/Redis/anchor checks passed. Refresh the final
+PR/main state before continuing. It validates comparable evidence and the
 three-run decision; invented test timings are not a performance result. Next,
 implement the real equal HTTP paths and collector, calibrate SQL, then run the
 approved screen. Live equal-load performance remains pending. This is an immutable synthetic-data experiment,

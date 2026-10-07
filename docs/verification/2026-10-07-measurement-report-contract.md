@@ -7,6 +7,8 @@ The first Task 3 increment in the approved
 adds a fixture-only evidence validator. Baseline is Task 2 merge
 `bbccf82dfb7bdc09e6eeb0b9812e64a284f741a9`. Production sources, backend defaults,
 native query paths and published release tags are unchanged.
+Delivered in [PR #89](https://github.com/kefyusuf/laravel-bloom-gate/pull/89),
+implementation source `9898be1efb8f68dbded019947e31910add7fc0cb`.
 
 No live performance screen was run. Unit fixtures contain invented timings and
 digests solely to test decision rules; their `GO` is not an experiment verdict.
@@ -93,7 +95,14 @@ it must not fill them with assumed passing values.
   including exact 95% throughput and 10% drift boundaries. The review covers
   this contract only.
 
-Exact-head hosted check results will be recorded at PR closure.
+Hosted checks passed on implementation source
+`9898be1efb8f68dbded019947e31910add7fc0cb`: quality `37586217258`
+(Pint 377 files, maximum PHPStan, 946 fast tests / 7,692 assertions with one
+optional skip, plus 51 report tests), native `37586218372` (capability 4/43,
+query 22/93, HTTP 2/139), anchors `37586217164` (PHP 8.3/Laravel 12 and
+PHP 8.5/Laravel 13), consumer `37586217092` and Redis `37586217107`.
+CodeRabbit skipped review; it is not counted as independent review evidence.
+Final documentation updates must also have green exact-head checks before merge.
 These are package-quality results, not measured
 latency, throughput or stability qualification.
 
@@ -102,6 +111,8 @@ latency, throughput or stability qualification.
 Verification used only this package's isolated source copy and invented report
 data. Temporary Docker containers use `--rm` and an existing package PHP image;
 no Compose stack, network, volume, task-built image or worktree was created.
+The hosted native task stack removed its two containers, network, two volumes
+and task-built image successfully; those are separate from local resources.
 Reused images and unrelated resources are retained. The ignored
 `.build/swoole-performance-quality` copy can be regenerated; continuation state
 and acceptance criteria live in these tracked documents.
