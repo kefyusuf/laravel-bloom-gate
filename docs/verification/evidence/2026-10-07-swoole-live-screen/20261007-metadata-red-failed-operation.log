@@ -1,0 +1,32 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Experiments\Swoole\MeasurementHttpTest[22m [90m>[39m…  [41;1m RuntimeException [49;22m  
+[39;1m  Measurement HTTP failed: HTTP/1.1 500 Internal Server Error 
+   INFO  Server running….  
+
+
+  Local: http://0.0.0.0:8000 
+
+  Press Ctrl+C to stop the server
+
+Warning: OpenSwoole\Server::set(): 'send_yield' option can only be set when using dispatch_mode=2/4 in /experiment/vendor/laravel/octane/bin/createSwooleServer.php on line 24[39;22m
+
+  at [32mtests/Experiments/Swoole/MeasurementHttpTest.php[39m:[32m20[39m
+     16▕     $body = file_get_contents('http://127.0.0.1:8000/'.$path.'?key='.rawurlencode($key), false,
+     17▕         stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true, 'header' => 'Connection: close']]));
+     18▕     if (! str_contains($http_response_header[0] ?? '', '200 OK')) {
+     19▕         $server = $GLOBALS['measurement_server'] ?? null;
+  ➜  20▕         throw new RuntimeException('Measurement HTTP failed: '.($http_response_header[0] ?? '').' '.
+     21▕             ($server instanceof Process ? $server->getOutput().$server->getErrorOutput() : ''));
+     22▕     }
+     23▕     if ($body === false) {
+     24▕         throw new RuntimeException('Measurement HTTP request failed.');
+
+  [33m1   [39m[39;1mtests/Experiments/Swoole/MeasurementHttpTest.php[39;22m:[39;1m20[39;22m
+  [33m2   [39m[39;1mtests/Experiments/Swoole/MeasurementHttpTest.php[39;22m:[39;1m71[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m3 passed[39;22m[90m (3 assertions)[39m
+  [90mDuration:[39m [39m4.57s[39m
+

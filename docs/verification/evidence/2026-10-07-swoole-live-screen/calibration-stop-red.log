@@ -1,0 +1,46 @@
+
+  [90;1m.[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Experiments\Swoole\MeasurementReportTest[22m [90m>[39m it rejects a gen…   
+[39;1m  Failed asserting that two strings are identical.
+  [39;22m[31m-'INCONCLUSIVE'[39m[39;1m
+  [39;22m[32m+'GO'[39m[39;1m
+  [39;22m
+
+  at [32mtests/Experiments/Swoole/MeasurementReportTest.php[39m:[32m52[39m
+     48▕ it('rejects a generator-limited calibration even when the paired timings would pass', function (array $limit): void {
+     49▕     $report = validMeasurementReport();
+     50▕     $report['calibration'] = [$limit];
+     51▕     $result = MeasurementReport::evaluate($report);
+  ➜  52▕     expect($result['verdict'])->toBe('INCONCLUSIVE');
+     53▕     expect($result['reasons'])->toContain('Generator-limited calibration cannot establish SQL capacity.');
+     54▕ })->with([
+     55▕     [['dropped_iterations' => 1, 'generator_saturated' => false]],
+     56▕     [['dropped_iterations' => 0, 'generator_saturated' => true]],
+
+  [33m1   [39m[39;1mtests/Experiments/Swoole/MeasurementReportTest.php[39;22m:[39;1m52[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Experiments\Swoole\MeasurementReportTest[22m [90m>[39m it rejects a gen…   
+[39;1m  Failed asserting that two strings are identical.
+  [39;22m[31m-'INCONCLUSIVE'[39m[39;1m
+  [39;22m[32m+'GO'[39m[39;1m
+  [39;22m
+
+  at [32mtests/Experiments/Swoole/MeasurementReportTest.php[39m:[32m52[39m
+     48▕ it('rejects a generator-limited calibration even when the paired timings would pass', function (array $limit): void {
+     49▕     $report = validMeasurementReport();
+     50▕     $report['calibration'] = [$limit];
+     51▕     $result = MeasurementReport::evaluate($report);
+  ➜  52▕     expect($result['verdict'])->toBe('INCONCLUSIVE');
+     53▕     expect($result['reasons'])->toContain('Generator-limited calibration cannot establish SQL capacity.');
+     54▕ })->with([
+     55▕     [['dropped_iterations' => 1, 'generator_saturated' => false]],
+     56▕     [['dropped_iterations' => 0, 'generator_saturated' => true]],
+
+  [33m1   [39m[39;1mtests/Experiments/Swoole/MeasurementReportTest.php[39;22m:[39;1m52[39;22m
+
+
+  [90mTests:[39m    [31;1m2 failed[39;22m[90m,[39m[39m [39m[32;1m51 passed[39;22m[90m (53 assertions)[39m
+  [90mDuration:[39m [39m4.56s[39m
+
