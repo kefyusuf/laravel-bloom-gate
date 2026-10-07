@@ -1,0 +1,30 @@
+{
+  "source_ref": "21f37ba88cd6b064a6bf7f8ea6ae7d02211ba793",
+  "encoding": "UTF-8 text normalized to LF; logs omit ANSI and trailing whitespace; digests cover exact tracked content",
+  "artifacts": {
+    "20261007-qualify-delay-0-cell.json": "d09410f9698e565d116dd89edaa174166a7d4e631fe0fbacb6e991acd83225f3",
+    "20261007-qualify-delay-0-resources.json": "477e870d81ba854b8f2654fc40a5638a38c90b8fa939d26f424f894914721003",
+    "20261007-qualify-delay-0.json": "df92e53ee2e0efb6ff3636fb9e2ce3cd671d19ac0a6a6dfe0391f5f3242120ab",
+    "20261007-qualify-delay-0.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "20261007-qualify-delay-25-cell.json": "007a41243859bacfa0eb507e74575f2fbfa39b3b78c5192f745e9b84eaa95c5d",
+    "20261007-qualify-delay-25-resources.json": "15c8eac399c45a317aaac230526aba86352eb732e3a82e5eda54fb169d2039b9",
+    "20261007-qualify-delay-25.json": "a4e78c8d913224a4d76f8d97a38acf75eb8c17b5ec85e7501a9c87d96e3336a5",
+    "20261007-qualify-delay-25.txt": "1eec806a9efad1139670cfa2bf4bc380f108ef8d3b4c6e462b8dc70bc5c004c7",
+    "20261007-qualify-negative-128-vus-cell.json": "e0e9ca5789be405e3e1ad14cfb407efc42580fc94513d27f51ea4dbd75c0513a",
+    "20261007-qualify-negative-128-vus-resources.json": "fae26eab02d5cb90cc021a876df824ace4f9a0e8cbe778284e552d3f0ab86ad8",
+    "20261007-qualify-negative-128-vus.json": "976cf89f0c82a81c74c09a54449e90fdd823b6fe4ca9bae01a9b8034338b7670",
+    "20261007-qualify-negative-128-vus.txt": "2178530263bb73a94b8fefce53738959aa5544f94d545b5d52921cea57f26b68",
+    "20261007-qualify-outcome.json": "e39d0d8f8a095dd3c4858e458470e8e1970aae118a99d53a4d90b0149878a719",
+    "http-red.txt": "979aa35640d085fd5adb456d4bcae856982882c0c9d0c2bc06cd67dbb6b60ee2",
+    "http-workers-green.txt": "0b5ffb3625bf0ad7b2d3237aa72a0fc70a37bf311b6d04f70d0dfd3751c10807",
+    "report-red.txt": "3c1658675fdbcd008d60c1be0491c4c45aba76bf40b6584ef72a4255a371aca6",
+    "report-first-green.txt": "6fdf28dad279837a2dbf96b6d713e8fe47e501a02ae69d74c463584ee3f7fe54",
+    "drops-red.txt": "ee3f119edf3c80e1cc4fe48e0da8e94c4fba74e76a269f8a5206412b65d1fad3",
+    "drops-green.txt": "873109632e29dba2979b5f526f0d3c95765bd03b8f515a583d31e99fbd97325e",
+    "resources-red.txt": "5cfc41ec577335e7d443fea56cf4271b651f4ccca0841a5fbc9171f7c1a1592e",
+    "percentiles-red.txt": "0b88ddbfa78e6dbb1d0f2529acd4dc34e7ee69c40ceec24dbb375f4a3cd332fd",
+    "percentiles-green.txt": "ba1421fced96cc2d57dd973555fb97f0aaf6298efcf206a8e8e19327b8109566",
+    "quality-final.txt": "bb7ae39428b005ac767362d064a218bc70517ef49a42a68255b710e14c0bc241",
+    "live-run.txt": "aeb407513b76501721d4a3703dab4a7feda38ceb0e4213459af0c3861e7ac07a"
+  }
+}

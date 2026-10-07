@@ -2,6 +2,20 @@
 
 ## Latest continuation
 
+Independent fixed-budget generator qualification in
+[PR #91](https://github.com/kefyusuf/laravel-bloom-gate/pull/91) stopped
+**INCONCLUSIVE** at the first delayed positive profile. At 4,800 RPS/1,024 VUs,
+the 0-ms cell passed, but the 25-ms cell dropped 1,104 scheduled iterations and
+had 4,929 controlled-delay violations. The 100/150-ms positives were not run.
+All-iteration client totals matched independent receiver counts. See the
+[qualification record](verification/2026-10-07-load-generator-qualification.md)
+and tracked evidence, measured source `21f37ba88cd6b064a6bf7f8ea6ae7d02211ba793`.
+No source/settings tuning or rerun occurred. The user authorized this separate
+generator attempt; its failure does not authorize application reruns. A next
+proposal must address exact delay control and scheduling, freeze a new profile,
+and obtain authorization before fresh timing. Retain the production backend.
+Refresh PR #91's exact-head review/CI/merge state before treating it as delivered.
+
 Task 3 now has real equal HTTP paths and a manual collector in
 [PR #90](https://github.com/kefyusuf/laravel-bloom-gate/pull/90). Its actual
 MySQL attempt is **INCONCLUSIVE**: the fixed 128-VU generator dropped one
@@ -13,8 +27,10 @@ compatibility correction was used; no third performance attempt, conditional
 matrix, PostgreSQL confirmation or soak is authorized by this outcome.
 92,404 completed calibration/control responses had no observed parity failure,
 false negative or HTTP error, but no paired speed comparison completed.
-Stop this runtime attempt and retain the proven backend. Refresh exact-head
-review/CI/merge state before considering PR #90 delivered.
+Stop this runtime attempt and retain the proven backend. PR #90 merged at
+`0a3f86301edb59f342b12b9a6dfd1d0603045832` after independent review and
+exact-head hosted checks. The separate generator attempt above does not change
+that screen's outcome.
 
 The user approved the Redis-free single-host evaluation; plan PR #86 merged at
 `ad6fc04e5319d009bbda2b0e06600342afef57ac`. See

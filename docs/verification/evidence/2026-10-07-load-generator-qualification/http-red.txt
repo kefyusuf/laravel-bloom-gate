@@ -1,0 +1,22 @@
+
+  ⨯
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorHttpTest > it…  RuntimeException
+  Receiver exited: Could not open input file: /app/tests/Experiments/Swoole/generator-server.php
+
+  at tests/Experiments/Swoole/GeneratorHttpTest.php:35
+     31▕     try {
+     32▕         $deadline = microtime(true) + 10;
+     33▕         do {
+     34▕             if (! $server->isRunning()) {
+  ➜  35▕                 throw new RuntimeException('Receiver exited: '.$server->getOutput().$server->getErrorOutput());
+     36▕             }
+     37▕             set_error_handler(static fn (): bool => true);
+     38▕             try {
+     39▕                 $socket = stream_socket_client('tcp://127.0.0.1:8001', $code, $message, 0.1);
+
+  1   tests/Experiments/Swoole/GeneratorHttpTest.php:35
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 4.16s
