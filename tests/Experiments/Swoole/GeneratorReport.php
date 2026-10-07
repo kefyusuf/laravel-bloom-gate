@@ -21,6 +21,7 @@ final class GeneratorReport
                 self::check(self::integer($cell, $field) === 0, "$field must be zero.");
             }
             self::check(($cell['generator_saturated'] ?? null) === false, 'Generator saturation invalidates qualification.');
+            self::check(($cell['window_basis'] ?? null) === 'scenario-start-time', 'The measurement window must use scenario start time.');
             self::check(($cell['path'] ?? null) === 'generator' && self::integer($cell, 'workers') === 4
                 && self::integer($cell, 'vus') === 1024 && self::integer($cell, 'offered_rate') === 4800
                 && self::integer($cell, 'warmup_seconds') === 30 && self::integer($cell, 'duration_seconds') === 60,

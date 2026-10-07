@@ -11,7 +11,7 @@ if (is_file(__DIR__.'/GeneratorReport.php')) {
 /** @return array<string, mixed> */
 function validGeneratorCell(): array
 {
-    return ['path' => 'generator', 'workers' => 4, 'vus' => 1024, 'offered_rate' => 4800,
+    return ['path' => 'generator', 'workers' => 4, 'vus' => 1024, 'offered_rate' => 4800, 'window_basis' => 'scenario-start-time',
         'controlled_delay_ms' => 150, 'warmup_seconds' => 30, 'duration_seconds' => 60,
         'responses' => 288000, 'started_iterations' => 288000, 'completed_iterations' => 288000,
         'unfinished_iterations' => 0, 'dropped_iterations' => 0, 'errors' => 0,
@@ -49,5 +49,11 @@ it('rejects impossible percentile ordering', function (): void {
     $cell = validGeneratorCell();
     $cell['p50_ms'] = 250;
     $cell['p99_ms'] = 151;
+    expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
+});
+
+it('rejects a measurement window selected by successful iteration number', function (): void {
+    $cell = validGeneratorCell();
+    $cell['window_basis'] = 'successful-iteration-index';
     expect(GeneratorReport::evaluateCell($cell)['verdict'])->toBe('INCONCLUSIVE');
 });

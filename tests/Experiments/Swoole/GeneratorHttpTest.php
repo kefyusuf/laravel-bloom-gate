@@ -70,6 +70,7 @@ it('counts controlled synthetic responses independently without SQL or Redis', f
             expect($reply['sql_calls'])->toBe(0);
             expect($reply['redis_calls'])->toBe(0);
             expect($reply['controlled_delay_ms'])->toBe(25);
+            expect($reply['query_ms'])->toBeGreaterThanOrEqual(25);
             expect((hrtime(true) - $start) / 1e6)->toBeGreaterThanOrEqual(25);
             $pids[] = generatorCount($reply, 'pid');
         }
@@ -79,6 +80,7 @@ it('counts controlled synthetic responses independently without SQL or Redis', f
         expect(generatorCount($after, 'completed') - generatorCount($before, 'completed'))->toBe(8);
         expect($after['failed'])->toBe(0);
         expect($after['workers'])->toBe(4);
+        expect($after['timer_failures'])->toBe(0);
     } finally {
         $server->stop();
     }

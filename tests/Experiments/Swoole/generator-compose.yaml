@@ -8,7 +8,7 @@ services:
     mem_limit: 256m
     volumes:
       - .:/fixture:ro
-      - ../../../.build/generator-qualification:/results:ro
+      - ../../../.build/generator-qualification:/results
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/generator-info')===false?1:0);"]
       interval: 2s
