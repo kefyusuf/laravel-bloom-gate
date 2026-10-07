@@ -51,15 +51,19 @@ $instrumented = Join-Path $output 'instrumented.go'
 [IO.File]::WriteAllText($instrumented, $body, [Text.UTF8Encoding]::new($false))
 $replace = @{}
 $replace[$target] = $instrumented
-$replace[(Join-Path $source 'lib/executor/lbg_arrival_boundary_test.go')] = Join-Path $PSScriptRoot 'arrival_boundary_test.go'
 $overlay = Join-Path $output 'overlay.json'
 [IO.File]::WriteAllText($overlay, (@{Replace=$replace} | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
 Push-Location $source
 try {
     $raceArgs = @()
     if ($Race) { $raceArgs += '-race' }
-    & go test -mod=vendor @raceArgs "-overlay=$overlay" ./lib/executor -run '^TestBoundary' -count=1 -timeout=60s -v
-    $result = $LASTEXITCODE
+    $testFile = Join-Path $source 'lib/executor/lbg_arrival_boundary_test.go'
+    if (Test-Path -LiteralPath $testFile) { throw 'Temporary test path is already occupied.' }
+    [IO.File]::WriteAllBytes($testFile, [IO.File]::ReadAllBytes((Join-Path $PSScriptRoot 'arrival_boundary_test.go')))
+    try {
+        & go test -mod=vendor @raceArgs "-overlay=$overlay" ./lib/executor -run '^TestBoundary' -count=1 -timeout=60s -v
+        $result = $LASTEXITCODE
+    } finally { Remove-Item -LiteralPath $testFile }
     if ($result -eq 0 -and $UpstreamChecks) {
         & go test -mod=vendor @raceArgs "-overlay=$runtimeOverlay" ./lib/executor -run '^TestConstantArrivalRate' -count=1 -timeout=120s -v
         $result = $LASTEXITCODE

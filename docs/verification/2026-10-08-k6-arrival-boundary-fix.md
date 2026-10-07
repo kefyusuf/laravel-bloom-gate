@@ -42,7 +42,10 @@ the runner fails the test explicitly.
 Seven boundary tests and two segment subcases passed locally. Uninstrumented
 upstream constant-arrival tests passed (five main tests and three segment
 subcases); the upstream Windows timing test skipped itself. Local Go was
-1.27.1/windows-amd64. CI additionally uses Go 1.23.7/Linux and race detection.
+1.27.1/windows-amd64; the corrected runner also passed the same RED/GREEN,
+upstream and uninstrumented build sequence locally with Go 1.23.7. The final
+local binary provenance records Go 1.23.7; initial Go 1.27.1 proof is retained
+separately. CI additionally uses Go 1.23.7/Linux and race detection.
 The [retained evidence](evidence/2026-10-08-k6-arrival-boundary-fix/) includes
 RED/GREEN logs and the uninstrumented binary's provenance. Final exact-head
 CI and independent review gate delivery; local proof is not hosted proof.
@@ -64,6 +67,10 @@ The source revision is `5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb`.
 The verification script requires a clean checkout, applies the patch to an
 owned copy, and uses separate overlays for controlled tests and the unchanged
 clock binary/upstream checks. Original upstream files remain unchanged.
+Go 1.23.7 initially failed vet on a nonexistent overlaid test file, before RED
+execution. The runner now materializes only its previously absent test file and
+removes it in a finally block before upstream checks/build. Vet remains enabled;
+this compatibility failure is not behavioral RED or a passing CI result.
 Local runtime source SHA-256 is
 `e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce`;
 the binary digest and actual toolchain are in `binary-provenance.json`.

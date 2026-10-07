@@ -1,8 +1,8 @@
 {
   "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
   "mode": "Patched",
-  "go": "go version go1.23.7 windows/amd64",
+  "go": "go version go1.27.1 windows/amd64",
   "runtime_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
-  "binary_sha256": "c4ba93cf93b063bcd05b6b913669c88752fea797c4662a78a54627fa7ca1e0da",
+  "binary_sha256": "7d6ffb17d29f06f26a8b88f0d52af27d4b678c8e6ffe31d1f63a4e2943aecf0d",
   "instrumented_clock": false
 }

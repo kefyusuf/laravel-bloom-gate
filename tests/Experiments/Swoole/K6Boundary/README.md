@@ -33,6 +33,10 @@ unchanged. `-Race` adds the Go race detector on a supported host. CI uses Linux
 and Go 1.23.7; local proof records its actual toolchain. A single first-runner
 barrier proves busy-VU loss; failure to enter the runner fails the test.
 
+Go 1.23's vet requires the added test file on disk. The script creates only its
+previously absent test file in the verified checkout, then removes it in a
+finally block before upstream checks/build. Original files and vet stay intact.
+
 The binary is `.build/k6-terminal-fix/k6-boundary[.exe]`. Its version banner
 still identifies upstream v1.3.0; `binary-provenance.json` distinguishes the
 patched runtime source, exact upstream revision, toolchain and binary digest.

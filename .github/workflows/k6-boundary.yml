@@ -28,6 +28,7 @@ jobs:
           ./tests/Experiments/Swoole/K6Boundary/verify.ps1 -SourcePath .build/k6-terminal-fix/upstream -Mode Baseline *> .build/k6-terminal-fix/baseline.txt
           if ($LASTEXITCODE -eq 0) { throw 'Original executor unexpectedly passed.' }
           $proof = Get-Content .build/k6-terminal-fix/baseline.txt -Raw
+          Write-Output $proof
           foreach ($count in @('4801', '4806', '432006')) {
             if ($proof -notmatch ('actual\s*:\s*' + $count + '\b')) { throw "Missing RED boundary proof: $count" }
           }
