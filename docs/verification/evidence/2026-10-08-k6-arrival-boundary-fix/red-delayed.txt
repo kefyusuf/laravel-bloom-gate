@@ -1,0 +1,21 @@
+=== RUN   TestBoundaryTruncationDoesNotOfferTerminalSlot
+    lbg_arrival_boundary_test.go:91:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:91
+            Error:          Not equal:
+                            expected: 4800
+                            actual  : 4801
+            Test:           TestBoundaryTruncationDoesNotOfferTerminalSlot
+            Messages:       the one-second open schedule must offer exactly 4800 slots
+--- FAIL: TestBoundaryTruncationDoesNotOfferTerminalSlot (0.00s)
+=== RUN   TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+    lbg_arrival_boundary_test.go:97:
+            Error Trace:    E:/projects/laravel-bloom-gate/.build/k6-terminal-fix/upstream/lib/executor/lbg_arrival_boundary_test.go:97
+            Error:          Not equal:
+                            expected: 4800
+                            actual  : 4806
+            Test:           TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots
+            Messages:       late cancellation delivery must not extend the nominal open schedule
+--- FAIL: TestBoundaryDelayedCancellationDoesNotOfferSixExtraSlots (0.00s)
+FAIL
+FAIL    go.k6.io/k6/lib/executor    1.610s
+FAIL

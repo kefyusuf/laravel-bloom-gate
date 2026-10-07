@@ -1,0 +1,38 @@
+name: K6 Arrival Boundary
+
+on:
+  pull_request:
+    paths:
+      - 'tests/Experiments/Swoole/K6Boundary/**'
+      - '.github/workflows/k6-boundary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  component:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.23.7'
+          cache: false
+      - name: Acquire the pinned public executor source
+        run: git clone --depth 1 --branch v1.3.0 https://github.com/grafana/k6.git .build/k6-terminal-fix/upstream
+      - name: Require the original executor to expose the boundary failures
+        shell: pwsh
+        run: |
+          ./tests/Experiments/Swoole/K6Boundary/verify.ps1 -SourcePath .build/k6-terminal-fix/upstream -Mode Baseline *> .build/k6-terminal-fix/baseline.txt
+          if ($LASTEXITCODE -eq 0) { throw 'Original executor unexpectedly passed.' }
+          $proof = Get-Content .build/k6-terminal-fix/baseline.txt -Raw
+          foreach ($count in @('4801', '4806', '432006')) {
+            if ($proof -notmatch ('actual\s*:\s*' + $count + '\b')) { throw "Missing RED boundary proof: $count" }
+          }
+          Write-Output 'Expected original-executor RED boundary failures verified.'
+          exit 0
+      - name: Verify actual executor boundaries, upstream behavior and uninstrumented build
+        shell: pwsh
+        run: ./tests/Experiments/Swoole/K6Boundary/verify.ps1 -SourcePath .build/k6-terminal-fix/upstream -Mode Patched -Race -UpstreamChecks -BuildBinary

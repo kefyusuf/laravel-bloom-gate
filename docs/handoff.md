@@ -2,6 +2,21 @@
 
 ## Latest continuation
 
+The isolated pinned-k6 boundary correction now has real executor TDD evidence:
+original 4,801/4,806 terminal slots reduce to 4,800, and controlled late
+cancellation at the full 90-second count reduces 432,006 to 432,000.
+See the [component correction](verification/2026-10-08-k6-arrival-boundary-fix.md)
+and `tests/Experiments/Swoole/K6Boundary`. Exact integer global-slot admission
+and timer-branch cancellation check preserve striped work, fractional schedules
+and visible drops. Seven component tests/two segment subcases and real-clock
+upstream checks passed locally; an uninstrumented patched binary built with
+recorded provenance. Refresh final PR review/CI/merge before relying on delivery.
+Default Compose/k6 image remains unchanged. Next: reviewed Linux image/provenance
+integration before one separately frozen, approved qualification; no fresh load
+ran and PR #95 remains INCONCLUSIVE. This proves a corrected overshoot mechanism,
+not the old run's root cause or capacity. No Docker resource/worktree operation
+occurred; all existing resources retained. Older next-step text is historical.
+
 Offline pinned-k6 v1.3.0 analysis follows PR #95's failed qualification. At
 4,800 RPS, integer-nanosecond period truncation places slot 432,000 at
 89.999856 seconds, before the 90-second deadline. It can explain one extra

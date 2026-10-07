@@ -1,0 +1,4 @@
+=== RUN   TestBoundaryTruncationDoesNotOfferTerminalSlot
+--- PASS: TestBoundaryTruncationDoesNotOfferTerminalSlot (0.00s)
+PASS
+ok      go.k6.io/k6/lib/executor    1.382s
