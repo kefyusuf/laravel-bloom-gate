@@ -31,7 +31,7 @@ trap cleanup EXIT
 "${compose[@]}" build php
 "${compose[@]}" up -d --wait
 printf "ALTER USER 'seeder'@'%%' IDENTIFIED BY '%s';\n" "$seed_password" | "${compose[@]}" exec -T mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot'
-"${compose[@]}" exec -T php sh -c 'cp -r /package/tests/Experiments/Swoole/. /experiment/ && mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public tests/Experiments/Swoole && cp SharedMemory*.php Measurement*.php fixture.php tests/Experiments/Swoole/ && composer install --no-interaction --no-progress --prefer-dist'
+"${compose[@]}" exec -T php sh -c 'cp -r /package/tests/Experiments/Swoole/. /experiment/ && mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs public tests/Experiments/Swoole && cp SharedMemory*.php Measurement*.php Generator*.php generator-server.php fixture.php tests/Experiments/Swoole/ && composer install --no-interaction --no-progress --prefer-dist'
 "${compose[@]}" exec -T php php preflight.php
 "${compose[@]}" exec -T -e "DEMO_SEED_PASSWORD=$seed_password" php sh -c 'php seed.php && rm seed.php'
 unset seed_password
@@ -41,3 +41,4 @@ unset seed_password
 "${compose[@]}" exec -T -e SHARED_MEMORY_NATIVE_TESTS=1 php vendor/bin/pest tests/Experiments/Swoole/SharedMemoryQueryTest.php --group=swoole --fail-on-warning --fail-on-risky
 "${compose[@]}" exec -T -e SHARED_MEMORY_NATIVE_TESTS=1 php vendor/bin/pest tests/Experiments/Swoole/SharedMemoryHttpTest.php --group=swoole --fail-on-warning --fail-on-risky
 "${compose[@]}" exec -T -e MEASUREMENT_NATIVE_TESTS=1 php vendor/bin/pest tests/Experiments/Swoole/MeasurementAdmissionTest.php tests/Experiments/Swoole/MeasurementHttpTest.php --fail-on-warning --fail-on-risky
+"${compose[@]}" exec -T -e GENERATOR_NATIVE_TESTS=1 php vendor/bin/pest tests/Experiments/Swoole/GeneratorHttpTest.php --fail-on-warning --fail-on-risky
