@@ -19,7 +19,10 @@ if (git status --porcelain) { throw 'Commit the reviewed measurement sources bef
 
 function Invoke-Docker([string[]]$DockerArgs) {
     $output = & $docker @DockerArgs
-    if ($LASTEXITCODE) { throw "Task Docker operation failed: $($DockerArgs[0])" }
+    if ($LASTEXITCODE) {
+        $output | Set-Content (Join-Path $results "$Task-failed-operation.log")
+        throw "Task Docker operation failed: $($DockerArgs[0]); see $Task-failed-operation.log"
+    }
     return $output
 }
 function Get-RedisCommands {
