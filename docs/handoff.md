@@ -1,6 +1,20 @@
-# Project handoff — 2026-10-07
+# Project handoff — 2026-10-08
 
 ## Latest continuation
+
+One corrected frozen qualification at source
+`9a0d211b2aca0f81782175533fc70e411fe26473` stopped **INCONCLUSIVE** after
+2/12 positive cells. Early negative safety passed; block 1 / 0 ms passed;
+block 1 / 25 ms had 432,006 all-run completions against 432,000 ±1.
+Client/builtin/receiver counts agree, nominal cohort is 288,000 and drops,
+errors and early responses are zero. The remaining ten cells did not run.
+See the [retained qualification record](verification/2026-10-08-generator-qualification.md).
+No tuning, tolerance widening or retry occurred. Next: offline terminal-start
+and pinned-executor analysis; root cause remains unknown. SQL/application
+comparison remains unqualified. PR #95 includes the TDD early-negative-safety
+fix and evidence; refresh its final exact-head review/CI/merge state before
+using delivery. Own task Docker stack/images were removed; existing resources
+were retained. The older next-step instructions below are historical.
 
 The versioned measurement contract now separates nominal completeness (existing
 ±1 count tolerance) from actual-window performance (unchanged ≥95% throughput
