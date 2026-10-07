@@ -1,0 +1,27 @@
+ Network lbg-generator-20261008-qualification-v1_default Creating
+ Network lbg-generator-20261008-qualification-v1_default Creating
+ Network lbg-generator-20261008-qualification-v1_default Created
+ Network lbg-generator-20261008-qualification-v1_default Created
+ Container lbg-generator-20261008-qualification-v1-php-1 Creating
+ Container lbg-generator-20261008-qualification-v1-php-1 Created
+ Container lbg-generator-20261008-qualification-v1-php-1 Starting
+ Container lbg-generator-20261008-qualification-v1-php-1 Started
+ Container lbg-generator-20261008-qualification-v1-php-1 Waiting
+ Container lbg-generator-20261008-qualification-v1-php-1 Healthy
+ Container lbg-generator-20261008-qualification-v1-load Creating
+ Container lbg-generator-20261008-qualification-v1-load Created
+negative-128-vus responses=4207 drops=2512 p99=152.0689645 verdict=INCONCLUSIVE
+ Container lbg-generator-20261008-qualification-v1-load Creating
+ Container lbg-generator-20261008-qualification-v1-load Created
+block-1-delay-0 responses=287990 drops=0 p99=0.589697859999997 verdict=PASS
+ Container lbg-generator-20261008-qualification-v1-load Creating
+ Container lbg-generator-20261008-qualification-v1-load Created
+block-1-delay-25 responses=288000 drops=0 p99=27.33040062 verdict=INCONCLUSIVE
+ Container lbg-generator-20261008-qualification-v1-php-1 Stopping
+ Container lbg-generator-20261008-qualification-v1-php-1 Stopped
+ Container lbg-generator-20261008-qualification-v1-php-1 Removing
+ Container lbg-generator-20261008-qualification-v1-php-1 Removed
+ Network lbg-generator-20261008-qualification-v1_default Removing
+ Network lbg-generator-20261008-qualification-v1_default Removed
+Untagged: lbg-generator-php:20261008-qualification-v1
+Deleted: sha256:f311d5c46ee585a9489eee355791219b316176e1c2a909c1a93f33d3a5e6c673

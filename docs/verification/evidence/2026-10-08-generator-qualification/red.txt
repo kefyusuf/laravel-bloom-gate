@@ -1,0 +1,27 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorReportTest
+  ⨯ it checks negative-control safety through the CLI before positive c… 0.85s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it checks negative…
+  Failed asserting that an array has a key 'verdict' with the value 'INCONCLUSIVE'.
+Failed asserting that two strings are equal.
+  -'VALID_NEGATIVE_CONTROL'
+  +'INCONCLUSIVE'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:212
+    208▕         unset($run['profiles']);
+    209▕         file_put_contents($path, json_encode($run, JSON_THROW_ON_ERROR));
+    210▕         $process = new Process(['php', __DIR__.'/generator-evaluate.php', $path, '--negative-control']);
+    211▕         $process->mustRun();
+  ➜ 212▕         expect(json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR))->toMatchArray([
+    213▕             'verdict' => 'VALID_NEGATIVE_CONTROL', 'reasons' => []]);
+    214▕         $run['negative_control']['cell']['total_errors'] = 1;
+    215▕         file_put_contents($path, json_encode($run, JSON_THROW_ON_ERROR));
+    216▕         $process->mustRun();
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:212
+
+
+  Tests:    1 failed (2 assertions)
+  Duration: 4.85s

@@ -10,7 +10,7 @@ use InvalidArgumentException;
 final class GeneratorReport
 {
     /** @return array{verdict:string,reasons:list<string>} */
-    public static function evaluateQualification(mixed $input): array
+    public static function evaluateNegativeControl(mixed $input): array
     {
         try {
             $run = self::object($input);
@@ -60,15 +60,33 @@ final class GeneratorReport
                 && self::integer($controlReceiver, 'failed') === 0
                 && abs($controlTotal + self::integer($control, 'dropped_iterations') - 8400) <= 1,
                 'Negative-control completed and dropped work must be independently accounted for.');
+            self::check(is_string($negative['raw'] ?? null)
+                && preg_match('/^[a-z0-9-]+\.json$/D', $negative['raw']) === 1,
+                'The negative-control raw artifact is required.');
+
+            return ['verdict' => 'VALID_NEGATIVE_CONTROL', 'reasons' => []];
+        } catch (InvalidArgumentException $failure) {
+            return ['verdict' => 'INCONCLUSIVE', 'reasons' => [$failure->getMessage()]];
+        }
+    }
+
+    /** @return array{verdict:string,reasons:list<string>} */
+    public static function evaluateQualification(mixed $input): array
+    {
+        try {
+            $controlResult = self::evaluateNegativeControl($input);
+            self::check($controlResult['verdict'] === 'VALID_NEGATIVE_CONTROL', implode(' ', $controlResult['reasons']));
+            $run = self::object($input);
+            $identity = self::object($run['identity'] ?? null);
+            $negative = self::object($run['negative_control'] ?? null);
             $profiles = $run['profiles'] ?? null;
             self::check(is_array($profiles) && array_is_list($profiles) && count($profiles) === 12,
                 'All four delays in three blocks are required.');
             $cells = [];
             $artifacts = [];
-            self::check(is_string($negative['raw'] ?? null)
-                && preg_match('/^[a-z0-9-]+\.json$/D', $negative['raw']) === 1,
-                'The negative-control raw artifact is required.');
-            $artifacts[$negative['raw']] = true;
+            $rawControl = $negative['raw'] ?? null;
+            self::check(is_string($rawControl), 'The negative-control raw artifact is required.');
+            $artifacts[$rawControl] = true;
             foreach ($profiles as $profileInput) {
                 $profile = self::object($profileInput);
                 $cell = self::object($profile['cell'] ?? null);
