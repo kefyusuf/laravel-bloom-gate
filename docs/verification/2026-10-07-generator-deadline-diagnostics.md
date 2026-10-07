@@ -14,8 +14,8 @@ cycle. Requests enter the measured window by scenario time rather than successfu
 iteration index. No production code or private application data was involved.
 
 The reviewed collector ran once at 4,800 RPS, 1,024 preallocated VUs, 25 ms delay,
-5 seconds warmup and 15 seconds measurement. Receiver budget: 4 CPUs/4 GiB;
-generator: 2 CPUs/256 MiB. Paused k6 started after the independent observer was
+5 seconds warmup and 15 seconds measurement. Generator budget: 4 CPUs/4 GiB;
+receiver: 2 CPUs/256 MiB. Paused k6 started after the independent observer was
 ready. Its REST API remained inside the task network with no host ports.
 
 See the [plan](../plans/2026-10-07-generator-deadline-diagnostics.md) and
