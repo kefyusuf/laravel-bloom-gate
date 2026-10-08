@@ -1,0 +1,120 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.42kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d
+#2 ...
+
+#3 [auth] library/golang:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [auth] grafana/k6:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb
+#5 DONE 1.1s
+
+#2 [internal] load metadata for docker.io/grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d
+#2 DONE 1.1s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 86B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [stage-1 1/3] FROM docker.io/grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d
+#8 resolve docker.io/grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d 0.1s done
+#8 DONE 0.1s
+
+#9 [build 1/7] FROM docker.io/library/golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb
+#9 resolve docker.io/library/golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb 0.1s done
+#9 DONE 0.1s
+
+#10 [build 4/7] ADD https://codeload.github.com/grafana/k6/tar.gz/5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb /tmp/upstream.tar.gz
+#10 DONE 0.8s
+
+#7 [internal] load build context
+#7 transferring context: 49B done
+#7 DONE 0.0s
+
+#11 [build 2/7] WORKDIR /src
+#11 CACHED
+
+#12 [build 3/7] RUN apk add --no-cache patch=2.7.6-r10
+#12 CACHED
+
+#13 [build 5/7] COPY arrival-slot-boundary.patch /tmp/arrival-slot-boundary.patch
+#13 CACHED
+
+#14 [build 7/7] RUN --network=none GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off CGO_ENABLED=0 go build -mod=vendor -trimpath -buildvcs=false -o /out/k6 .     && mkdir -p /out/provenance     && cp lib/executor/constant_arrival_rate.go /out/provenance/runtime.go     && cp /tmp/arrival-slot-boundary.patch /out/provenance/arrival-slot-boundary.patch     && printf '{"upstream_revision":"5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb","runtime_source_sha256":"e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce","patch_sha256":"1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1","binary_sha256":"%s","instrumented_clock":false,"source_archive_sha256":"2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0","builder_image":"golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb","runtime_base_image":"grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"}\n' "$(sha256sum /out/k6 | cut -d ' ' -f 1)" > /out/provenance/provenance.json
+#14 CACHED
+
+#15 [build 4/7] ADD https://codeload.github.com/grafana/k6/tar.gz/5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb /tmp/upstream.tar.gz
+#15 CACHED
+
+#16 [build 6/7] RUN echo '2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0  /tmp/upstream.tar.gz' | sha256sum -c -     && tar -xzf /tmp/upstream.tar.gz --strip-components=1     && echo '1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1  /tmp/arrival-slot-boundary.patch' | sha256sum -c -     && patch -p1 < /tmp/arrival-slot-boundary.patch     && echo 'e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce  lib/executor/constant_arrival_rate.go' | sha256sum -c -     && ! grep -E 'boundary(Contexts|Since|NewTimer|AfterTimer)' lib/executor/constant_arrival_rate.go
+#16 CACHED
+
+#17 [stage-1 2/3] COPY --from=build /out/k6 /usr/bin/k6
+#17 CACHED
+
+#18 [stage-1 3/3] COPY --from=build /out/provenance /opt/lbg-k6
+#18 CACHED
+
+#19 exporting to image
+#19 exporting layers done
+#19 exporting manifest sha256:02a810e1bcbc7215ecd4530a31d62ebddba2690797178ea07f4ef064ebf50cae done
+#19 exporting config sha256:575b0e950b452e101f73f85b5ef6adb3310792b3019d28caf10264801aff2bdd done
+#19 exporting attestation manifest sha256:ecb6bd55bc128ed7199e8989c2a9fb5a3681c1bfed5b25e5aa1d7979947d4388 0.0s done
+#19 exporting manifest list sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa
+#19 exporting manifest list sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa 0.0s done
+#19 naming to docker.io/library/lbg-generator-k6:20261008-qualification-patched-v1 done
+#19 unpacking to docker.io/library/lbg-generator-k6:20261008-qualification-patched-v1
+#19 unpacking to docker.io/library/lbg-generator-k6:20261008-qualification-patched-v1 0.4s done
+#19 DONE 0.5s
+ Image lbg-generator-php:20261008-qualification-patched-v1 Building
+ Image lbg-generator-php:20261008-qualification-patched-v1 Built
+ Network lbg-generator-20261008-qualification-patched-v1_default Creating
+ Network lbg-generator-20261008-qualification-patched-v1_default Creating
+ Network lbg-generator-20261008-qualification-patched-v1_default Created
+ Network lbg-generator-20261008-qualification-patched-v1_default Created
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Creating
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Created
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Starting
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Started
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Waiting
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Healthy
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+negative-128-vus responses=4210 drops=2512 p99=152.11931544 verdict=INCONCLUSIVE
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+block-1-delay-0 responses=287995 drops=0 p99=2.61016148 verdict=PASS
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+block-1-delay-25 responses=287993 drops=0 p99=40.6457339200001 verdict=PASS
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+block-1-delay-100 responses=287988 drops=0 p99=110.09423327 verdict=PASS
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+block-1-delay-150 responses=287990 drops=0 p99=154.23687963 verdict=PASS
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+block-2-delay-0 responses=287991 drops=0 p99=4.50192459999987 verdict=PASS
+ Container lbg-generator-20261008-qualification-patched-v1-load Creating
+ Container lbg-generator-20261008-qualification-patched-v1-load Created
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Stopping
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Stopped
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Removing
+ Container lbg-generator-20261008-qualification-patched-v1-php-1 Removed
+ Network lbg-generator-20261008-qualification-patched-v1_default Removing
+ Network lbg-generator-20261008-qualification-patched-v1_default Removed
+Untagged: lbg-generator-php:20261008-qualification-patched-v1
+Deleted: sha256:906dbf5c8e7662fb4c8f2f95deb8a0bc567248a709aabafc2609b84645b1bacc
+Untagged: lbg-generator-k6:20261008-qualification-patched-v1
+Deleted: sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa
