@@ -1,0 +1,50 @@
+[
+  {
+    "BlockIO": "4.1kB / 0B",
+    "CPUPerc": "37.04%",
+    "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+    "ID": "a7b7c2a19cc4",
+    "MemPerc": "1.44%",
+    "MemUsage": "59.17MiB / 4GiB",
+    "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+    "NetIO": "396kB / 225kB",
+    "PIDs": "20",
+    "epoch_ms": 1791440302101
+  },
+  {
+    "BlockIO": "60.1MB / 0B",
+    "CPUPerc": "16.68%",
+    "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+    "ID": "8f231ab60d1c",
+    "MemPerc": "16.17%",
+    "MemUsage": "41.4MiB / 256MiB",
+    "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+    "NetIO": "228kB / 396kB",
+    "PIDs": "11",
+    "epoch_ms": 1791440302103
+  },
+  {
+    "BlockIO": "4.1kB / 0B",
+    "CPUPerc": "36.57%",
+    "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+    "ID": "a7b7c2a19cc4",
+    "MemPerc": "1.69%",
+    "MemUsage": "69.23MiB / 4GiB",
+    "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+    "NetIO": "1.84MB / 915kB",
+    "PIDs": "20",
+    "epoch_ms": 1791440306486
+  },
+  {
+    "BlockIO": "60.1MB / 0B",
+    "CPUPerc": "22.33%",
+    "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+    "ID": "8f231ab60d1c",
+    "MemPerc": "16.11%",
+    "MemUsage": "41.25MiB / 256MiB",
+    "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+    "NetIO": "917kB / 1.85MB",
+    "PIDs": "11",
+    "epoch_ms": 1791440306486
+  }
+]

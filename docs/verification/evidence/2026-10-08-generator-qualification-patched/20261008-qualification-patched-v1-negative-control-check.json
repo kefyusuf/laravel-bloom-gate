@@ -1,0 +1,203 @@
+{
+  "identity": {
+    "source_ref": "5185bf8d7bbe90078bd9fc2d72c3d0737e66ec79",
+    "sources": {
+      "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+      "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+      "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+      "generator-observe.php": "7ab18788fcb78d47dc2955efcb7b589c207bf90cc58350613aa4ae42208ff520",
+      "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+      "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+      "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+      "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+      "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+      "qualify-generator.ps1": "67b525271c658b7ba347199e266c86a55e26f4f9c11f158d0f4f171d06343774",
+      "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+      "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+      "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+      "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+      "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+      "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+    },
+    "receiver_image": "sha256:906dbf5c8e7662fb4c8f2f95deb8a0bc567248a709aabafc2609b84645b1bacc",
+    "k6_image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+    "k6_provenance": {
+      "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+      "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+      "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+      "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+      "instrumented_clock": false,
+      "image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+      "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+      "go_version": "go1.23.7",
+      "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+      "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+      "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+    },
+    "php": "8.4.26",
+    "swoole": "26.2.0",
+    "workers": 4,
+    "generator_cpus": 4,
+    "generator_memory_bytes": 4294967296,
+    "receiver_cpus": 2,
+    "receiver_memory_bytes": 268435456,
+    "fixed_vus": 1024
+  },
+  "negative_control": {
+    "raw": "20261008-qualification-patched-v1-negative-128-vus.json",
+    "cell": {
+      "block": 0,
+      "path": "generator",
+      "workers": 4,
+      "vus": 128,
+      "controlled_delay_ms": 150,
+      "offered_rate": 1200,
+      "absent_percent": 90,
+      "warmup_seconds": 2,
+      "duration_seconds": 5,
+      "window_basis": "scenario-start-time",
+      "measurement_contract": "scheduled-completeness-actual-window-v1",
+      "execution_topology": "single-local-constant-arrival",
+      "builtin_iterations": 5888,
+      "builtin_http_requests": 5888,
+      "elapsed_seconds": 5.143,
+      "unfinished_iterations": 0,
+      "dropped_iterations": 2512,
+      "generator_saturated": true,
+      "rps": 818.5883725452071,
+      "measurement_start_epoch_ms": 1791440302698,
+      "measurement_end_epoch_ms": 1791440307841,
+      "p50_ms": 150.9440865,
+      "p95_ms": 151.66535505,
+      "p99_ms": 152.11931544,
+      "query_ms": {
+        "min": 150.003852,
+        "med": 150.636767,
+        "p(95)": 151.33725925,
+        "p(99)": 151.76429826,
+        "max": 156.087704
+      },
+      "started_iterations": 4210,
+      "completed_iterations": 4210,
+      "responses": 4210,
+      "present_responses": 421,
+      "absent_responses": 3789,
+      "errors": 0,
+      "parity_failures": 0,
+      "false_negatives": 0,
+      "unknown_membership": 0,
+      "sql_calls": 0,
+      "redis_calls": 0,
+      "total_started_iterations": 5888,
+      "total_completed_iterations": 5888,
+      "total_errors": 0,
+      "total_parity_failures": 0,
+      "total_false_negatives": 0,
+      "total_unknown_membership": 0,
+      "total_delay_mismatches": 0,
+      "window_audit": {
+        "index_interpretation": "unavailable",
+        "start_offset_ms": {
+          "min": -1998,
+          "med": 1496.5,
+          "p(95)": 4652.65,
+          "p(99)": 4935,
+          "max": 4992
+        },
+        "crossing_offset_ms": {
+          "p(99)": 839.79,
+          "max": 846,
+          "min": 0,
+          "med": 409.5,
+          "p(95)": 811.9499999999999
+        },
+        "scheduled_started": 3488,
+        "scheduled_completed": 3488,
+        "warmup_entered": 722,
+        "scheduled_outside": 0,
+        "scheduled_early": 0,
+        "scheduled_late": 0,
+        "extra_entered": 0
+      },
+      "identity": {
+        "source_ref": "5185bf8d7bbe90078bd9fc2d72c3d0737e66ec79",
+        "sources": {
+          "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+          "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+          "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+          "generator-observe.php": "7ab18788fcb78d47dc2955efcb7b589c207bf90cc58350613aa4ae42208ff520",
+          "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+          "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+          "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+          "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+          "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+          "qualify-generator.ps1": "67b525271c658b7ba347199e266c86a55e26f4f9c11f158d0f4f171d06343774",
+          "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+          "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+          "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+          "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+          "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+          "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+        },
+        "receiver_image": "sha256:906dbf5c8e7662fb4c8f2f95deb8a0bc567248a709aabafc2609b84645b1bacc",
+        "k6_image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+        "k6_provenance": {
+          "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+          "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+          "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+          "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+          "instrumented_clock": false,
+          "image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+          "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+          "go_version": "go1.23.7",
+          "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+          "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+          "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+        },
+        "php": "8.4.26",
+        "swoole": "26.2.0",
+        "workers": 4,
+        "generator_cpus": 4,
+        "generator_memory_bytes": 4294967296,
+        "receiver_cpus": 2,
+        "receiver_memory_bytes": 268435456,
+        "fixed_vus": 1024
+      },
+      "receiver_delta": {
+        "completed": 5888,
+        "started": 5888,
+        "failed": 0
+      },
+      "worker_pids": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "worker_requests": [
+        1471,
+        1474,
+        1472,
+        1471
+      ],
+      "resources": {
+        "receiver_memory_percent_max": 16.11,
+        "samples": 1,
+        "receiver_running": true,
+        "generator_exit": 0,
+        "generator_oom": false,
+        "receiver_restarts": 0,
+        "generator_cpu_max": 36.57,
+        "receiver_cpu_max": 22.33,
+        "receiver_oom": false,
+        "generator_memory_percent_max": 1.69
+      }
+    },
+    "evaluation": {
+      "verdict": "INCONCLUSIVE",
+      "reasons": [
+        "dropped_iterations must be zero."
+      ]
+    }
+  }
+}

@@ -2,6 +2,20 @@
 
 ## Latest continuation
 
+One frozen patched-k6 qualification at source
+`5185bf8d7bbe90078bd9fc2d72c3d0737e66ec79` stopped INCONCLUSIVE on its sixth
+positive cell, block 2 / 25 ms. First five cells passed with 432,000 completed
+and zero drops. The sixth has 430,898 completed + 1,102 drops = 432,000, missing
+observer coverage and resource observations above headroom limits. Six cells
+remain unrun; no retry/tuning/tolerance change occurred. See the
+[patched qualification record](verification/2026-10-08-generator-qualification-patched.md)
+and 55 retained artifacts. Extra terminal work did not recur in observed totals;
+capacity and application speed remain unqualified. Next: offline loss/observation
+correlation, then a bounded reviewed observer diagnostic seam if needed. Do not
+fix only coverage or ignore lost work. Own task stack/network/images were removed;
+existing resources/base images/cache retained. Refresh this evidence PR's review,
+CI and merge state before relying on delivery. Earlier text below is historical.
+
 The validated k6 correction is now wired into the measurement image build and
 collector provenance preflight. See the
 [image integration record](verification/2026-10-08-k6-measurement-image.md).

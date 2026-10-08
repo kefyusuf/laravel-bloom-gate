@@ -1,0 +1,1067 @@
+{
+  "cell": {
+    "block": 1,
+    "path": "generator",
+    "workers": 4,
+    "vus": 1024,
+    "controlled_delay_ms": 100,
+    "offered_rate": 4800,
+    "absent_percent": 90,
+    "warmup_seconds": 30,
+    "duration_seconds": 60,
+    "window_basis": "scenario-start-time",
+    "measurement_contract": "scheduled-completeness-actual-window-v1",
+    "execution_topology": "single-local-constant-arrival",
+    "builtin_iterations": 432000,
+    "builtin_http_requests": 432000,
+    "elapsed_seconds": 60.094,
+    "unfinished_iterations": 0,
+    "dropped_iterations": 0,
+    "generator_saturated": false,
+    "rps": 4792.292075747995,
+    "measurement_start_epoch_ms": 1791440536110,
+    "measurement_end_epoch_ms": 1791440596204,
+    "p50_ms": 100.984274,
+    "p95_ms": 102.21339825,
+    "p99_ms": 110.09423327,
+    "query_ms": {
+      "min": 100.002048,
+      "med": 100.628458,
+      "p(95)": 101.52962525000001,
+      "p(99)": 101.96020306999999,
+      "max": 130.741508
+    },
+    "started_iterations": 287988,
+    "completed_iterations": 287988,
+    "responses": 287988,
+    "present_responses": 28798,
+    "absent_responses": 259190,
+    "errors": 0,
+    "parity_failures": 0,
+    "false_negatives": 0,
+    "unknown_membership": 0,
+    "sql_calls": 0,
+    "redis_calls": 0,
+    "total_started_iterations": 432000,
+    "total_completed_iterations": 432000,
+    "total_errors": 0,
+    "total_parity_failures": 0,
+    "total_false_negatives": 0,
+    "total_unknown_membership": 0,
+    "total_delay_mismatches": 0,
+    "window_audit": {
+      "index_interpretation": "zero-drop-local-only",
+      "start_offset_ms": {
+        "min": -29980,
+        "med": 14996.5,
+        "p(95)": 55493,
+        "p(99)": 59093,
+        "max": 59993
+      },
+      "crossing_offset_ms": {
+        "p(95)": -1,
+        "p(99)": -1,
+        "max": -1,
+        "min": -3,
+        "med": -2
+      },
+      "scheduled_started": 288000,
+      "scheduled_completed": 288000,
+      "warmup_entered": 0,
+      "scheduled_outside": 12,
+      "scheduled_early": 12,
+      "scheduled_late": 0,
+      "extra_entered": 0
+    },
+    "identity": {
+      "source_ref": "5185bf8d7bbe90078bd9fc2d72c3d0737e66ec79",
+      "sources": {
+        "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+        "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+        "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+        "generator-observe.php": "7ab18788fcb78d47dc2955efcb7b589c207bf90cc58350613aa4ae42208ff520",
+        "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+        "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+        "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+        "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+        "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+        "qualify-generator.ps1": "67b525271c658b7ba347199e266c86a55e26f4f9c11f158d0f4f171d06343774",
+        "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+        "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+        "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+        "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+        "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+        "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+      },
+      "receiver_image": "sha256:906dbf5c8e7662fb4c8f2f95deb8a0bc567248a709aabafc2609b84645b1bacc",
+      "k6_image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+      "k6_provenance": {
+        "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+        "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+        "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+        "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+        "instrumented_clock": false,
+        "image_id": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa",
+        "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+        "go_version": "go1.23.7",
+        "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+        "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+        "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+      },
+      "php": "8.4.26",
+      "swoole": "26.2.0",
+      "workers": 4,
+      "generator_cpus": 4,
+      "generator_memory_bytes": 4294967296,
+      "receiver_cpus": 2,
+      "receiver_memory_bytes": 268435456,
+      "fixed_vus": 1024
+    },
+    "receiver_delta": {
+      "completed": 432000,
+      "started": 432000,
+      "failed": 0
+    },
+    "worker_pids": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "worker_requests": [
+      108004,
+      107996,
+      107998,
+      108002
+    ],
+    "resources": {
+      "receiver_memory_percent_max": 20.79,
+      "samples": 12,
+      "receiver_running": true,
+      "generator_exit": 0,
+      "generator_oom": false,
+      "receiver_restarts": 0,
+      "generator_cpu_max": 250.11,
+      "receiver_cpu_max": 107.49,
+      "receiver_oom": false,
+      "generator_memory_percent_max": 13.48
+    }
+  },
+  "metrics": {
+    "measured_start_epoch_ms": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "min": 1791440536110,
+        "med": 1791440536110,
+        "p(95)": 1791440536110,
+        "p(99)": 1791440536110,
+        "max": 1791440536110
+      }
+    },
+    "audit_scheduled_late": {
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "type": "counter"
+    },
+    "unknown_membership": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "sql_calls": {
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "measured_finished_ms": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 57094,
+        "p(99)": 59493,
+        "max": 60094,
+        "min": 101,
+        "med": 30098
+      }
+    },
+    "total_completed_iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 432000,
+        "rate": 4794.897713115358
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 100.922489,
+        "p(95)": 102.12360235,
+        "p(99)": 109.18984556000001,
+        "max": 165.082292,
+        "min": 96.753323
+      }
+    },
+    "measured_query_ms": {
+      "values": {
+        "p(99)": 101.96020306999999,
+        "max": 130.741508,
+        "min": 100.002048,
+        "med": 100.628458,
+        "p(95)": 101.52962525000001
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "total_errors": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "parity_failures": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "audit_scheduled_started": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 288000,
+        "rate": 3196.5984754102383
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "min": 108,
+        "max": 543,
+        "value": 376
+      }
+    },
+    "present_responses": {
+      "values": {
+        "count": 28798,
+        "rate": 319.6376489405002
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "total_parity_failures": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "vus_max": {
+      "contains": "default",
+      "values": {
+        "value": 1024,
+        "min": 1024,
+        "max": 1024
+      },
+      "type": "gauge"
+    },
+    "iterations": {
+      "values": {
+        "rate": 4794.897713115358,
+        "count": 432000
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "responses": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 287988,
+        "rate": 3196.4652838070965
+      }
+    },
+    "audit_scheduled_completed": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 288000,
+        "rate": 3196.5984754102383
+      }
+    },
+    "audit_scheduled_early": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 12,
+        "rate": 0.13319160314209327
+      }
+    },
+    "audit_start_offset_ms": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "min": -29980,
+        "med": 14996.5,
+        "p(95)": 55493,
+        "p(99)": 59093,
+        "max": 59993
+      }
+    },
+    "completed_iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 287988,
+        "rate": 3196.4652838070965
+      }
+    },
+    "total_false_negatives": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "audit_crossing_offset_ms": {
+      "contains": "default",
+      "values": {
+        "min": -3,
+        "med": -2,
+        "p(95)": -1,
+        "p(99)": -1,
+        "max": -1
+      },
+      "type": "trend"
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.007881,
+        "p(95)": 0.053139,
+        "p(99)": 0.1547361900000002,
+        "max": 46.708107,
+        "min": 0.00335
+      }
+    },
+    "total_delay_mismatches": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "started_iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 287988,
+        "rate": 3196.4652838070965
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 432000
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 100.971405,
+        "p(95)": 102.18580975,
+        "p(99)": 109.38386491000003,
+        "max": 165.148218,
+        "min": 96.779004
+      }
+    },
+    "errors": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "total_started_iterations": {
+      "contains": "default",
+      "values": {
+        "count": 432000,
+        "rate": 4794.897713115358
+      },
+      "type": "counter"
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 432000,
+        "rate": 4794.897713115358
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "audit_scheduled_outside": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 12,
+        "rate": 0.13319160314209327
+      }
+    },
+    "measured_http_ms": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 100.984274,
+        "p(95)": 102.21339825,
+        "p(99)": 110.09423327,
+        "max": 165.148218,
+        "min": 98.04173
+      }
+    },
+    "absent_responses": {
+      "values": {
+        "rate": 2876.8276348665963,
+        "count": 259190
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "audit_extra_entered": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "audit_warmup_entered": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 179.151186,
+        "min": 100.275153,
+        "med": 101.138474,
+        "p(95)": 102.39883975,
+        "p(99)": 110.22388291000001
+      }
+    },
+    "data_received": {
+      "contains": "data",
+      "values": {
+        "count": 112228955,
+        "rate": 1245662.8696176538
+      },
+      "type": "counter"
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 96.779004,
+        "med": 100.971405,
+        "p(95)": 102.18580975,
+        "p(99)": 109.38386491000003,
+        "max": 165.148218
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 47088088,
+        "rate": 522644.82746799703
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0.00105,
+        "med": 0.00317,
+        "p(95)": 0.00482,
+        "p(99)": 0.012381,
+        "max": 41.774534
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 0.14278924000000023,
+        "max": 35.034261,
+        "min": 0.007481,
+        "med": 0.024202,
+        "p(95)": 0.06076004999999999
+      }
+    },
+    "false_negatives": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "redis_calls": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "total_unknown_membership": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      }
+    },
+    "http_req_connecting": {
+      "values": {
+        "min": 0,
+        "med": 0,
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 39.567945
+      },
+      "type": "trend",
+      "contains": "time"
+    }
+  },
+  "receiver_before": {
+    "started": 869888,
+    "completed": 869888,
+    "failed": 0,
+    "workers": 4,
+    "worker_pids": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "worker_requests": [
+      217470,
+      217479,
+      217468,
+      217471
+    ],
+    "timer_rearms": 215368,
+    "timer_failures": 0,
+    "php": "8.4.26",
+    "swoole": "26.2.0"
+  },
+  "receiver_after": {
+    "started": 1301888,
+    "completed": 1301888,
+    "failed": 0,
+    "workers": 4,
+    "worker_pids": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "worker_requests": [
+      325474,
+      325475,
+      325466,
+      325473
+    ],
+    "timer_rearms": 441792,
+    "timer_failures": 0,
+    "php": "8.4.26",
+    "swoole": "26.2.0"
+  },
+  "resource_samples": [
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "190.71%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "8.28%",
+      "MemUsage": "339.2MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "2.37MB / 1.63MB",
+      "PIDs": "19",
+      "epoch_ms": 1791440508523
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "102.70%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.67%",
+      "MemUsage": "52.91MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "213MB / 286MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440508523
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "174.57%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "10.39%",
+      "MemUsage": "425.5MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "12.5MB / 7.89MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440513897
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "82.20%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.46%",
+      "MemUsage": "52.37MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "219MB / 296MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440513897
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "144.06%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "10.64%",
+      "MemUsage": "435.8MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "22.6MB / 14.2MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440519286
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "85.90%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.56%",
+      "MemUsage": "52.63MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "225MB / 306MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440519286
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "146.30%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "10.81%",
+      "MemUsage": "442.7MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "34.6MB / 21.6MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440524679
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "83.79%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.61%",
+      "MemUsage": "52.75MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "231MB / 314MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440524679
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "172.89%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "11.20%",
+      "MemUsage": "458.6MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "44.9MB / 27.9MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440530124
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "100.87%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.51%",
+      "MemUsage": "52.5MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "237MB / 325MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440530124
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "174.98%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "11.19%",
+      "MemUsage": "458.5MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "53.2MB / 33.1MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440534520
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "80.61%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.55%",
+      "MemUsage": "52.61MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "243MB / 335MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440534520
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "211.29%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "11.38%",
+      "MemUsage": "466.1MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "61.4MB / 38.2MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440539912
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "90.37%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.71%",
+      "MemUsage": "53.03MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "249MB / 345MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440539912
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "209.13%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "11.71%",
+      "MemUsage": "479.8MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "71.6MB / 44.5MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440544292
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "86.21%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.63%",
+      "MemUsage": "52.81MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "255MB / 353MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440544292
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "212.01%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "11.73%",
+      "MemUsage": "480.3MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "81.7MB / 50.7MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440549675
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "78.87%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.51%",
+      "MemUsage": "52.52MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "260MB / 361MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440549675
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "203.94%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "12.04%",
+      "MemUsage": "493.1MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "89.9MB / 55.8MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440555060
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "84.91%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.61%",
+      "MemUsage": "52.77MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "267MB / 373MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440555060
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "213.94%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "12.15%",
+      "MemUsage": "497.9MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "100MB / 62.1MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440559461
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "83.20%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.41%",
+      "MemUsage": "52.25MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "272MB / 382MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440559461
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "219.30%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "12.75%",
+      "MemUsage": "522MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "108MB / 67.2MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440563846
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "83.63%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.49%",
+      "MemUsage": "52.46MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "277MB / 390MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440563846
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "250.11%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "12.74%",
+      "MemUsage": "521.7MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "117MB / 72.4MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440568229
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "107.49%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.79%",
+      "MemUsage": "53.21MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "282MB / 398MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440568229
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "244.40%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "12.75%",
+      "MemUsage": "522.2MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "125MB / 77.5MB",
+      "PIDs": "20",
+      "epoch_ms": 1791440573675
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "88.80%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.51%",
+      "MemUsage": "52.5MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "289MB / 408MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440573675
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "246.93%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "13.48%",
+      "MemUsage": "552.1MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "137MB / 85MB",
+      "PIDs": "21",
+      "epoch_ms": 1791440579076
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "91.14%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.52%",
+      "MemUsage": "52.54MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "294MB / 417MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440579076
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "220.41%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "13.10%",
+      "MemUsage": "536.4MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "147MB / 91.3MB",
+      "PIDs": "21",
+      "epoch_ms": 1791440584475
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "89.46%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.64%",
+      "MemUsage": "52.84MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "300MB / 427MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440584475
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "224.24%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "13.10%",
+      "MemUsage": "536.8MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "155MB / 96.4MB",
+      "PIDs": "21",
+      "epoch_ms": 1791440589866
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "83.33%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.58%",
+      "MemUsage": "52.68MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "308MB / 439MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440589866
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "219.49%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-load",
+      "ID": "0edf29e01225",
+      "MemPerc": "13.17%",
+      "MemUsage": "539.5MiB / 4GiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-load",
+      "NetIO": "167MB / 104MB",
+      "PIDs": "21",
+      "epoch_ms": 1791440595235
+    },
+    {
+      "BlockIO": "60.1MB / 0B",
+      "CPUPerc": "87.03%",
+      "Container": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "ID": "8f231ab60d1c",
+      "MemPerc": "20.39%",
+      "MemUsage": "52.2MiB / 256MiB",
+      "Name": "lbg-generator-20261008-qualification-patched-v1-php-1",
+      "NetIO": "313MB / 447MB",
+      "PIDs": "11",
+      "epoch_ms": 1791440595235
+    }
+  ],
+  "diagnostic_artifacts": {
+    "generator_cgroup": "20261008-qualification-patched-v1-block-1-delay-100-generator-cgroup.txt",
+    "scope": "Target one-second cumulative snapshots with actual timestamps; not interval quantiles or capacity proof.",
+    "timeline": "20261008-qualification-patched-v1-block-1-delay-100-timeline.jsonl"
+  },
+  "observed_containers": {
+    "receiver_image": "sha256:906dbf5c8e7662fb4c8f2f95deb8a0bc567248a709aabafc2609b84645b1bacc",
+    "receiver_nano_cpus": 2000000000,
+    "generator_nano_cpus": 4000000000,
+    "generator_memory_bytes": 4294967296,
+    "receiver_memory_bytes": 268435456,
+    "generator_image": "sha256:fb4db0dcdb5eb25b3a26afc8ae6ee93554050d9c48f64b391291d74038121ffa"
+  }
+}
