@@ -2,6 +2,15 @@
 
 ## Latest continuation
 
+The next boundary is the
+[bounded loss-diagnostic plan](plans/2026-10-08-generator-loss-diagnostic.md).
+PR100 merged at `cce340a4b9b58cf0caabcba5371ab490407d1ae1`; its five configured
+CI jobs and independent exact-head review passed. Existing short diagnostics do
+not cover the old failure interval. Prepare a separate collector mode with a
+validated safety negative followed by one 30/60-second 25 ms cell, using TDD and
+review before freezing any new load. This planning increment runs no Docker or
+qualification; previous INCONCLUSIVE outcomes and unproved loss cause remain.
+
 The observer CLI now records logical endpoint stage, request epoch bounds and
 monotonic elapsed time, classified failures and successfully collected partial
 evidence. See the
