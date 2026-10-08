@@ -2,6 +2,18 @@
 
 ## Latest continuation
 
+The validated k6 correction is now wired into the measurement image build and
+collector provenance preflight. See the
+[image integration record](verification/2026-10-08-k6-measurement-image.md).
+The vendored Go 1.23.7 Linux build retains the reviewed runtime source digest;
+installed binary/source/patch readback passes, original upstream and forged
+binary metadata are rejected. Report/CLI identity checks fail closed and no
+count, budget or negative-control tolerance changed. No HTTP qualification ran;
+PR #95 remains INCONCLUSIVE. Refresh this branch's exact-head independent review,
+CI and merge state before freezing one separately approved qualification.
+Owned task images/readback containers are cleaned up; existing resources and
+base images/cache are retained. Earlier continuation text below is historical.
+
 The isolated pinned-k6 boundary correction now has real executor TDD evidence:
 original 4,801/4,806 terminal slots reduce to 4,800, and controlled late
 cancellation at the full 90-second count reduces 432,006 to 432,000.

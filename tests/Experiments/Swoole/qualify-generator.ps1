@@ -10,6 +10,7 @@ $docker = (Get-Command docker -ErrorAction SilentlyContinue).Source
 if (-not $docker) { $docker = 'C:\Users\yukonit\AppData\Local\Programs\DockerDesktop\resources\bin\docker.exe' }
 $project = "lbg-generator-$Task"
 $image = "lbg-generator-php:$Task"
+$generatorImage = "lbg-generator-k6:$Task"
 $env:GENERATOR_TASK = $Task
 $compose = @('compose', '-p', $project, '-f', "$PSScriptRoot/generator-compose.yaml")
 $results = Join-Path $repo '.build/generator-qualification'
@@ -21,6 +22,8 @@ if (& $docker ps -aq --filter "label=com.docker.compose.project=$project") { thr
 if ($LASTEXITCODE -eq 0) { throw 'Refusing an existing network.' }
 & $docker image inspect $image *> $null
 if ($LASTEXITCODE -eq 0 -and -not $OwnedBuiltImage) { throw 'Refusing an existing image.' }
+& $docker image inspect $generatorImage *> $null
+if ($LASTEXITCODE -eq 0) { throw 'Refusing an existing generator image.' }
 
 function Invoke-Docker([string[]]$Arguments) {
     $output = & $docker @Arguments
@@ -130,29 +133,32 @@ function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$
 }
 
 $owned = $false
+$generatorOwned = $false
 $profiles = @()
 $negative = $null
 $script:identity = $null
 try {
     $owned = $true
+    $generatorOwned = $true
+    $k6Provenance = & "$PSScriptRoot/K6Boundary/build-image.ps1" -Task $Task | ConvertFrom-Json -AsHashtable
+    $script:k6Image = $k6Provenance.image_id
+    Write-Json (Join-Path $results "$Task-k6-provenance.json") $k6Provenance
     if (-not $OwnedBuiltImage) { Invoke-Docker ($compose + @('build', 'php')) | Set-Content (Join-Path $results "$Task-build.log") }
-    $pin = 'grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d'
-    Invoke-Docker @('pull', $pin) | Out-Null
-    $script:k6Image = Invoke-Docker @('image', 'inspect', $pin, '--format', '{{.Id}}')
     Invoke-Docker ($compose + @('up', '-d', '--wait')) | Out-Null
     $receiver = Inspect-Container "$project-php-1"
     if ($receiver.Image -ne (Invoke-Docker @('image', 'inspect', $image, '--format', '{{.Id}}')) -or $receiver.HostConfig.NanoCpus -ne 2000000000 -or $receiver.HostConfig.Memory -ne 268435456) { throw 'Receiver image/budget differs.' }
     $info = Get-Info
     if ($info.workers -ne 4 -or @($info.worker_pids | Where-Object { $_ -le 0 }).Count -gt 0 -or @($info.worker_pids | Select-Object -Unique).Count -ne 4) { throw 'Four actual receiver PIDs are unavailable.' }
     $sources = [ordered]@{}
-    foreach ($file in @('load.js', 'generator-server.php', 'GeneratorDeadline.php', 'generator-observe.php', 'GeneratorObservation.php', 'generator-coverage.php', 'GeneratorReport.php', 'generator-evaluate.php', 'generator-compose.yaml', 'qualify-generator.ps1', 'Dockerfile')) {
+    foreach ($file in @('load.js', 'generator-server.php', 'GeneratorDeadline.php', 'generator-observe.php', 'GeneratorObservation.php', 'generator-coverage.php', 'GeneratorReport.php', 'generator-evaluate.php', 'generator-compose.yaml', 'qualify-generator.ps1', 'Dockerfile',
+        'K6Boundary/Dockerfile', 'K6Boundary/.dockerignore', 'K6Boundary/build-image.ps1', 'K6Boundary/verify-image.ps1', 'K6Boundary/arrival-slot-boundary.patch')) {
         $body = [IO.File]::ReadAllText((Join-Path $PSScriptRoot $file)).Replace("`r`n", "`n")
         $sources[$file] = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($body))).ToLowerInvariant()
         $observed = Invoke-Docker ($compose + @('exec', '-T', '-e', "SOURCE_FILE=$file", 'php', 'php', '-r', 'echo hash("sha256",str_replace("\r\n","\n",file_get_contents("/fixture/".getenv("SOURCE_FILE"))));'))
         if ($observed -ne $sources[$file]) { throw "Installed source differs: $file" }
     }
     $script:identity = [ordered]@{ source_ref = (git rev-parse HEAD); sources = $sources; receiver_image = $receiver.Image;
-        k6_image_id = $k6Image; k6_manifest = ($pin -split '@')[1]; php = $info.php; swoole = $info.swoole;
+        k6_image_id = $k6Image; k6_provenance = $k6Provenance; php = $info.php; swoole = $info.swoole;
         workers = $info.workers; generator_cpus = 4; generator_memory_bytes = 4294967296;
         receiver_cpus = 2; receiver_memory_bytes = 268435456; fixed_vus = 1024 }
     if ($Diagnostic) {
@@ -192,4 +198,5 @@ try {
         & $docker @compose down --volumes --remove-orphans
         & $docker image rm $image
     }
+    if ($generatorOwned) { & $docker image rm $generatorImage }
 }

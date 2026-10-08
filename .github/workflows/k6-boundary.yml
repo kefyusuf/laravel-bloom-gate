@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'tests/Experiments/Swoole/K6Boundary/**'
+      - 'tests/Experiments/Swoole/generator-compose.yaml'
+      - 'tests/Experiments/Swoole/qualify-generator.ps1'
       - '.github/workflows/k6-boundary.yml'
   workflow_dispatch:
 
@@ -37,3 +39,6 @@ jobs:
       - name: Verify actual executor boundaries, upstream behavior and uninstrumented build
         shell: pwsh
         run: ./tests/Experiments/Swoole/K6Boundary/verify.ps1 -SourcePath .build/k6-terminal-fix/upstream -Mode Patched -Race -UpstreamChecks -BuildBinary
+      - name: Verify patched Linux image provenance and reject substitutions without HTTP
+        shell: pwsh
+        run: ./tests/Experiments/Swoole/K6Boundary/test-image.ps1 -Task ci-${{ github.run_id }}-${{ github.run_attempt }}

@@ -1,0 +1,10 @@
+{
+  "report-red.txt": "558016b22f2b353816580d676703b9ae7cfb24e9f36950fe142ff9ab42d35113",
+  "measurement-green.txt": "675259d679e2dcf768a14a5cd3be9f6d1943850d921b4a1cecff8efa4f264b95",
+  "fast-green.txt": "cd99e7c4a43f022549ba9c77bdf103271b0a90b2276777043eccc765dd425277",
+  "node-green.txt": "1b4b103de2cb37375286a28ddd58a08ea6d60bd9e76139c99178b555f92135c2",
+  "scoped-analysis.txt": "fa6ea2359067eb44320a11b96811bde2ce42d1674af3707eca14ecd3e5f371fb",
+  "full-analysis.txt": "3650fb6602e896b2c50170fb9bc27c0acd54d564fae527226fc66d168fae7819",
+  "image-integration-proof.txt": "cb43c9585694217d6bc87ebb176f20ce70e7cc07a84d9b50437459c70d446858",
+  "compose.json": "1ef79ea404ac861ed5a562d90bc871d0061a06143d48ee3510308498885c9dfc"
+}

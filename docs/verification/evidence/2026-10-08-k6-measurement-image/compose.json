@@ -1,0 +1,54 @@
+{
+  "name": "lbg-generator-20261008-image-integration",
+  "networks": {
+    "default": {
+      "name": "lbg-generator-20261008-image-integration_default",
+      "ipam": {}
+    }
+  },
+  "services": {
+    "php": {
+      "build": {
+        "context": "E:\\projects\\laravel-bloom-gate\\tests\\Experiments\\Swoole",
+        "dockerfile": "Dockerfile"
+      },
+      "cpus": 2,
+      "command": [
+        "php",
+        "/fixture/generator-server.php"
+      ],
+      "entrypoint": null,
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "php",
+          "-r",
+          "exit(@file_get_contents('http://127.0.0.1:8000/generator-info')===false?1:0);"
+        ],
+        "timeout": "2s",
+        "interval": "2s",
+        "retries": 30
+      },
+      "image": "lbg-generator-php:20261008-image-integration",
+      "mem_limit": "268435456",
+      "networks": {
+        "default": null
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "E:\\projects\\laravel-bloom-gate\\tests\\Experiments\\Swoole",
+          "target": "/fixture",
+          "read_only": true,
+          "bind": {}
+        },
+        {
+          "type": "bind",
+          "source": "E:\\projects\\laravel-bloom-gate\\.build\\generator-qualification",
+          "target": "/results",
+          "bind": {}
+        }
+      ]
+    }
+  }
+}
