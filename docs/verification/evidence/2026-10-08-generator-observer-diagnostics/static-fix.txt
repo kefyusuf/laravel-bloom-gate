@@ -1,0 +1,12 @@
+
+  ✓✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    FIXED   .................................... 3 files, 3 style issues fixed
+  ✓ tests/Experiments/Swoole/GeneratorObserverTest.php line_ending, unary_ope…
+  ✓ tests/Experiments/Swoole/generator-observe.php line_ending, unary_operato…
+  ✓ tests/Experiments/Swoole/generator-observer-fixture.php unary_operator_sp…
+
+Note: Using configuration file /app/phpstan.neon.dist.
+
+ [OK] No errors

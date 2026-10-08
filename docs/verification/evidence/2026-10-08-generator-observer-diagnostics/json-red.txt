@@ -1,0 +1,26 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ✓ it preserves successful k6 evidence when the receiver request is un… 1.06s
+  ⨯ it classifies malformed endpoint JSON at its original stage without… 1.05s
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.02s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it classifies ma…
+  Failed asserting that an array has a key 'failure_kind' with the value null.
+Failed asserting that null matches expected 'invalid_json'.
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:67
+     63▕ it('classifies malformed endpoint JSON at its original stage without exposing its body', function (): void {
+     64▕     $result = runGeneratorObserverFixture('invalid-json');
+     65▕     expect($result['exit'])->toBe(1);
+     66▕     $row = $result['rows'][0];
+  ➜  67▕     expect($row)->toMatchArray(['status' => 'unavailable', 'failure_stage' => 'k6_metrics',
+     68▕         'failure_kind' => 'invalid_json', 'k6' => null, 'receiver' => null]);
+     69▕     expect($row['requests'])->toHaveKey('k6_metrics')->not->toHaveKey('receiver_info');
+     70▕ });
+     71▕
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:67
+
+
+  Tests:    1 failed, 2 passed (40 assertions)
+  Duration: 3.18s

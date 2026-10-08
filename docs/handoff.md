@@ -2,6 +2,20 @@
 
 ## Latest continuation
 
+The observer CLI now records logical endpoint stage, request epoch bounds and
+monotonic elapsed time, classified failures and successfully collected partial
+evidence. See the
+[observer diagnostic record](verification/2026-10-08-generator-observer-diagnostics.md).
+Actual subprocess TDD uses synthetic bounded local peers; unavailable samples
+and fail-fast behavior still invalidate measurement coverage. Read timeout,
+body size, cadence, zero-loss and resource guards remain unchanged. No new
+qualification/load ran; previous results remain INCONCLUSIVE and the loss cause
+is unproved. Optional receiver/cgroup CLI inputs keep original defaults and are
+not supplied by the collector. Refresh final review/CI/merge before using this
+source. Next: a separately frozen bounded timing plan using the new diagnostics,
+without assuming endpoint attribution fixes earlier lost work. Own quality
+container/test resources cleaned at closure; unrelated Docker resources retained.
+
 One frozen patched-k6 qualification at source
 `5185bf8d7bbe90078bd9fc2d72c3d0737e66ec79` stopped INCONCLUSIVE on its sixth
 positive cell, block 2 / 25 ms. First five cells passed with 432,000 completed

@@ -1,0 +1,23 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ⨯ it retains an unavailable observation instead of inventing zero los… 1.03s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it retains an un…
+  Failed asserting that null is identical to 'k6_metrics'.
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:23
+     19▕             throw new RuntimeException('Unavailable observation was not retained.');
+     20▕         }
+     21▕         $row = json_decode(trim($body), true, 512, JSON_THROW_ON_ERROR);
+     22▕         expect($row)->toMatchArray(['status' => 'unavailable', 'k6' => null, 'receiver' => null]);
+  ➜  23▕         expect($row['failure_stage'] ?? null)->toBe('k6_metrics');
+     24▕     } finally {
+     25▕         if (is_file($output)) {
+     26▕             unlink($output);
+     27▕         }
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:23
+
+
+  Tests:    1 failed (8 assertions)
+  Duration: 1.08s

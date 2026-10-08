@@ -1,0 +1,125 @@
+
+  ⨯⨯⨯
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    FAIL   ........................................... 3 files, 3 style issues
+  ⨯ tests/Experiments/Swoole/GeneratorObserverTest.php line_ending, unary_ope…
+  ⨯ tests/Experiments/Swoole/generator-observe.php line_ending, unary_operato…
+  ⨯ tests/Experiments/Swoole/generator-observer-fixture.php blank_line_before…
+
+Note: Using configuration file /app/phpstan.neon.dist.
+ ------ -----------------------------------------------------------------------
+  Line   GeneratorObserverTest.php
+ ------ -----------------------------------------------------------------------
+  52     Anonymous function should return array but returns mixed.
+         🪪  return.type
+  55     Function runGeneratorObserverFixture() should return array{exit:
+         int|null, rows: list<array<string, mixed>>} but returns array{exit: i
+         nt|null, rows: non-empty-list<array>}.
+         🪪  return.type
+         💡  Offset 'rows' (list<array<string, mixed>>) does not accept type no
+         n-empty-list<array<int|string, mixed>>.
+  82     Access to an undefined property Pest\Mixins\Expectation<mixed>::$not.
+         🪪  property.notFound
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-und
+         efined-property
+  82     Cannot call method toHaveKey() on mixed.
+         🪪  method.nonObject
+  122    Cannot access offset 'elapsed_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  122    Cannot access offset 'k6_metrics' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  132    Access to an undefined property Pest\Mixins\Expectation<mixed>::$not.
+         🪪  property.notFound
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-und
+         efined-property
+  132    Cannot call method toBeEmpty() on mixed.
+         🪪  method.nonObject
+  133    Access to an undefined property Pest\Mixins\Expectation<mixed>::$not.
+         🪪  property.notFound
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-und
+         efined-property
+  133    Cannot call method toBeEmpty() on mixed.
+         🪪  method.nonObject
+  136    Binary operation "-" between mixed and mixed results in an error.
+         🪪  binaryOp.invalid
+  137    Binary operation "+" between mixed and 1 results in an error.
+         🪪  binaryOp.invalid
+  181    Cannot access offset 'failure_stage' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  182    Cannot access offset 'failure_kind' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  183    Cannot access offset 'k6_metrics' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  183    Cannot access offset 'requests' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  184    Cannot access offset 'request_start_epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  185    Cannot access offset 'request_end_epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  186    Cannot access offset 'elapsed_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  187    Cannot access offset 'epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  187    Cannot access offset 'request_start_epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  187    Parameter #1 $expected of method Pest\Mixins\Expectation<mixed>::toBe
+         GreaterThanOrEqual() expects DateTimeInterface|float|int|string,
+         mixed given.
+         🪪  argument.type
+  188    Cannot access offset 'observation_end_epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  188    Cannot access offset 'request_end_epoch_ms' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+  188    Parameter #1 $expected of method Pest\Mixins\Expectation<mixed>::toBe
+         LessThanOrEqual() expects DateTimeInterface|float|int|string, mixed
+         given.
+         🪪  argument.type
+  189    Access to an undefined property Pest\Mixins\Expectation<mixed>::$not.
+         🪪  property.notFound
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-und
+         efined-property
+  189    Cannot call method toContain() on mixed.
+         🪪  method.nonObject
+ ------ -----------------------------------------------------------------------
+
+ ------ -----------------------------------------------------------------------
+  Line   generator-observe.php
+ ------ -----------------------------------------------------------------------
+  6      Function generatorObserveJson() has parameter $requests with no value
+         type specified in iterable type array.
+         🪪  missingType.iterableValue
+         💡  See:
+         https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-i
+         terable-type
+  84     Cannot access offset 'failure_kind' on mixed.
+         🪪  offsetAccess.nonOffsetAccessible
+ ------ -----------------------------------------------------------------------
+
+ ------ --------------------------------------------------------------------
+  Line   generator-observer-fixture.php
+ ------ --------------------------------------------------------------------
+  7      Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  10     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  22     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  26     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  30     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  35     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+  38     Parameter #1 $haystack of function str_starts_with expects string,
+         mixed given.
+         🪪  argument.type
+ ------ --------------------------------------------------------------------
+
+ [ERROR] Found 36 errors

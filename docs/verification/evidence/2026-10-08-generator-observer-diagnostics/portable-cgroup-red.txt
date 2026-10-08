@@ -1,0 +1,35 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ⨯ it stops on the first unavailable sample after success and keeps co… 1.04s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it stops on the…
+  Failed asserting that two strings are identical.
+  -'usage_usec 7
+  +'usage_usec 24226434
+  +user_usec 15612680
+  +system_usec 8613753
+  +nice_usec 0
+  +nr_periods 0
+   nr_throttled 0
+  +throttled_usec 0
+  +nr_bursts 0
+  +burst_usec 0
+   '
+
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:147
+    143▕     expect($observed['receiver_cpu_stat'])->toBeString();
+    144▕     expect($observed['receiver_cpu_stat'])->not->toBeEmpty();
+    145▕     expect($observed['receiver_memory_bytes'])->toBeString();
+    146▕     expect($observed['receiver_memory_bytes'])->not->toBeEmpty();
+  ➜ 147▕     expect($observed['receiver_cpu_stat'])->toBe("usage_usec 7\nnr_throttled 0\n");
+    148▕     expect($observed['receiver_memory_bytes'])->toBe('128');
+    149▕     expect($unavailable)->toMatchArray(['status' => 'unavailable', 'failure_stage' => 'receiver_info', 'failure_kind' => 'invalid_json']);
+    150▕     expect($unavailable['k6'])->toBe(['data' => [['id' => 'iterations', 'sample' => ['count' => 7]]]]);
+    151▕     assert(is_int($observed['epoch_ms']));
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:147
+
+
+  Tests:    1 failed (8 assertions)
+  Duration: 1.08s
