@@ -1,0 +1,77 @@
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/ActivateCommand.php
+ ------ ------------------------------------------------------------------
+  53     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/BuildCommand.php
+ ------ ------------------------------------------------------------------
+  54     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/CoordinateAdoptCommand.php
+ ------ ------------------------------------------------------------------
+  23     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/DiscardCommand.php
+ ------ ------------------------------------------------------------------
+  41     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/LeaseResolveCommand.php
+ ------ ------------------------------------------------------------------
+  29     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+  30     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\WriterLeaseToken::fromString() expects
+         string, array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/RebuildCommand.php
+ ------ ------------------------------------------------------------------
+  27     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/StatusCommand.php
+ ------ ------------------------------------------------------------------
+  70     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ ------ ------------------------------------------------------------------
+  Line   src/Laravel/Console/VerifyCommand.php
+ ------ ------------------------------------------------------------------
+  45     Parameter #1 $value of static method
+         Kefyusuf\BloomGate\Core\FilterName::fromString() expects string,
+         array|bool|float|int|string|null given.
+         🪪  argument.type
+ ------ ------------------------------------------------------------------
+
+ [ERROR] Found 9 errors

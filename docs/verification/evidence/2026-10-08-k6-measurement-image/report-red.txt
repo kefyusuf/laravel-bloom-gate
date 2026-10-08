@@ -1,0 +1,26 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorReportTest
+  ⨯ it rejects qualification without the patched image provenance        0.01s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorReportTest > it rejects qualifi…
+  Failed asserting that two strings are identical.
+  -'INCONCLUSIVE'
+  +'PASS'
+
+
+  at tests/Experiments/Swoole/GeneratorReportTest.php:147
+    143▕
+    144▕ it('rejects qualification without the patched image provenance', function (): void {
+    145▕     $run = validGeneratorQualification();
+    146▕     unset($run['identity']['k6_provenance']);
+  ➜ 147▕     expect(GeneratorReport::evaluateQualification($run)['verdict'])->toBe('INCONCLUSIVE');
+    148▕ });
+    149▕
+    150▕ it('rejects qualification without its deliberately deficient negative control', function (): void {
+    151▕     $run = validGeneratorQualification();
+
+  1   tests/Experiments/Swoole/GeneratorReportTest.php:147
+
+
+  Tests:    1 failed (1 assertions)
+  Duration: 0.05s

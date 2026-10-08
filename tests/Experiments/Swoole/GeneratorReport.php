@@ -28,6 +28,20 @@ final class GeneratorReport
                 self::check(is_string($sources[$file] ?? null) && preg_match('/^[a-f0-9]{64}$/D', $sources[$file]) === 1,
                     'Frozen load and runtime definition digests are required.');
             }
+            $provenance = self::object($identity['k6_provenance'] ?? null);
+            self::check(($provenance['image_id'] ?? null) === $identity['k6_image_id']
+                && ($provenance['upstream_revision'] ?? null) === '5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb'
+                && ($provenance['runtime_source_sha256'] ?? null) === 'e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce'
+                && ($provenance['instrumented_clock'] ?? null) === false
+                && ($provenance['go_version'] ?? null) === 'go1.23.7',
+                'The verified patched generator image provenance is required.');
+            foreach (['binary_sha256', 'patch_sha256'] as $field) {
+                self::check(is_string($provenance[$field] ?? null)
+                    && preg_match('/^[a-f0-9]{64}$/D', $provenance[$field]) === 1,
+                    'Generator binary and patch digests are required.');
+            }
+            self::check(($sources['K6Boundary/arrival-slot-boundary.patch'] ?? null) === $provenance['patch_sha256'],
+                'The installed generator patch must match the frozen sources.');
             self::check(self::integer($identity, 'generator_cpus') === 4
                 && self::integer($identity, 'generator_memory_bytes') === 4294967296
                 && self::integer($identity, 'receiver_cpus') === 2

@@ -1,0 +1,1151 @@
+
+   INFO  Warning: The use statement with non-compound name 'LogicException' has no effect in /app/tests/Unit/Laravel/Redis/LaravelRedisRuntimeDiagnosticsTest.php on line 11
+
+
+Warning: The use statement with non-compound name 'ReflectionClass' has no effect in /app/tests/Feature/Laravel/ServiceWiringTest.php on line 38
+
+Warning: The use statement with non-compound name 'RuntimeException' has no effect in /app/tests/Feature/Laravel/ServiceWiringTest.php on line 39
+
+Warning: The use statement with non-compound name 'ReflectionClass' has no effect in /app/tests/Feature/Laravel/ValidationRulesTest.php on line 9
+
+Warning: The use statement with non-compound name 'RuntimeException' has no effect in /app/tests/Feature/Laravel/ValidationRulesTest.php on line 10.
+
+   PASS  Tests\Arch\BoundaryTest
+  ✓ it keeps Illuminate dependencies inside the Laravel adapter boundar… 0.02s
+
+   PASS  Tests\Arch\CoreDependencyTest
+  ✓ it keeps Core free from framework and infrastructure imports         0.01s
+
+   PASS  Tests\Arch\FrameworkBoundaryTest
+  ✓ it keeps framework-neutral layers free from framework and backend i… 0.04s
+  ✓ it keeps internal package dependencies pointing inward               0.03s
+  ✓ it allows only declared imports in framework-neutral layers          0.01s
+
+   PASS  Tests\Arch\M4LifecycleBoundaryTest
+  ✓ it enforces the explicit m4 internal dependency graph                0.01s
+  ✓ it explicitly keeps drivers and lifecycle independent in both directions
+  ✓ it keeps every non laravel m4 layer free from illuminate imports
+  ✓ it restricts laravel source dependencies to internal package layers and illuminate
+  ✓ it keeps m4 core state objects free from persistence and redis knowledge
+
+   PASS  Tests\Arch\M5ApplicationBoundaryTest
+  ✓ it enforces the complete m5 internal dependency direction            0.01s
+  ✓ it keeps application and contracts framework neutral                 0.01s
+  ✓ it keeps drivers independent from application and lifecycle          0.01s
+  ✓ it keeps laravel validation facade and console surfaces inside the adapter boundary
+  ✓ it keeps core identity fingerprint and layout values free from persistence tokens
+  ✓ it keeps query gate on query safety and authorized probe abstractions
+  ✓ it keeps filter definition contracts framework neutral
+
+   PASS  Tests\Arch\M6CoreCoordinationBoundaryTest
+  ✓ it keeps WU-00 coordination Core free from framework and persistenc… 0.01s
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\CoordinatedAdoptionAndLeaseRecoveryTest
+  ✓ fresh filter adopts without brownfield handoff and retry is idempot… 0.01s
+  ✓ brownfield adoption requires explicit quiescent handoff and targets current active
+  ✓ brownfield without active generation adopts empty targets
+  ✓ adoption claim is pinned to observed control revision
+  ✓ completed brownfield adoption retry no longer requires quiescent handoff
+  ✓ brownfield candidate blocks adoption before ownership claim
+  ✓ owner only adoption pending fences legacy mutation and writer acquire then resumes
+  ✓ exact token lookup never acquires an unknown lease and retains apr tombstone state
+  ✓ known committed prepared lease releases
+  ✓ known committed acquired lease is blocked without preparation evidence
+  ✓ known rollback releases acquired or prepared lease
+  ✓ unknown authoritative outcome never releases
+  ✓ released token is terminal and resolution is idempotent
+  ✓ unknown token is rejected without creating a lease
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\CoordinatedWriterTest
+  ✓ token exists before first remote operation                           0.01s
+  ✓ acquire failure prevents bloom writes
+  ✓ target semantic mismatch prevents authoritative permission
+  ✓ required target bloom failure prevents prepared state
+  ✓ partial target writes are safe false positives and retryable
+  ✓ retry with same acquired token reuses original target binding
+  ✓ all target writes complete before mark prepared
+  ✓ uncertain mark prepared acknowledgement retries same token and converges to p
+  ✓ prepared retry does not repeat count or bloom work
+  ✓ only durable prepared state is returned as authorization
+  ✓ known commit releases prepared lease
+  ✓ known rollback and pre authoritative abort release p or a
+  ✓ unknown authoritative outcome never releases
+  ✓ known commit with uncertain release reports cleanup uncertainty
+  ✓ failed prepare preserves original token
+  ✓ explicit pre authoritative abandonment uses terminal release
+  ✓ abandonment cleanup uncertainty is reported without claiming release
+  ✓ abandonment does not mask programming failures as cleanup uncertainty
+  ✓ prepared write has no destructor ttl or implicit release
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\CoordinationDiagnosticsIntegrationTest
+  ✓ managed status exposes coordination without creating control state   0.02s
+  ✓ doctor reports config disagreement pending and healthy adoption read only
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\CoordinationStatusReaderTest
+  ✓ invalid runtime configuration is distinct from unavailable storage
+  ✓ never adopted filter is reported without mutation
+  ✓ reports resumable phases without writes with data set "steady"
+  ✓ reports resumable phases without writes with data set "unpublished candidate"
+  ✓ reports resumable phases without writes with data set "pre reconcile drain"
+  ✓ reports resumable phases without writes with data set "drain ready"
+  ✓ reports resumable phases without writes with data set "reconcile"
+  ✓ reports resumable phases without writes with data set "verification persisted"
+  ✓ reports resumable phases without writes with data set "ready"
+  ✓ reports resumable phases without writes with data set "promotion persisted"
+  ✓ reports resumable phases without writes with data set "post promotion"
+  ✓ reports resumable phases without writes with data set "post promotion ready"
+  ✓ reports resumable phases without writes with data set "abort intent"
+  ✓ reports resumable phases without writes with data set "abort drain"
+  ✓ reports resumable phases without writes with data set "retirement persisted"
+  ✓ missing sync is pending and config disagreement is invalid
+  ✓ impossible target and drain relations are invalid
+  ✓ corruption and unavailability never report adopted
+  ✓ unavailable count keeps sync evidence without inventing zero
+  ✓ retired abort candidate with remaining writers is invalid
+  ✓ lease enumeration is opt in and not used as the drain count
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\LegacyMutationFilterControlStoreTest
+  ✓ read only control and active snapshot inspection remain available w… 0.01s
+  ✓ runtime requirement blocks control cas without mutating raw state
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\LegacyMutationGuardTest
+  ✓ never adopted filter remains eligible when runtime is uncoordinated
+  ✓ persisted ownership fences legacy mutation even when runtime is uncoordinated
+  ✓ runtime coordinated requirement fences missing owner as recovery required
+  ✓ contradictory persisted coordination remains corruption not runtime downgrade
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\LegacyMutationLifecyclePathsTest
+  ✓ runtime requirement fences candidate allocation
+  ✓ runtime requirement fences candidate lifecycle transition
+  ✓ runtime requirement fences generation health mutation
+  ✓ runtime requirement fences candidate discard
+  ✓ runtime requirement fences candidate promotion
+  ✓ runtime requirement fences active deactivation
+
+   PASS  Tests\Unit\Application\ManagedFilterBuilderTest
+  ✓ it fences legacy managed build when runtime requires coordinated-v1 before data-plane work
+  ✓ it builds the next candidate with ordered lifecycle semantic and st… 0.01s
+  ✓ it builds a valid empty managed candidate without a bulk write
+  ✓ it refuses a new build when a candidate already exists before touching data plane
+  ✓ it fails sizing before candidate allocation or data-plane mutation
+  ✓ it leaves a failed operational build visible building and non active without recovery
+  ✓ it propagates normalizer programming failure and does not silently retire candidate
+  ✓ it rejects non positive build chunk sizes with dataset "zero"
+  ✓ it rejects non positive build chunk sizes with dataset "negative"
+
+   PASS  Tests\Unit\Application\ManagedFilterLifecycleWorkflowsTest
+  ✓ it fences legacy managed verification when runtime requires coordin… 0.02s
+  ✓ it fences legacy activation before preadd reconciliation writes when runtime requires coordinated-v1
+  ✓ it fences legacy candidate discard when runtime requires coordinated-v1
+  ✓ it verifies a fresh shadow healthy candidate and applies passed evidence
+  ✓ it requires current shadow healthy state for normal managed verification with dataset "verified is activation-only fresh verification"
+  ✓ it requires current shadow healthy state for normal managed verification with dataset "shadow stale is not verifiable"
+  ✓ it rejects runtime semantic drift before managed verification
+  ✓ it marks the candidate stale when m4 verification detects a false negative
+  ✓ it propagates typed bloom verification failures without manufacturing evidence
+  ✓ it activates immutable candidate with fresh verification and no reconciliation
+  ✓ it never promotes a replacement candidate that appears after fresh verification
+  ✓ it requires explicit quiescence before preadd activation mutates or verifies candidate
+  ✓ it reconciles then freshly verifies and promotes preadd candidate under quiescence
+  ✓ it freshly reconciles and verifies an already verified preadd candidate without reapplying shadow evidence
+  ✓ it propagates reconciliation failure and blocks promotion
+  ✓ it marks an already verified preadd candidate stale when fresh post-reconciliation verification fails
+  ✓ it discards only the current candidate through lifecycle retirement without data-plane destruction
+  ✓ it rejects discard when no current candidate exists
+  ✓ it exposes no sampling verification API
+
+   PASS  Tests\Unit\Application\MembershipAdderTest
+  ✓ it fences legacy managed membership writes when runtime requires co… 0.01s
+  ✓ it treats add as a one-item managed bulk write using the active generation layout
+  ✓ it normalizes every addMany value once and uses one bounded bulk driver call
+  ✓ it is a successful no-op when no active generation exists
+  ✓ it synchronizes active pre-add generation even when query optimization is disabled with dataset "global disabled"
+  ✓ it synchronizes active pre-add generation even when query optimization is disabled with dataset "filter disabled"
+  ✓ it synchronizes an active generation even when health is not healthy without changing health
+  ✓ it rejects writes for an active immutable generation
+  ✓ it rejects semantic mismatch as hard configuration failure before bloom mutation with dataset "normalization mismatch"
+  ✓ it rejects semantic mismatch as hard configuration failure before bloom mutation with dataset "authoritative mismatch"
+  ✓ it rejects semantic mismatch as hard configuration failure before bloom mutation with dataset "consistency mismatch"
+  ✓ it rejects an unbound active generation rather than silently skipping synchronization
+  ✓ it propagates normalizer registry snapshot contract and driver failures with ('normalizer')
+  ✓ it propagates normalizer registry snapshot contract and driver failures with ('registry')
+  ✓ it propagates normalizer registry snapshot contract and driver failures with ('snapshot')
+  ✓ it propagates normalizer registry snapshot contract and driver failures with ('contract')
+  ✓ it propagates normalizer registry snapshot contract and driver failures with ('driver')
+  ✓ it does not dual-write candidates or own application database transactions
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Application\OnlineRebuildCoordinatorTest
+  ✓ active rebuild advances through every happy path phase and complete… 0.01s
+  ✓ pre reconcile drain uses persisted epoch count only
+  ✓ post promotion drain blocks completion and a second rebuild
+  ✓ ready to promote recovery rotates targets after control promotion already committed
+  ✓ publication requires each active and candidate semantic fingerprint to match
+  ✓ reconciling retry resumes when control verification committed before sync progress
+  ✓ abort requested is not reversed by wu08 advance
+  ✓ first activation uses empty initial targets and same online workflow
+  ✓ unpublished candidate abort retires control only and retry is complete
+  ✓ abort requested waits for existing pre reconcile drain before rotating away from candidate
+  ✓ draining abort blocks until every published epoch lease drains then retires and finalizes
+  ✓ draining abort recovers after candidate retirement committed before sync finalization
+  ✓ abort after control promotion is too late and advance finishes promotion recovery
+  ✓ promotion winning same observation race fences stale abort
+  ✓ abort winning same observation race fences stale promotion
+  ✓ publication winning same observation race fences unpublished control only abort
+  ✓ first activation abort rotates to empty targets before candidate retirement
+
+   PASS  Tests\Unit\Application\OptimalBloomSizingV1Test
+  ✓ it pins the canonical one-million at one-per-thousand sizing vector  0.01s
+  ✓ it matches deterministic managed sizing vectors with dataset "one percent"
+  ✓ it matches deterministic managed sizing vectors with dataset "ten percent"
+  ✓ it matches deterministic managed sizing vectors with dataset "high fpr floors hash count at one"
+  ✓ it matches deterministic managed sizing vectors with dataset "single member high fpr remains a valid layout"
+  ✓ it uses explicit half-up rounding for the ideal hash-count tie
+  ✓ it rejects non-positive capacities with dataset "zero"
+  ✓ it rejects non-positive capacities with dataset "negative"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "zero"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "one"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "negative"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "greater than one"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "nan"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "positive infinity"
+  ✓ it rejects non-finite or out-of-range false-positive rates with dataset "negative infinity"
+  ✓ it rejects sizing that requires more than the m2 hash-count limit
+  ✓ it rejects sizing that requires more than the m2 bit-count limit
+  ✓ it does not silently clamp unsupported sizing requests
+
+   PASS  Tests\Unit\Application\ProductionSafetyDoctorTest
+  ✓ it classifies the complete declared redis production profile determ… 0.01s
+  ✓ it reports a missing trusted-negative profile as not enabled and never pass
+  ✓ it makes every unsupported redis production prerequisite visible
+  ✓ it never reports inaccessible durability prerequisites as pass
+  ✓ it classifies an unreachable redis runtime without manufacturing prerequisite passes
+  ✓ it reports an unrecognized trusted-negative profile with a matching failure message
+  ✓ it converts malformed redis runtime diagnostics into failed checks and continues filter evaluation
+  ✓ it converts malformed redis durability diagnostics into failed durability checks and continues filter evaluation
+
+   PASS  Tests\Unit\Application\QueryGateDescriptorCacheTest
+  ✓ it reuses descriptors while normalizing and authorizing every looku… 0.01s
+  ✓ it refreshes cached drift once and falls back once when drift repeats
+  ✓ it preserves fresh health bypass after cached control drift
+  ✓ it does not retry cold drift or cached backend failures with (false)
+  ✓ it does not retry cold drift or cached backend failures with (true)
+  ✓ it contains cache failures without blocking resolution or authoritative fallback with ('get')
+  ✓ it contains cache failures without blocking resolution or authoritative fallback with ('put')
+  ✓ it contains cache failures without blocking resolution or authoritative fallback with ('forget')
+  ✓ it uses current semantics rather than a cached descriptor from an earlier definition
+  ✓ it honors current optimization configuration without reusing cached eligibility
+  ✓ it recomputes positions against a freshly resolved layout after cached drift
+
+   PASS  Tests\Unit\Application\QueryGateTest
+  ✓ it returns a trusted negative without authoritative lookup and norm… 0.01s
+  ✓ it preserves authoritative truth for maybe-present results with dataset "authoritative true"
+  ✓ it preserves authoritative truth for maybe-present results with dataset "authoritative false"
+  ✓ it preserves authoritative truth and reason for authorized-probe bypass with dataset "authoritative true"
+  ✓ it preserves authoritative truth and reason for authorized-probe bypass with dataset "authoritative false"
+  ✓ it fails open before query-safety resolution when optimization is disabled with dataset "global disabled"
+  ✓ it fails open before query-safety resolution when optimization is disabled with dataset "filter disabled"
+  ✓ it falls back authoritatively when descriptor preparation bypasses
+  ✓ it exists returns the authoritative-correct boolean semantics of existsResult
+  ✓ it propagates authoritative lookup failures instead of inventing a boolean
+  ✓ it propagates normalizer programming failures without probing or fallback
+  ✓ it propagates unexpected authorized-probe failures instead of converting them to bypass
+  ✓ it propagates unknown-filter and invalid-configuration failures rather than bypassing with dataset "unknown filter"
+  ✓ it propagates unknown-filter and invalid-configuration failures rather than bypassing with dataset "invalid configuration"
+
+   PASS  Tests\Unit\Application\QuerySafetyDescriptorResolverTest
+  ✓ it fails open when there is no eligible active snapshot              0.01s
+  ✓ it fails open for non-active or non-healthy active state with dataset "lifecycle"
+  ✓ it fails open for non-active or non-healthy active state with dataset "health"
+  ✓ it fails open when managed semantic binding is missing
+  ✓ it returns exact generation layout and pinned control identity when semantics match
+  ✓ it fails open with distinct stable reasons for every semantic mismatch with dataset "normalization"
+  ✓ it fails open with distinct stable reasons for every semantic mismatch with dataset "authoritative set"
+  ✓ it fails open with distinct stable reasons for every semantic mismatch with dataset "consistency"
+  ✓ it maps known operational preparation failures to bypass and propagates programming errors
+  ✓ it maps managed generation storage failures to stable bypass reasons with dataset "missing"
+  ✓ it maps managed generation storage failures to stable bypass reasons with dataset "corrupt"
+  ✓ it maps managed generation storage failures to stable bypass reasons with dataset "backend"
+
+   PASS  Tests\Unit\Contracts\BulkBloomDriverTest
+  ✓ it defines bulk bloom driver as an additive child capability         0.01s
+
+   PASS  Tests\Unit\Contracts\FilterDefinitionContractsTest
+  ✓ it defines the value normalizer contract exactly
+  ✓ it defines the authoritative set contract exactly
+  ✓ it defines filter definition as exactly three semantic capabilities
+  ✓ it keeps filter definition contracts framework neutral and free from hidden query semantics
+
+   PASS  Tests\Unit\Contracts\FilterRegistryTest
+  ✓ it defines a framework neutral exact-name filter registry port
+  ✓ it models per-filter enabled state explicitly as query optimization only
+
+   PASS  Tests\Unit\Contracts\M6PersistenceContractsTest
+  ✓ it defines coordinated lifecycle persistence as a framework-neutral additive port
+  ✓ it defines writer synchronization as dedicated atomic store operations
+  ✓ it represents only valid coordinated lifecycle observations
+  ✓ it defines distinct coordination persistence failure categories
+  ✓ it provides backend-neutral reusable lifecycle and writer contract suites
+
+   PASS  Tests\Unit\Contracts\ManagedGenerationContractsTest
+  ✓ it keeps the original bloom driver surface unchanged
+  ✓ it defines the additive generation inspector contract exactly
+  ✓ it defines generation contract store around managed descriptors and fingerprint contracts
+  ✓ it keeps semantic contract persistence fingerprint-only
+  ✓ it defines managed descriptor as layout plus semantic contract only
+
+   PASS  Tests\Unit\Contracts\QuerySafetyContractsTest
+  ✓ it defines a bounded active generation snapshot reader contract
+  ✓ it defines authorized probe without raw application values
+  ✓ it enforces semantic authorized probe result invariants
+
+   PASS  Tests\Unit\Contracts\Redis\RedisCommandExecutorTest
+  ✓ it defines the framework-neutral redis command executor contract exactly
+
+   PASS  Tests\Unit\Contracts\Redis\RedisFailureBoundaryTest
+  ✓ it keeps redis command failures separate from bloom driver failures
+  ✓ it represents storage corruption as a distinct bloom contract failure
+
+   PASS  Tests\Unit\Contracts\Redis\RedisStructuredCommandExecutorTest
+  ✓ it defines the structured redis executor as an additive child contract
+
+   PASS  Tests\Unit\Core\BitPositionsTest
+  ✓ it preserves ordered positions including duplicates
+  ✓ it rejects a position count different from the layout hash count
+  ✓ it rejects positions outside the layout bit range with dataset "negative"
+  ✓ it rejects positions outside the layout bit range with dataset "equal to bit count"
+  ✓ it compares positions by layout and ordered values
+
+   PASS  Tests\Unit\Core\BloomLayoutTest
+  ✓ it retains a valid bloom layout exactly
+  ✓ it accepts the minimum valid layout
+  ✓ it rejects invalid layout parameters with dataset "zero bits"
+  ✓ it rejects invalid layout parameters with dataset "zero hashes"
+  ✓ it rejects invalid layout parameters with dataset "hashes exceed bits"
+  ✓ it rejects invalid layout parameters with dataset "more than 64 hashes"
+  ✓ it enforces the sha256 double-hash v1 bit-count range
+  ✓ it compares bloom layouts by all protocol parameters
+
+   PASS  Tests\Unit\Core\BloomProbeGeneratorTest
+  ✓ it matches the sha256 double-hash v1 golden vectors with dataset "empty bytes"
+  ✓ it matches the sha256 double-hash v1 golden vectors with dataset "ascii bytes"
+  ✓ it matches the sha256 double-hash v1 golden vectors with dataset "utf8 bytes"
+  ✓ it matches the sha256 double-hash v1 golden vectors with dataset "embedded nul"
+  ✓ it uses the defined single-bit special case
+  ✓ it keeps every generated position inside the maximum v1 layout without overflowing
+
+   PASS  Tests\Unit\Core\BypassReasonTest
+  ✓ it provides the built-in bypass reasons with dataset "optimization disabled"
+  ✓ it provides the built-in bypass reasons with dataset "lifecycle not active"
+  ✓ it provides the built-in bypass reasons with dataset "health not healthy"
+  ✓ it provides the built-in bypass reasons with dataset "active version unavailable"
+  ✓ it provides the built-in bypass reasons with dataset "backend unavailable"
+  ✓ it provides the built-in bypass reasons with dataset "backend profile unasserted"
+  ✓ it provides the built-in bypass reasons with dataset "operation failed"
+  ✓ it accepts custom stable reason codes with dataset "single character"
+  ✓ it accepts custom stable reason codes with dataset "dot namespace"
+  ✓ it accepts custom stable reason codes with dataset "hyphen"
+  ✓ it accepts custom stable reason codes with dataset "maximum length"
+  ✓ it rejects invalid reason codes with dataset "empty"
+  ✓ it rejects invalid reason codes with dataset "too long"
+  ✓ it rejects invalid reason codes with dataset "starts with digit"
+  ✓ it rejects invalid reason codes with dataset "uppercase"
+  ✓ it rejects invalid reason codes with dataset "space"
+  ✓ it rejects invalid reason codes with dataset "slash"
+  ✓ it rejects invalid reason codes with dataset "colon"
+  ✓ it rejects invalid reason codes with dataset "opening brace"
+  ✓ it rejects invalid reason codes with dataset "unicode"
+  ✓ it compares bypass reasons by code
+
+   PASS  Tests\Unit\Core\ConsistencyContractTest
+  ✓ it exposes exactly the two locked m5 consistency contracts           0.01s
+
+   PASS  Tests\Unit\Core\FilterControlStateTest
+  ✓ it retains exact identity revision allocation waterline and generation snapshot
+  ✓ it allows no active or candidate generation
+  ✓ it allows one active generation
+  ✓ it allows one candidate generation
+  ✓ it allows distinct active and candidate generations simultaneously
+  ✓ it rejects duplicate tracked generation versions
+  ✓ it rejects multiple tracked active lifecycle generations
+  ✓ it rejects an active pointer to an untracked generation
+  ✓ it rejects a candidate pointer to an untracked generation
+  ✓ it rejects an active pointer to a non active lifecycle
+  ✓ it rejects a candidate pointer to an active lifecycle
+  ✓ it rejects a candidate pointer to a retired lifecycle
+  ✓ it rejects the same version as active and candidate
+  ✓ it rejects a tracked version above the allocation waterline
+  ✓ it allows gaps below the last allocated version
+  ✓ it does not require every retired generation to remain tracked forever
+
+   PASS  Tests\Unit\Core\FilterNameTest
+  ✓ it accepts valid filter names with dataset "single byte"
+  ✓ it accepts valid filter names with dataset "two bytes"
+  ✓ it accepts valid filter names with dataset "dot namespace"
+  ✓ it accepts valid filter names with dataset "underscore"
+  ✓ it accepts valid filter names with dataset "hyphen and dot"
+  ✓ it accepts valid filter names with dataset "maximum length"
+  ✓ it rejects invalid filter names with dataset "empty"
+  ✓ it rejects invalid filter names with dataset "too long"
+  ✓ it rejects invalid filter names with dataset "leading dot"
+  ✓ it rejects invalid filter names with dataset "trailing dot"
+  ✓ it rejects invalid filter names with dataset "leading underscore"
+  ✓ it rejects invalid filter names with dataset "trailing hyphen"
+  ✓ it rejects invalid filter names with dataset "colon"
+  ✓ it rejects invalid filter names with dataset "slash"
+  ✓ it rejects invalid filter names with dataset "opening brace"
+  ✓ it rejects invalid filter names with dataset "closing brace"
+  ✓ it rejects invalid filter names with dataset "space"
+  ✓ it rejects invalid filter names with dataset "unicode"
+  ✓ it preserves case as part of identity
+  ✓ it compares equal filter names by value
+
+   PASS  Tests\Unit\Core\FilterStateRevisionTest
+  ✓ it accepts positive state revisions with dataset "first revision"    0.01s
+  ✓ it accepts positive state revisions with dataset "arbitrary revision"
+  ✓ it accepts positive state revisions with dataset "maximum revision"
+  ✓ it rejects zero and negative state revisions with dataset "zero"
+  ✓ it rejects zero and negative state revisions with dataset "negative"
+  ✓ it compares state revisions by value
+  ✓ it creates the next immutable state revision
+  ✓ it rejects advancing beyond the maximum integer
+
+   PASS  Tests\Unit\Core\FilterVersionTest
+  ✓ it accepts positive filter versions with dataset "first generation"  0.01s
+  ✓ it accepts positive filter versions with dataset "arbitrary generation"
+  ✓ it accepts positive filter versions with dataset "maximum generation"
+  ✓ it rejects zero and negative filter versions with dataset "zero"
+  ✓ it rejects zero and negative filter versions with dataset "negative"
+  ✓ it creates the next immutable generation
+  ✓ it compares filter versions by value
+  ✓ it rejects advancing beyond the maximum integer
+
+   PASS  Tests\Unit\Core\GenerationControlStateTest
+  ✓ it retains generation version lifecycle and health exactly
+  ✓ it is an immutable state container without lifecycle or health policy methods
+
+   PASS  Tests\Unit\Core\HealthStateTest
+  ✓ it defines exactly the operational health states
+
+   PASS  Tests\Unit\Core\LifecycleStateTest
+  ✓ it defines exactly the lifecycle states
+
+   PASS  Tests\Unit\Core\M6CoordinationVocabularyTest
+  ✓ it requires positive synchronization revisions and preserves immutable increment semantics
+  ✓ it requires positive synchronization epochs and preserves immutable increment semantics
+  ✓ it preserves canonical synchronization target ordering and uniqueness
+  ✓ it accepts only canonical writer lease tokens
+  ✓ it defines exactly the durable writer lease states
+  ✓ it defines exactly the M6 synchronization phases
+  ✓ it preserves an immutable writer lease binding across token epoch and exact targets
+  ✓ it represents the strict logical synchronization snapshot without persistence concerns
+  ✓ it defines exactly the authoritative outcomes required by coordinated writer completion
+
+   PASS  Tests\Unit\Core\MembershipTest
+  ✓ it defines exactly the membership semantics
+
+   PASS  Tests\Unit\Core\NormalizedValueTest
+  ✓ it preserves exact byte sequences with dataset "empty"
+  ✓ it preserves exact byte sequences with dataset "ascii"
+  ✓ it preserves exact byte sequences with dataset "surrounding whitespace"
+  ✓ it preserves exact byte sequences with dataset "utf8 bytes"
+  ✓ it preserves exact byte sequences with dataset "embedded nul"
+  ✓ it compares normalized values by exact bytes
+  ✓ it uses byte length rather than character count
+
+   PASS  Tests\Unit\Core\ProbeAlgorithmTest
+  ✓ it exposes the stable v1 probe algorithm identifier
+  ✓ it defines exactly the supported probe algorithms
+
+   PASS  Tests\Unit\Core\SemanticFingerprintTest
+  ✓ it pins deterministic domain-separated sha256 fingerprint vectors
+  ✓ it separates equal lexical identities by semantic fingerprint domain
+  ✓ it round trips canonical fingerprint values by domain type
+  ✓ it rejects non-canonical fingerprint encodings with dataset "empty"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "missing algorithm prefix"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "wrong algorithm"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "short digest"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "long digest"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "uppercase digest"
+  ✓ it rejects non-canonical fingerprint encodings with dataset "non hex digest"
+  ✓ it uses the same canonical fingerprint validation for every semantic domain
+
+   PASS  Tests\Unit\Core\SemanticIdentityTest
+  ✓ it accepts bounded visible-ascii normalization identities with dataset "simple version"
+  ✓ it accepts bounded visible-ascii normalization identities with dataset "semantic parameters"
+  ✓ it accepts bounded visible-ascii normalization identities with dataset "punctuation"
+  ✓ it accepts bounded visible-ascii normalization identities with dataset "maximum length"
+  ✓ it accepts bounded visible-ascii authoritative-set identities with dataset "logical source"
+  ✓ it accepts bounded visible-ascii authoritative-set identities with dataset "qualified semantics"
+  ✓ it accepts bounded visible-ascii authoritative-set identities with dataset "maximum length"
+  ✓ it rejects invalid normalization identities with dataset "empty"
+  ✓ it rejects invalid normalization identities with dataset "too long"
+  ✓ it rejects invalid normalization identities with dataset "space"
+  ✓ it rejects invalid normalization identities with dataset "tab"
+  ✓ it rejects invalid normalization identities with dataset "newline"
+  ✓ it rejects invalid normalization identities with dataset "nul"
+  ✓ it rejects invalid normalization identities with dataset "unicode"
+  ✓ it rejects invalid authoritative-set identities with dataset "empty"
+  ✓ it rejects invalid authoritative-set identities with dataset "too long"
+  ✓ it rejects invalid authoritative-set identities with dataset "space"
+  ✓ it rejects invalid authoritative-set identities with dataset "carriage return"
+  ✓ it rejects invalid authoritative-set identities with dataset "nul"
+  ✓ it rejects invalid authoritative-set identities with dataset "unicode"
+  ✓ it compares semantic identities by exact case-sensitive value
+
+   WARN  QuerySafetyDescriptorCacheTest
+  - descriptor reuse and namespace isolation → Requires enabled APCu; r… 0.01s
+  - changed semantics are a cache miss → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "format" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "filter" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "revision" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "version" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "bits" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "hashes" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "algorithm" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "normalization" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "authoritative" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - malformed payload is a cache miss with data set "consistency" → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  - forget evicts the requested descriptor → Requires enabled APCu; run PHP with apc.enable_cli=1.
+  ✓ disabled apcu gets miss and writes are noops
+
+   PASS  Tests\Unit\Drivers\Memory\MemoryCoordinationStoreTest
+  ✓ it keeps ordinary control CAS valid while coordination has never be… 0.01s
+  ✓ it serializes legacy control CAS and ownership claim in both deterministic Fiber orderings
+  ✓ it keeps adoption pending observable while writer admission fails closed
+  ✓ it serializes opposite-plane CAS through revision fencing in both deterministic Fiber orderings
+  ✓ it orders writer acquire wholly before or wholly after epoch rotation in deterministic Fiber orderings
+  ✓ it fails closed on malformed raw Memory ownership synchronization lease and count state
+
+   PASS  Tests\Unit\Drivers\Memory\MemoryQuerySafetyTest
+  ✓ it exposes active snapshot from the memory control store without full-store query coupling
+  ✓ it returns definitely absent only after optimistic memory revalidation succeeds
+  ✓ it returns maybe present after matching bits exist
+  ✓ it bypasses when revalidation returns a snapshot for a different filter
+  ✓ it bypasses when control revision changes after descriptor preparation
+  ✓ it never turns missing bloom storage into a trusted negative
+
+   PASS  Tests\Unit\Drivers\Redis\RedisBloomDriverTest
+  ✓ it provisions with exact script keys and layout arguments
+  ✓ it adds with exact layout arguments followed by ordered positions
+  ✓ it maps membership status codes to booleans with dataset "absent"
+  ✓ it maps membership status codes to booleans with dataset "maybe present"
+  ✓ it checks membership with exact script keys and ordered arguments
+  ✓ it destroys exactly the requested generation with no arguments
+  ✓ it maps provision semantic failures with dataset "layout conflict"
+  ✓ it maps provision semantic failures with dataset "storage corrupt"
+  ✓ it maps add semantic failures with dataset "not provisioned"
+  ✓ it maps add semantic failures with dataset "layout mismatch"
+  ✓ it maps add semantic failures with dataset "storage corrupt"
+  ✓ it maps membership semantic failures with dataset "not provisioned"
+  ✓ it maps membership semantic failures with dataset "layout mismatch"
+  ✓ it maps membership semantic failures with dataset "storage corrupt"
+  ✓ it wraps redis command failures as driver operational failures with ('provision')
+  ✓ it wraps redis command failures as driver operational failures with ('add')
+  ✓ it wraps redis command failures as driver operational failures with ('check')
+  ✓ it wraps redis command failures as driver operational failures with ('destroy')
+  ✓ it rejects unexpected script status as a programming protocol error
+
+   PASS  Tests\Unit\Drivers\Redis\RedisBloomScriptsTest
+  ✓ it pins the internal redis script protocol constants                 0.01s
+  ✓ it keeps every script on the two-key generation protocol with dataset "provision"
+  ✓ it keeps every script on the two-key generation protocol with dataset "add"
+  ✓ it keeps every script on the two-key generation protocol with dataset "might contain"
+  ✓ it keeps every script on the two-key generation protocol with dataset "destroy"
+  ✓ it pins the common metadata argv protocol for stateful scripts with dataset "provision"
+  ✓ it pins the common metadata argv protocol for stateful scripts with dataset "add"
+  ✓ it pins the common metadata argv protocol for stateful scripts with dataset "might contain"
+  ✓ it pins the redis primitive used by each script with dataset "provision writes metadata"
+  ✓ it pins the redis primitive used by each script with dataset "add sets bitmap positions"
+  ✓ it pins the redis primitive used by each script with dataset "might contain reads bitmap positions"
+  ✓ it pins the redis primitive used by each script with dataset "destroy removes both generation keys"
+  ✓ it validates state before bitmap mutation in the add script
+
+   PASS  Tests\Unit\Drivers\Redis\RedisBulkBloomDriverTest
+  ✓ it does not contact redis for an empty bulk batch                    0.01s
+  ✓ it serializes a non-empty bulk batch into one redis eval
+  ✓ it rejects mixed layouts before contacting redis
+
+   PASS  Tests\Unit\Drivers\Redis\RedisBulkBloomScriptsTest
+  ✓ it pins the managed bitmap marker and invalid-batch status
+  ✓ it validates the entire bulk batch before marker and bitmap mutation
+  ✓ it requires marker to be absent or canonical one before bulk mutation
+
+   PASS  Tests\Unit\Drivers\Redis\RedisControlScriptsTest
+  ✓ it keeps control reads on the canonical state key without ttl primitives
+  ✓ it uses same-slot state staging owner and sync keys for cas without ttl primitives
+  ✓ it pins the private structured status tokens inside the scripts
+  ✓ it validates read key type and strict hash shape before returning fields
+  ✓ it materializes a complete staging hash before replacing current correctness state
+  ✓ it bounds hset unpack calls while materializing the staging hash
+  ✓ it checks coordination state before legacy control revision semantics
+  ✓ it checks storage conflict before proposed revision progression
+  ✓ it places semantic cas failures before the first staging mutation
+  ✓ it cleans staging on staged write or rename failure before returning the redis error
+  ✓ it keeps lifecycle transition policy out of redis control scripts with dataset "read"
+  ✓ it keeps lifecycle transition policy out of redis control scripts with dataset "compare and swap"
+
+   PASS  Tests\Unit\Drivers\Redis\RedisControlStateCodecTest
+  ✓ it encodes control state deterministically with canonical control v1 tokens
+  ✓ it omits nullable pointer fields instead of encoding sentinel values
+  ✓ it decodes a valid payload regardless of redis hash field order
+  ✓ it encodes every lifecycle token exactly with dataset "configured"
+  ✓ it encodes every lifecycle token exactly with dataset "building"
+  ✓ it encodes every lifecycle token exactly with dataset "shadow"
+  ✓ it encodes every lifecycle token exactly with dataset "verified"
+  ✓ it encodes every lifecycle token exactly with dataset "active"
+  ✓ it encodes every lifecycle token exactly with dataset "retired"
+  ✓ it round trips every lifecycle token exactly with dataset "configured"
+  ✓ it round trips every lifecycle token exactly with dataset "building"
+  ✓ it round trips every lifecycle token exactly with dataset "shadow"
+  ✓ it round trips every lifecycle token exactly with dataset "verified"
+  ✓ it round trips every lifecycle token exactly with dataset "active"
+  ✓ it round trips every lifecycle token exactly with dataset "retired"
+  ✓ it encodes every health token exactly with dataset "healthy"
+  ✓ it encodes every health token exactly with dataset "degraded"
+  ✓ it encodes every health token exactly with dataset "stale"
+  ✓ it encodes every health token exactly with dataset "unavailable"
+  ✓ it round trips every health token exactly with dataset "healthy"
+  ✓ it round trips every health token exactly with dataset "degraded"
+  ✓ it round trips every health token exactly with dataset "stale"
+  ✓ it round trips every health token exactly with dataset "unavailable"
+  ✓ it rejects unknown control formats
+  ✓ it rejects unknown top level fields instead of silently ignoring them
+  ✓ it rejects duplicate fields
+  ✓ it rejects malformed generation field names with dataset "empty version"
+  ✓ it rejects malformed generation field names with dataset "zero version"
+  ✓ it rejects malformed generation field names with dataset "leading zero"
+  ✓ it rejects malformed generation field names with dataset "negative version"
+  ✓ it rejects malformed generation field names with dataset "unknown generation property"
+  ✓ it rejects malformed generation field names with dataset "extra segment"
+  ✓ it rejects incomplete lifecycle health generation pairs with dataset "lifecycle missing"
+  ✓ it rejects incomplete lifecycle health generation pairs with dataset "health missing"
+  ✓ it rejects unknown lifecycle and health tokens with dataset "unknown lifecycle"
+  ✓ it rejects unknown lifecycle and health tokens with dataset "unknown health"
+  ✓ it rejects non canonical positive decimal values with dataset "revision zero"
+  ✓ it rejects non canonical positive decimal values with dataset "revision leading zero"
+  ✓ it rejects non canonical positive decimal values with dataset "revision plus sign"
+  ✓ it rejects non canonical positive decimal values with dataset "last allocated leading zero"
+  ✓ it rejects non canonical positive decimal values with dataset "candidate leading zero"
+  ✓ it rejects canonical looking decimals outside the platform integer range
+  ✓ it rejects non canonical generation versions before semantic duplication is possible
+  ✓ it rejects odd length or non string hash payloads with dataset "odd pair count"
+  ✓ it rejects odd length or non string hash payloads with dataset "non string field"
+  ✓ it rejects odd length or non string hash payloads with dataset "non string value"
+  ✓ it maps core invariant violations to control state corruption
+  ✓ it does not encode ttl or expiration metadata
+
+   PASS  Tests\Unit\Drivers\Redis\RedisCoordinationRepresentationTest
+  ✓ it reserves every M6 coordination key under the existing filter has… 0.01s
+  ✓ it encodes sync-v1 with canonical fields targets and optional pointers
+  ✓ it uses dash as the only canonical empty target encoding and omits absent optional fields
+  ✓ it round trips every canonical synchronization phase token with dataset "steady"
+  ✓ it round trips every canonical synchronization phase token with dataset "draining pre reconcile"
+  ✓ it round trips every canonical synchronization phase token with dataset "reconciling"
+  ✓ it round trips every canonical synchronization phase token with dataset "ready to promote"
+  ✓ it round trips every canonical synchronization phase token with dataset "draining post promotion"
+  ✓ it round trips every canonical synchronization phase token with dataset "abort requested"
+  ✓ it round trips every canonical synchronization phase token with dataset "draining abort"
+  ✓ it decodes strict sync-v1 regardless of redis hash field order
+  ✓ it rejects unknown duplicate missing or malformed sync-v1 fields with dataset "unknown field"
+  ✓ it rejects unknown duplicate missing or malformed sync-v1 fields with dataset "duplicate field"
+  ✓ it rejects unknown duplicate missing or malformed sync-v1 fields with dataset "missing current targets"
+  ✓ it rejects unknown duplicate missing or malformed sync-v1 fields with dataset "unknown format"
+  ✓ it rejects unknown duplicate missing or malformed sync-v1 fields with dataset "unknown phase"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "revision zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "revision leading zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "epoch leading zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "candidate zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "draining leading zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target leading zero"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target duplicate"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target descending"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target whitespace"
+  ✓ it rejects non canonical synchronization numbers and target encodings with dataset "target trailing separator"
+  ✓ it rejects odd-length and non-string synchronization hash payloads with dataset "odd field value list"
+  ✓ it rejects odd-length and non-string synchronization hash payloads with dataset "non string field"
+  ✓ it rejects odd-length and non-string synchronization hash payloads with dataset "non string value"
+  ✓ it rejects canonical-looking coordination integers outside the platform range
+  ✓ it round trips the canonical empty target set inside writer lease records
+  ✓ it encodes every durable A-P-R writer lease record canonically with dataset "acquired"
+  ✓ it encodes every durable A-P-R writer lease record canonically with dataset "prepared"
+  ✓ it encodes every durable A-P-R writer lease record canonically with dataset "released"
+  ✓ it decodes every durable A-P-R writer lease record with the supplied token identity with dataset "acquired"
+  ✓ it decodes every durable A-P-R writer lease record with the supplied token identity with dataset "prepared"
+  ✓ it decodes every durable A-P-R writer lease record with the supplied token identity with dataset "released"
+  ✓ it rejects malformed writer lease records with dataset "unknown state"
+  ✓ it rejects malformed writer lease records with dataset "lowercase state"
+  ✓ it rejects malformed writer lease records with dataset "zero epoch"
+  ✓ it rejects malformed writer lease records with dataset "leading zero epoch"
+  ✓ it rejects malformed writer lease records with dataset "duplicate targets"
+  ✓ it rejects malformed writer lease records with dataset "descending targets"
+  ✓ it rejects malformed writer lease records with dataset "empty targets sentinel malformed"
+  ✓ it rejects malformed writer lease records with dataset "extra segment"
+  ✓ it encodes and decodes canonical active-writer count fields and values
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "field zero"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "field leading zero"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "field wrong prefix"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "count negative"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "count leading zero"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "count plus sign"
+  ✓ it rejects malformed active-writer count fields and persisted values with dataset "count empty"
+  ✓ it rejects negative count values before redis persistence
+  ✓ it uses the immutable coordinated ownership marker and rejects every other value
+  ✓ it never exposes ttl or expiration fields in synchronization or lease representations
+
+   PASS  Tests\Unit\Drivers\Redis\RedisFilterControlStoreTest
+  ✓ it maps a missing redis control key to null                          0.02s
+  ✓ it decodes a valid redis control hash payload
+  ✓ it maps redis control read corruption status to the typed corruption failure
+  ✓ it does not treat a malformed ok read payload as missing
+  ✓ it maps redis transport failures to control store operational failures
+  ✓ it rejects unexpected read statuses as protocol errors with dataset "empty response"
+  ✓ it rejects unexpected read statuses as protocol errors with dataset "conflict is invalid for read"
+  ✓ it rejects unexpected read statuses as protocol errors with dataset "unknown status"
+  ✓ it creates control state with null expected revision and exact encoded payload
+  ✓ it updates control state with the exact expected revision token
+  ✓ it lets redis resolve missing state before client-side revision progression
+  ✓ it lets redis resolve a stale expected revision before validating the proposed revision
+  ✓ it maps redis cas invalid revision progression to invalid argument
+  ✓ it maps redis cas revision conflict without retrying
+  ✓ it maps redis cas storage corruption without retrying
+  ✓ it maps redis cas transport failures to control store operational failures
+  ✓ it rejects unexpected cas reply shapes as protocol errors with dataset "empty response"
+  ✓ it rejects unexpected cas reply shapes as protocol errors with dataset "success with payload"
+  ✓ it rejects unexpected cas reply shapes as protocol errors with dataset "unknown status"
+  ✓ it rejects target snapshot identity mismatch before redis mutation
+  ✓ it rejects invalid create revision after redis confirms create context
+  ✓ it rejects invalid update revision after redis confirms expected revision
+
+   PASS  Tests\Unit\Drivers\Redis\RedisGenerationContractScriptsTest
+  ✓ it pins generation semantic metadata field names and status protoco… 0.01s
+  ✓ it reads canonical m3 layout and semantic fields without mutating generation storage
+  ✓ it binds all semantic fingerprints in one hset only after layout and existing binding validation
+
+   PASS  Tests\Unit\Drivers\Redis\RedisGenerationContractStoreTest
+  ✓ it inspects exact provisioned layout from canonical redis metadata
+  ✓ it reports old provisioned m3 generation as unbound instead of corrupt
+  ✓ it reconstructs a bound descriptor from redis layout and fingerprints
+  ✓ it binds canonical layout and all fingerprints in one structured eval
+  ✓ it maps semantic store status replies to typed failures with dataset "not provisioned"
+  ✓ it maps semantic store status replies to typed failures with dataset "storage corrupt"
+  ✓ it maps semantic store status replies to typed failures with dataset "layout mismatch"
+  ✓ it maps semantic store status replies to typed failures with dataset "semantic conflict"
+  ✓ it maps read storage failures without interpreting them as unbound with dataset "not provisioned"
+  ✓ it maps read storage failures without interpreting them as unbound with dataset "storage corrupt"
+  ✓ it wraps redis command failures as semantic store operational failures
+  ✓ it rejects unexpected structured replies as protocol errors
+
+   PASS  Tests\Unit\Drivers\Redis\RedisKeyspaceTest
+  ✓ it builds canonical generation keys with a shared cluster hash tag
+  ✓ it preserves exact case-sensitive filter identity
+  ✓ it encodes filter versions as unpadded base-10 decimals
+  ✓ it accepts bounded ascii prefixes with dataset "single alphanumeric"
+  ✓ it accepts bounded ascii prefixes with dataset "mixed safe separators"
+  ✓ it accepts bounded ascii prefixes with dataset "maximum length"
+  ✓ it rejects unsafe redis key prefixes with dataset "empty"
+  ✓ it rejects unsafe redis key prefixes with dataset "leading punctuation"
+  ✓ it rejects unsafe redis key prefixes with dataset "colon"
+  ✓ it rejects unsafe redis key prefixes with dataset "opening brace"
+  ✓ it rejects unsafe redis key prefixes with dataset "closing brace"
+  ✓ it rejects unsafe redis key prefixes with dataset "space"
+  ✓ it rejects unsafe redis key prefixes with dataset "unicode"
+  ✓ it rejects unsafe redis key prefixes with dataset "too long"
+  ✓ it builds the canonical control state key with the same logical filter hash tag
+  ✓ it keeps existing generation key bytes unchanged when control state keys are introduced
+
+   PASS  Kefyusuf\BloomGate\Tests\Unit\Drivers\Redis\RedisQuerySafetyTest
+  ✓ control store additively implements bounded active snapshot reader   0.01s
+  ✓ bounded active snapshot returns null without active version
+  ✓ bounded active snapshot maps corrupt and backend failures
+  ✓ bounded active snapshot wraps redis transport failure
+  ✓ active snapshot script is bounded read only and never hgetall
+  ✓ missing profile bypasses without contacting redis
+  ✓ unsupported profile cannot authorize negative
+  ✓ supported profile executes one atomic probe with explicit keys
+  ✓ authorized probe maps maybe and every stable bypass reason
+  ✓ authorized probe maps transport failure to backend unavailable
+  ✓ authorized probe rejects programming layout mismatch before redis
+  ✓ authorized probe rejects unexpected protocol result
+  ✓ authorized probe script is read only bounded and uses only declared keys
+
+   PASS  Tests\Unit\Laravel\Redis\LaravelRedisCommandExecutorTest
+  ✓ it forwards eval through the resolved Illuminate Redis connection e… 0.01s
+  ✓ it rejects non-integer Redis eval replies as a protocol error
+  ✓ it normalizes supported Redis client failures with dataset "phpredis"
+  ✓ it normalizes supported Redis client failures with dataset "predis"
+  ✓ it does not mask non-Redis programming or configuration failures
+  ✓ it implements both legacy and structured redis executor contracts
+  ✓ it returns a strict list of strings from structured eval
+  ✓ it accepts an empty structured eval list
+  ✓ it rejects unexpected structured eval reply shapes with dataset "scalar integer"
+  ✓ it rejects unexpected structured eval reply shapes with dataset "scalar string"
+  ✓ it rejects unexpected structured eval reply shapes with dataset "associative array"
+  ✓ it rejects unexpected structured eval reply shapes with dataset "integer member"
+  ✓ it rejects unexpected structured eval reply shapes with dataset "nested member"
+  ✓ it rejects unexpected structured eval reply shapes with dataset "null member"
+  ✓ it normalizes supported redis client failures for structured eval with dataset "phpredis"
+  ✓ it normalizes supported redis client failures for structured eval with dataset "predis"
+  ✓ it does not mask programming failures during structured eval
+  ✓ it uses a warm EVALSHA without sending the Lua source or issuing EVAL
+  ✓ it falls back exactly once only for operational NOSCRIPT errors with ('RedisException')
+  ✓ it falls back exactly once only for operational NOSCRIPT errors with ('Predis\PredisException')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('read timeout')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('NOAUTH Authentication required.')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('READONLY replica')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('ERR Error running script: NOS… value')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('NOSCRIPTING unsupported')
+  ✓ it never replays an operational error that does not prove NOSCRIPT with ('ERR NOSCRIPT No matching scri… EVAL.')
+  ✓ it does not retry an EVAL fallback that itself fails
+  ✓ it propagates programming failures containing NOSCRIPT without fallback
+  ✓ it uses the native phpredis SHA signature and safely consumes only current NOSCRIPT errors
+  ✓ it does not treat stale native errors or non-NOSCRIPT native errors as retry permission with (null)
+  ✓ it does not treat stale native errors or non-NOSCRIPT native errors as retry permission with ('NOAUTH Authentication required.')
+  ✓ it does not treat stale native errors or non-NOSCRIPT native errors as retry permission with ('READONLY replica')
+  ✓ it does not treat stale native errors or non-NOSCRIPT native errors as retry permission with ('NOSCRIPT user-defined Lua error')
+
+   PASS  Tests\Unit\Laravel\Redis\LaravelRedisRuntimeDiagnosticsTest
+  ✓ it reads only the redis runtime fields required by the m5 support p… 0.01s
+  ✓ it parses raw info text without broad redis client assumptions
+  ✓ it maps redis acl or transport failures to a dedicated diagnostics failure
+  ✓ it does not mask programming failures in diagnostics
+  ✓ it maps malformed runtime replies to a dedicated invalid diagnostics failure
+  ✓ it maps malformed durability replies to a dedicated invalid diagnostics failure
+
+   PASS  Tests\Unit\Lifecycle\ActivationVerificationEvidenceApplierTest
+  ✓ it applies passed evidence only to the same current shadow candidate
+  ✓ it rejects verification evidence for a different filter name
+  ✓ it rejects verification evidence when the candidate version changed
+  ✓ it rejects verification evidence when the candidate is no longer tracked
+  ✓ it rejects verification evidence when the current candidate is no longer shadow with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Configured))
+  ✓ it rejects verification evidence when the current candidate is no longer shadow with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Building))
+  ✓ it rejects verification evidence when the current candidate is no longer shadow with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Verified))
+  ✓ it does not invalidate version bound evidence because health changed
+  ✓ it rejects false negative evidence
+
+   PASS  Tests\Unit\Lifecycle\ActivationVerificationResultTest
+  ✓ it defines only conclusive activation verification statuses
+  ✓ it binds evidence to filter name and version without exposing the failed raw value
+
+   PASS  Tests\Unit\Lifecycle\ActivationVerifierTest
+  ✓ it passes when every authoritative present value might be contained
+  ✓ it stops at the first false negative and counts the failing check
+  ✓ it allows an empty authoritative present stream to pass with zero checked values
+  ✓ it propagates bloom driver operation failures without converting them to a result
+  ✓ it propagates bloom storage corruption without converting it to a result
+  ✓ it does not implicitly normalize raw application values
+  ✓ it accepts normalized values only and exposes no sampling control
+
+   PASS  Tests\Unit\Lifecycle\ActiveGenerationDeactivatorTest
+  ✓ it explicitly retires the current active generation without promoting the candidate
+  ✓ it rejects deactivation when there is no current active generation
+  ✓ it performs only one cas attempt and surfaces a deactivation conflict
+
+   PASS  Tests\Unit\Lifecycle\ActiveGenerationPolicyTest
+  ✓ it selects only an active healthy current generation as probe eligible
+  ✓ it rejects unhealthy active generations from probe eligibility with (Kefyusuf\BloomGate\Core\HealthState Enum (Degraded))
+  ✓ it rejects unhealthy active generations from probe eligibility with (Kefyusuf\BloomGate\Core\HealthState Enum (Stale))
+  ✓ it rejects unhealthy active generations from probe eligibility with (Kefyusuf\BloomGate\Core\HealthState Enum (Unavailable))
+  ✓ it does not treat a verified or shadow healthy candidate as an active eligible generation with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Verified))
+  ✓ it does not treat a verified or shadow healthy candidate as an active eligible generation with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Shadow))
+  ✓ it returns no eligible generation when the active pointer is missing
+  ✓ it returns no eligible generation when control state is unavailable
+  ✓ it does not select an unpointed active healthy generation
+
+   PASS  Tests\Unit\Lifecycle\CandidateAllocatorTest
+  ✓ it allocates version one into an empty control store
+  ✓ it allocates strictly after the last allocated version and never reuses retired gaps
+  ✓ it rejects allocating a second candidate without writing
+  ✓ it fails cleanly instead of wrapping the generation version at php int max
+  ✓ it performs only one cas attempt and surfaces a write conflict to the caller
+
+   PASS  Tests\Unit\Lifecycle\CandidatePromoterTest
+  ✓ it promotes the exact verified healthy candidate and retires the prior active generation
+  ✓ it promotes a verified healthy candidate when there is no prior active generation
+  ✓ it rejects promotion when there is no candidate
+  ✓ it rejects promotion when the requested candidate version differs
+  ✓ it rejects promotion unless the candidate is verified with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Configured))
+  ✓ it rejects promotion unless the candidate is verified with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Building))
+  ✓ it rejects promotion unless the candidate is verified with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Shadow))
+  ✓ it rejects promotion unless the verified candidate is healthy with (Kefyusuf\BloomGate\Core\HealthState Enum (Degraded))
+  ✓ it rejects promotion unless the verified candidate is healthy with (Kefyusuf\BloomGate\Core\HealthState Enum (Stale))
+  ✓ it rejects promotion unless the verified candidate is healthy with (Kefyusuf\BloomGate\Core\HealthState Enum (Unavailable))
+  ✓ it performs only one cas attempt and does not hide a promotion conflict
+  ✓ it depends only on the control store and has no bloom data plane dependency
+
+   PASS  Tests\Unit\Lifecycle\GenerationHealthUpdaterTest
+  ✓ it persists only the requested generation health and increments revision once
+  ✓ it allows health changes without lifecycle or pointer mutation with (Kefyusuf\BloomGate\Core\HealthState Enum (Healthy))
+  ✓ it allows health changes without lifecycle or pointer mutation with (Kefyusuf\BloomGate\Core\HealthState Enum (Degraded))
+  ✓ it allows health changes without lifecycle or pointer mutation with (Kefyusuf\BloomGate\Core\HealthState Enum (Stale))
+  ✓ it allows health changes without lifecycle or pointer mutation with (Kefyusuf\BloomGate\Core\HealthState Enum (Unavailable))
+  ✓ it requires control state and exact tracked generation
+  ✓ it surfaces stale cas conflicts without retrying
+  ✓ it depends only on the control store and has no driver dependency
+
+   PASS  Tests\Unit\Lifecycle\GenerationLifecycleTransitionerTest
+  ✓ it persists a legal generic lifecycle transition and preserves orthogonal state
+  ✓ it delegates legality to the existing generic lifecycle policy with dataset "evidence only shadow to verified"
+  ✓ it delegates legality to the existing generic lifecycle policy with dataset "promotion only verified to active"
+  ✓ it delegates legality to the existing generic lifecycle policy with dataset "illegal configured to shadow"
+  ✓ it requires control state and the exact tracked generation
+  ✓ it clears only a candidate pointer when a legal retirement would otherwise violate control invariants
+  ✓ it clears only the active pointer when retiring the active generation
+  ✓ it surfaces stale cas conflicts after exactly one read and one write attempt
+  ✓ it depends only on control persistence and the existing lifecycle policy
+
+   PASS  Tests\Unit\Lifecycle\LifecycleTransitionPolicyTest
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Configured->Retired"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Building->Retired"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Shadow->Retired"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Verified->Retired"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Active->Retired"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Configured"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Building"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Shadow"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Verified"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Active"
+  ✓ it enforces exactly the generic lifecycle transition matrix with dataset "Retired->Retired"
+  ✓ it rejects evidence free shadow to verified through the generic API
+  ✓ it rejects direct verified to active through the generic API
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Configured))
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Building))
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Shadow))
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Verified))
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Active))
+  ✓ it keeps retired terminal in the m4 generic policy with (Kefyusuf\BloomGate\Core\LifecycleState Enum (Retired))
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryBloomDriverContractTest
+  ✓ provision creates empty storage                                      0.01s
+  ✓ add sets positions and might contain requires all positions
+  ✓ add and check accept positions from an equivalent layout instance
+  ✓ add is monotonic and retry safe
+  ✓ same layout provision is retry safe and does not clear bits
+  ✓ conflicting layout provision fails without mutating existing storage
+  ✓ add rejects positions from a different layout
+  ✓ might contain rejects positions from a different layout
+  ✓ missing storage is a typed failure for add
+  ✓ missing storage is a typed failure for might contain
+  ✓ destroy removes only the requested generation and is retry safe
+  ✓ duplicate positions are preserved by contract semantics
+  ✓ filter name and version form independent storage identity
+  ✓ filter name identity remains case sensitive
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryBulkBloomDriverContractTest
+  ✓ empty batch is a successful no op without storage                    0.01s
+  ✓ non empty batch sets every items positions
+  ✓ equivalent layout instances are accepted in one batch
+  ✓ mixed layout batch fails before any item is mutated
+  ✓ non empty batch requires provisioned storage
+  ✓ repeated batches and duplicate items are retry safe
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryCoordinatedLifecycleStoreTest
+  ✓ never adopted read preserves control and absent coordination
+  ✓ claim ownership is one way and requires sync absence
+  ✓ claim ownership conflicts on stale control relation
+  ✓ coordinated control cas is guarded by exact sync revision
+  ✓ coordinated control cas treats null control revision as required absence
+  ✓ coordinated sync cas treats null control revision as required absence
+  ✓ coordinated sync cas treats null sync revision as required absence
+  ✓ owner sync contradiction fails closed
+  ✓ staging state is not current correctness state
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryFilterControlStoreTest
+  ✓ missing state returns null
+  ✓ create requires a null expected revision
+  ✓ create persists revision one
+  ✓ create rejects a non initial revision without mutation
+  ✓ second create conflicts and preserves existing state
+  ✓ update requires the exact current revision and advances once
+  ✓ stale expected revision conflicts without overwriting the winner
+  ✓ update rejects reusing the current revision without mutation
+  ✓ update rejects a skipped revision without mutation
+  ✓ target filter name must match the snapshot before mutation
+  ✓ read keeps filter name identity case sensitive
+  ✓ read returns the complete stored snapshot semantics
+  ✓ failure taxonomy keeps conflict operation failure and corruption distinct
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryGenerationContractStoreTest
+  ✓ missing generation is explicit in inspection
+  ✓ inspector returns the exact provisioned layout semantics
+  ✓ missing generation and unbound generation are distinct
+  ✓ bind requires an existing provisioned generation
+  ✓ bind rejects layout that differs from actual storage
+  ✓ bind then read returns actual layout and semantic contract
+  ✓ equal rebind is idempotent
+  ✓ different rebind conflicts and preserves winner
+  ✓ sibling versions have independent bindings
+  ✓ destroyed storage cannot present a managed descriptor
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryWriterLeaseInspectorTest
+  ✓ optional lease diagnostics keep original bindings and exclude released tokens
+
+   PASS  Kefyusuf\BloomGate\Tests\Contract\MemoryWriterSynchronizationStoreTest
+  ✓ read lease is exact read only and preserves apr state
+  ✓ acquire binds current epoch and targets atomically
+  ✓ acquire requires valid owner and sync
+  ✓ acquire retry preserves original binding and count
+  ✓ acquire retry on prepared lease preserves original binding and count
+  ✓ mark prepared is idempotent and count neutral
+  ✓ mark prepared requires valid owner sync and positive original epoch count
+  ✓ acquired lease can release once without preparation
+  ✓ acquired lease releases against original epoch after rotation
+  ✓ first release decrements once and retry is idempotent
+  ✓ unknown token is distinct
+  ✓ released token is terminal
+  ✓ count underflow is corruption
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired missing key"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired missing field"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired zero count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired excess count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired orphan epoch"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired malformed unrelated count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "acquired malformed lease"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared missing key"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared missing field"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared zero count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared excess count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared orphan epoch"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared malformed unrelated count"
+  ✓ active writer count rejects inconsistent evidence without repair with data set "prepared malformed lease"
+  ✓ active writer count rejects positive count without any lease
+  ✓ active writer count accepts empty epochs and released tombstones without mutation
+
+   PASS  Tests\Integration\Drivers\Memory\MemoryBloomBehaviorTest
+  ✓ it integrates deterministic core probes with memory driver storage…  0.01s
+
+   PASS  Tests\Feature\Laravel\CoordinationCommandsTest
+  ✓ it wires coordination ports and application services over one memor… 0.07s
+  ✓ it adopts and completes a rebuild through thin commands and exposes… 0.03s
+  ✓ it requires a quiescent handoff for brownfield adoption and fences legacy mutation
+  ✓ it returns at a durable drain and resumes the same rebuild after lease resolution
+  ✓ it resumes durable abort intent without expiring the blocking writer
+  ✓ it rejects invalid wait and unknown outcomes without creating ownership
+  ✓ it continues the same workflow when the drain clears inside the wai… 0.10s
+  ✓ it keeps leases and durable state unchanged when a positive wait bu… 1.01s
+  ✓ it rejects invalid coordination configuration and defaults missing mode to legacy
+  ✓ it does not expose released tombstones and does not enumerate leases by default
+  ✓ it requires durable prepared evidence for a committed lease and rejects missing tokens
+
+   PASS  Kefyusuf\BloomGate\Tests\Feature\Laravel\CoordinationStatusFailureTest
+  ✓ status and doctor identify invalid configuration                     0.01s
+  ✓ corrupt control preserves coordination diagnostics and failure exit
+  ✓ unavailable coordination service preserves the original failure
+  ✓ corrupt generation preserves valid coordination and prepared lease
+
+   PASS  Tests\Feature\Laravel\DescriptorCacheConfigurationTest
+  ✓ it rejects an unsupported descriptor cache driver                    0.01s
+  ✓ it requires an explicit application namespace for APCu descriptors
+  ✓ it rejects invalid descriptor expiration settings with (0)
+  ✓ it rejects invalid descriptor expiration settings with (-1)
+  ✓ it rejects invalid descriptor expiration settings with ('60')
+  ✓ it rejects invalid descriptor expiration settings with (null)
+  ✓ it rejects invalid descriptor expiration settings with (86401)
+
+   PASS  Tests\Feature\Laravel\DoctorCommandTest
+  ✓ it exposes bloom doctor as a read-only preflight command             0.01s
+  ✓ it reports a registered filter without an active generation as a warning without creating state
+  ✓ it reports active semantic drift as a doctor failure without repairing it
+  ✓ it keeps doctor command discovery side-effect free                   0.01s
+  ✓ it classifies an unreachable redis runtime before resolving filter infrastructure
+
+   PASS  Tests\Feature\Laravel\FilterRegistryTest
+  ✓ it resolves dotted filter names as exact case-sensitive array keys   0.01s
+  ✓ it throws a typed unknown-filter failure for missing exact names
+  ✓ it resolves definitions lazily through the laravel container
+  ✓ it resolves global optimization independently from per-filter optimization
+  ✓ it rejects invalid definition class configuration
+  ✓ it rejects resolved classes that do not implement FilterDefinition
+  ✓ it rejects closure definitions so filter config remains cache compatible
+  ✓ it rejects invalid capacity configuration with dataset "zero"
+  ✓ it rejects invalid capacity configuration with dataset "negative"
+  ✓ it rejects invalid capacity configuration with dataset "numeric string"
+  ✓ it rejects invalid capacity configuration with dataset "float"
+  ✓ it rejects invalid capacity configuration with dataset "boolean"
+  ✓ it rejects invalid false-positive rate configuration with dataset "zero"
+  ✓ it rejects invalid false-positive rate configuration with dataset "one"
+  ✓ it rejects invalid false-positive rate configuration with dataset "negative"
+  ✓ it rejects invalid false-positive rate configuration with dataset "greater than one"
+  ✓ it rejects invalid false-positive rate configuration with dataset "numeric string"
+  ✓ it rejects invalid false-positive rate configuration with dataset "nan"
+  ✓ it rejects invalid false-positive rate configuration with dataset "positive infinity"
+  ✓ it rejects invalid false-positive rate configuration with dataset "negative infinity"
+  ✓ it rejects non-boolean global and per-filter enabled configuration
+
+   PASS  Tests\Feature\Laravel\LifecycleCommandsTest
+  ✓ it fails loudly when bloom build targets an unknown filter           0.01s
+  ✓ it builds only a candidate and reports layout plus processed count without leaking values
+  ✓ it leaves an interrupted build candidate observable through status
+  ✓ it verifies only a current shadow healthy candidate and reports evi… 0.01s
+  ✓ it reports false-negative verification without promoting the candid… 0.01s
+  ✓ it activates immutable candidates without a quiescent flag
+  ✓ it requires quiescent acknowledgement for preadd activation and reconciles before fresh verification
+  ✓ it keeps the existing active generation unchanged when fresh activation verification fails
+  ✓ it discards only the current candidate and leaves the active generation untouched
+  ✓ it reports registered lifecycle layout semantic binding and consistency status without membership values
+  ✓ it lists configured filters when status is called without a filter…  0.01s
+  ✓ it keeps lifecycle command discovery lazy and side effect free       0.01s
+  ✓ it keeps console commands as thin application adapters               0.01s
+
+   PASS  Tests\Feature\Laravel\PackageBootTest
+  ✓ it boots with safe default configuration                             0.01s
+  ✓ it registers the package configuration for publishing
+  ✓ it registers the registry lazily without instantiating configured definitions
+  ✓ it does not require a live redis or database connection during package registration
+
+   PASS  Tests\Feature\Laravel\PackageDiscoveryMetadataTest
+  ✓ it declares the service provider for Laravel package discovery       0.01s
+
+   PASS  Tests\Feature\Laravel\RedisTrustedNegativeProfileResolverTest
+  ✓ it defaults redis trusted-negative profile to null                   0.01s
+  ✓ it accepts only the locked m5 redis trusted-negative profile
+  ✓ it rejects unknown or malformed redis trusted-negative profiles with dataset "unknown"
+  ✓ it rejects unknown or malformed redis trusted-negative profiles with dataset "empty"
+  ✓ it rejects unknown or malformed redis trusted-negative profiles with dataset "boolean"
+  ✓ it rejects unknown or malformed redis trusted-negative profiles with dataset "array"
+
+   PASS  Tests\Feature\Laravel\ServiceWiringTest
+  ✓ it resolves the complete application and lifecycle service graph wi… 0.01s
+  ✓ it shares memory coordinated ownership with the public legacy control fence
+  ✓ it keeps redis and database infrastructure lazy during package registration
+  ✓ it does not resolve filter definitions while registering the complete service graph
+  ✓ it facade resolves the same thin manager and delegates to canonical application services
+  ✓ it keeps config publishing stable after full service wiring
+  ✓ it keeps facade and manager in the laravel layer only
+
+   PASS  Tests\Feature\Laravel\ValidationRulesTest
+  ✓ it passes BloomUnique only when the authoritative-correct result do… 0.01s
+  ✓ it passes BloomUnique only when the authoritative-correct result does not exist with dataset "present is not unique"
+  ✓ it makes BloomExists the inverse of BloomUnique with dataset "present exists"
+  ✓ it makes BloomExists the inverse of BloomUnique with dataset "absent does not exist"
+  ✓ it keeps QueryGate bypass and authoritative fallback transparent to validation rules
+  ✓ it keeps validation rules as thin QueryGate adapters without driver access
+  ✓ it does not silently claim native unique-rule customization in M5
+
+  Tests:    13 skipped, 934 passed (7475 assertions)
+  Duration: 2.56s

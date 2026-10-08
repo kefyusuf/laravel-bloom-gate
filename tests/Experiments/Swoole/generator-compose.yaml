@@ -15,7 +15,8 @@ services:
       timeout: 2s
       retries: 30
   k6:
-    image: grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d
+    image: lbg-generator-k6:${GENERATOR_TASK:?Set a current-task label}
+    pull_policy: never
     profiles: ["load"]
     cpus: 4
     mem_limit: 4g

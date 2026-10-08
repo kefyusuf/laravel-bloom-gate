@@ -107,7 +107,13 @@ function validGeneratorQualification(): array
         'k6_image_id' => 'sha256:'.str_repeat('c', 64), 'generator_cpus' => 4,
         'generator_memory_bytes' => 4294967296, 'receiver_cpus' => 2,
         'receiver_memory_bytes' => 268435456, 'fixed_vus' => 1024, 'workers' => 4,
-        'sources' => ['load.js' => str_repeat('d', 64), 'Dockerfile' => str_repeat('e', 64)]];
+        'sources' => ['load.js' => str_repeat('d', 64), 'Dockerfile' => str_repeat('e', 64),
+            'K6Boundary/arrival-slot-boundary.patch' => str_repeat('f', 64)],
+        'k6_provenance' => ['image_id' => 'sha256:'.str_repeat('c', 64),
+            'upstream_revision' => '5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb',
+            'runtime_source_sha256' => 'e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce',
+            'instrumented_clock' => false, 'go_version' => 'go1.23.7',
+            'binary_sha256' => str_repeat('a', 64), 'patch_sha256' => str_repeat('f', 64)]];
     $profiles = [];
     foreach ([1, 2, 3] as $block) {
         foreach ([0, 25, 100, 150] as $delay) {
@@ -140,6 +146,46 @@ function validGeneratorQualification(): array
 it('admits qualification only after all four delays pass in three distinct blocks', function (): void {
     expect(GeneratorReport::evaluateQualification(validGeneratorQualification())['verdict'])->toBe('PASS');
 });
+
+it('rejects qualification without the patched image provenance', function (): void {
+    $run = validGeneratorQualification();
+    unset($run['identity']['k6_provenance']);
+    expect(GeneratorReport::evaluateQualification($run)['verdict'])->toBe('INCONCLUSIVE');
+});
+
+it('rejects substituted or incomplete patched generator identities through the CLI', function (string $field): void {
+    $run = validGeneratorQualification();
+    $provenance = $run['identity']['k6_provenance'];
+    assert(is_array($provenance));
+    $provenance[$field] = match ($field) {
+        'instrumented_clock' => true,
+        'go_version' => 'go1.27.1',
+        'upstream_revision' => str_repeat('b', 40),
+        'image_id' => 'sha256:'.str_repeat('d', 64),
+        'runtime_source_sha256', 'patch_sha256' => str_repeat('b', 64),
+        'binary_sha256' => null,
+        default => throw new InvalidArgumentException('Unknown provenance field.'),
+    };
+    $run['identity']['k6_provenance'] = $provenance;
+    $run['negative_control']['cell']['identity'] = $run['identity'];
+    foreach ($run['profiles'] as &$profile) {
+        $profile['cell']['identity'] = $run['identity'];
+    }
+    unset($profile);
+    $path = tempnam(sys_get_temp_dir(), 'generator-provenance-');
+    if ($path === false) {
+        throw new RuntimeException('Unable to allocate provenance input.');
+    }
+    try {
+        file_put_contents($path, json_encode($run, JSON_THROW_ON_ERROR));
+        $process = new Process(['php', __DIR__.'/generator-evaluate.php', $path, '--qualification']);
+        $process->mustRun();
+        expect(json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR))->toMatchArray(['verdict' => 'INCONCLUSIVE']);
+    } finally {
+        unlink($path);
+    }
+})->with(['instrumented_clock', 'go_version', 'upstream_revision', 'image_id',
+    'runtime_source_sha256', 'patch_sha256', 'binary_sha256']);
 
 it('rejects qualification without its deliberately deficient negative control', function (): void {
     $run = validGeneratorQualification();
