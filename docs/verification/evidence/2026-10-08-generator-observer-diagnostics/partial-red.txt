@@ -1,0 +1,33 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ⨯ it preserves successful k6 evidence when the receiver request is un… 1.04s
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.02s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it preserves suc…
+  Failed asserting that null is identical to Array &0 [
+    'data' => Array &1 [
+        0 => Array &2 [
+            'id' => 'iterations',
+            'sample' => Array &3 [
+                'count' => 7,
+            ],
+        ],
+    ],
+].
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:59
+     55▕     expect($result['rows'])->toHaveCount(1);
+     56▕     $row = $result['rows'][0];
+     57▕     expect($row)->toMatchArray(['status' => 'unavailable', 'failure_stage' => 'receiver_info',
+     58▕         'failure_kind' => 'transport_or_read_unavailable', 'receiver' => null]);
+  ➜  59▕     expect($row['k6'])->toBe(['data' => [['id' => 'iterations', 'sample' => ['count' => 7]]]]);
+     60▕     expect($row['requests'])->toHaveKeys(['k6_metrics', 'receiver_info']);
+     61▕ });
+     62▕
+     63▕ it('retains an unavailable observation instead of inventing zero lost work', function (): void {
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:59
+
+
+  Tests:    1 failed, 1 passed (31 assertions)
+  Duration: 2.10s

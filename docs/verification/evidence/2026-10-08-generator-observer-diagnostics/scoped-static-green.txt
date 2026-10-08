@@ -1,0 +1,10 @@
+
+  .✓.
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    FIXED   ..................................... 3 files, 1 style issue fixed
+  ✓ tests/Experiments/Swoole/GeneratorObserverTest.php line_ending, unary_ope…
+
+Note: Using configuration file /app/phpstan.neon.dist.
+
+ [OK] No errors

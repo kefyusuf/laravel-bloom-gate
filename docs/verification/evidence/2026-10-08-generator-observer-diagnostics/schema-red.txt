@@ -1,0 +1,52 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ✓ it preserves successful k6 evidence when the receiver request is un… 1.04s
+  ✓ it classifies malformed endpoint JSON at its original stage without… 1.04s
+  ⨯ it attributes invalid schema to the endpoint that supplied it with…  1.04s
+  ⨯ it attributes invalid schema to the endpoint that supplied it with…  1.03s
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.02s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it attributes in…
+  Failed asserting that an array has a key 'failure_stage' with the value 'receiver_cgroup'.
+Failed asserting that two strings are equal.
+  -'k6_metrics'
+  +'receiver_cgroup'
+
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:78
+     74▕ it('attributes invalid schema to the endpoint that supplied it', function (string $scenario, string $receiver, string $stage): void {
+     75▕     $result = runGeneratorObserverFixture($scenario, $receiver);
+     76▕     expect($result['exit'])->toBe(1);
+     77▕     $row = $result['rows'][0];
+  ➜  78▕     expect($row)->toMatchArray(['status' => 'unavailable', 'failure_stage' => $stage, 'failure_kind' => 'invalid_schema']);
+     79▕     expect($row['requests'])->toHaveKey($stage);
+     80▕     if ($stage === 'k6_metrics') {
+     81▕         expect($row['k6'])->toBeNull();
+     82▕         expect($row['requests'])->not->toHaveKey('receiver_info');
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:78
+
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it attributes in…
+  Failed asserting that an array has a key 'failure_stage' with the value 'receiver_cgroup'.
+Failed asserting that two strings are equal.
+  -'receiver_info'
+  +'receiver_cgroup'
+
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:78
+     74▕ it('attributes invalid schema to the endpoint that supplied it', function (string $scenario, string $receiver, string $stage): void {
+     75▕     $result = runGeneratorObserverFixture($scenario, $receiver);
+     76▕     expect($result['exit'])->toBe(1);
+     77▕     $row = $result['rows'][0];
+  ➜  78▕     expect($row)->toMatchArray(['status' => 'unavailable', 'failure_stage' => $stage, 'failure_kind' => 'invalid_schema']);
+     79▕     expect($row['requests'])->toHaveKey($stage);
+     80▕     if ($stage === 'k6_metrics') {
+     81▕         expect($row['k6'])->toBeNull();
+     82▕         expect($row['requests'])->not->toHaveKey('receiver_info');
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:78
+
+
+  Tests:    2 failed, 3 passed (56 assertions)
+  Duration: 5.20s

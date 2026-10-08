@@ -1,0 +1,23 @@
+
+   FAIL  Tests\Experiments\Swoole\GeneratorObserverTest
+  ⨯ it retains an unavailable observation instead of inventing zero los… 1.03s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Experiments\Swoole\GeneratorObserverTest > it retains an un…
+  Failed asserting that null is identical to 'transport_or_read_unavailable'.
+
+  at tests/Experiments/Swoole/GeneratorObserverTest.php:24
+     20▕         }
+     21▕         $row = json_decode(trim($body), true, 512, JSON_THROW_ON_ERROR);
+     22▕         expect($row)->toMatchArray(['status' => 'unavailable', 'k6' => null, 'receiver' => null]);
+     23▕         expect($row['failure_stage'] ?? null)->toBe('k6_metrics');
+  ➜  24▕         expect($row['failure_kind'] ?? null)->toBe('transport_or_read_unavailable');
+     25▕         $request = $row['requests']['k6_metrics'] ?? [];
+     26▕         expect($request['request_start_epoch_ms'] ?? null)->toBeInt();
+     27▕         expect($request['request_end_epoch_ms'] ?? null)->toBeInt();
+     28▕         expect($request['elapsed_ms'] ?? null)->toBeFloat()->toBeGreaterThanOrEqual(0);
+
+  1   tests/Experiments/Swoole/GeneratorObserverTest.php:24
+
+
+  Tests:    1 failed (9 assertions)
+  Duration: 1.08s

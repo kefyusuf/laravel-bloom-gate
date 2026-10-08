@@ -1,0 +1,138 @@
+
+  ...
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    PASS   ........................................................... 3 files
+
+Note: Using configuration file /app/phpstan.neon.dist.
+
+ [OK] No errors
+
+Composer could not detect the root package (kefyusuf/laravel-bloom-gate) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version
+
+   PASS  Tests\Experiments\Swoole\MeasurementReportTest
+  ✓ it accepts a complete paired screen only when all three runs beat SQL and Redis
+  ✓ it rejects a generator-limited calibration even when the paired timings would pass with ([1, false])
+  ✓ it rejects a generator-limited calibration even when the paired timings would pass with ([0, true])
+  ✓ it rejects incomplete or biased measurement evidence with ('source')
+  ✓ it rejects incomplete or biased measurement evidence with ('images')
+  ✓ it rejects incomplete or biased measurement evidence with ('rate')
+  ✓ it rejects incomplete or biased measurement evidence with ('workers')
+  ✓ it rejects incomplete or biased measurement evidence with ('unknown')
+  ✓ it rejects incomplete or biased measurement evidence with ('drops')
+  ✓ it rejects incomplete or biased measurement evidence with ('integrity')
+  ✓ it rejects incomplete or biased measurement evidence with ('samples')
+  ✓ it rejects incomplete or biased measurement evidence with ('cell')
+  ✓ it rejects incomplete or biased measurement evidence with ('duplicate')
+  ✓ it rejects incomplete or biased measurement evidence with ('dataset')
+  ✓ it rejects incomplete or biased measurement evidence with ('warmup')
+  ✓ it rejects incomplete or biased measurement evidence with ('duration')
+  ✓ it rejects incomplete or biased measurement evidence with ('parity')
+  ✓ it rejects incomplete or biased measurement evidence with ('negative')
+  ✓ it rejects incomplete or biased measurement evidence with ('errors')
+  ✓ it rejects incomplete or biased measurement evidence with ('saturation')
+  ✓ it rejects incomplete or biased measurement evidence with ('drift')
+  ✓ it rejects incomplete or biased measurement evidence with ('distribution')
+  ✓ it rejects incomplete or biased measurement evidence with ('capacity')
+  ✓ it rejects incomplete or biased measurement evidence with ('nan')
+  ✓ it rejects incomplete or biased measurement evidence with ('negative-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('fractional-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('boolean')
+  ✓ it rejects incomplete or biased measurement evidence with ('quantiles')
+  ✓ it rejects incomplete or biased measurement evidence with ('rps-count')
+  ✓ it rejects incomplete or biased measurement evidence with ('path')
+  ✓ it rejects incomplete or biased measurement evidence with ('redis-hints')
+  ✓ it rejects incomplete or biased measurement evidence with ('redis-script')
+  ✓ it rejects incomplete or biased measurement evidence with ('order')
+  ✓ it rejects incomplete or biased measurement evidence with ('window')
+  ✓ it rejects incomplete or biased measurement evidence with ('warmup-mismatch')
+  ✓ it rejects incomplete or biased measurement evidence with ('overcount')
+  ✓ it rejects incomplete or biased measurement evidence with ('declared-load')
+  ✓ it rejects incomplete or biased measurement evidence with ('started')
+  ✓ it rejects incomplete or biased measurement evidence with ('unfinished')
+  ✓ it rejects incomplete or biased measurement evidence with ('completed')
+  ✓ it rejects incomplete or biased measurement evidence with ('unaccounted')
+  ✓ it rejects incomplete or biased measurement evidence with ('elapsed')
+  ✓ it rejects incomplete or biased measurement evidence with ('zero-rps')
+  ✓ it rejects incomplete or biased measurement evidence with ('sql-underload')
+  ✓ it includes the exact latency and control-drift boundaries
+  ✓ it rejects a malformed root without throwing with (null)
+  ✓ it rejects a malformed root without throwing with ([])
+  ✓ it rejects a malformed root without throwing with ('not-an-object')
+  ✓ it rejects a malformed root without throwing with (42)
+  ✓ it rejects a SQL-only win as a Redis-removal benefit
+  ✓ it requires throughput parity in every repetition
+  ✓ it uses observed counts and time instead of rounded RPS at the throughput boundary
+  ✓ it includes exact ninety-five percent observed throughput
+
+   PASS  Tests\Experiments\Swoole\GeneratorReportTest
+  ✓ it admits only independently counted generation within the fixed en… 0.02s
+  ✓ it rejects scheduled work lost before the receiver can count it
+  ✓ it rejects unobserved resource safety even when every request arrived
+  ✓ it rejects impossible percentile ordering
+  ✓ it rejects a measurement window selected by successful iteration number
+  ✓ it admits explained clock-window crossings while retaining nominal completeness
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('legacy')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('audit')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('lost nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('pending nominal')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unexplained actual')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible extra')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('impossible split')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('builtin mismatch')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('topology')
+  ✓ it requires complete audit and builtin evidence without accepting nominal loss with ('unavailable index')
+  ✓ it admits qualification only after all four delays pass in three distinct blocks
+  ✓ it rejects qualification without the patched image provenance
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.01s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects substituted or incomplete patched generator identities t… 0.02s
+  ✓ it rejects qualification without its deliberately deficient negative control
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('partial')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('duplicate cell')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('duplicate artifact')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('negative reused')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('source')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('budget')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('failed cell')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('invalid block')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('invalid delay')
+  ✓ it rejects partial duplicated mixed-source or failed qualification evidence with ('control passed')
+  ✓ it rejects a negative control contaminated by errors or missing completion evidence with ('errors')
+  ✓ it rejects a negative control contaminated by errors or missing completion evidence with ('early responses')
+  ✓ it rejects a negative control contaminated by errors or missing completion evidence with ('missing builtin')
+  ✓ it rejects a negative control contaminated by errors or missing completion evidence with ('receiver failed')
+  ✓ it applies qualification completeness through the collector CLI      0.04s
+  ✓ it checks negative-control safety through the CLI before positive c… 0.04s
+
+   PASS  Tests\Experiments\Swoole\GeneratorDeadlineTest
+  ✓ it holds the response until its monotonic deadline even when the ti… 0.03s
+  ✓ it releases response state without waiting for cyclic collection with dataset "completed"
+  ✓ it releases response state without waiting for cyclic collection with dataset "failed allocation"
+
+   PASS  Tests\Experiments\Swoole\GeneratorObserverTest
+  ✓ it preserves successful k6 evidence when the receiver request is un… 1.04s
+  ✓ it classifies malformed endpoint JSON at its original stage without… 1.03s
+  ✓ it attributes invalid schema to the endpoint that supplied it with…  1.03s
+  ✓ it attributes invalid schema to the endpoint that supplied it with…  1.03s
+  ✓ it admits the exact response byte bound and rejects the next byte w… 1.04s
+  ✓ it admits the exact response byte bound and rejects the next byte w… 1.04s
+  ✓ it records delayed transport failure without claiming timeout from…  1.04s
+  ✓ it stops on the first unavailable sample after success and keeps co… 1.04s
+  ✓ it retains endpoint and CPU evidence when the cgroup memory read fa… 1.04s
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.02s
+
+   PASS  Tests\Experiments\Swoole\GeneratorObservationTest
+  ✓ it requires observations throughout the actual measurement interval  0.02s
+  ✓ it rejects startup-only and interrupted observations with dataset "paused only"
+  ✓ it rejects startup-only and interrupted observations with dataset "interrupted"
+  ✓ it rejects a failed poll overlapping the measurement start
+  ✓ it rejects missing generator CPU observations
+
+  Tests:    114 passed (245 assertions)
+  Duration: 10.68s

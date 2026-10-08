@@ -1,0 +1,23 @@
+{
+  "boundary-regression-green.txt": "547cdc368047e72a31fb9ad5079ce185c793a5f2d33b5c3f1d4bca38e5a6f005",
+  "cgroup-green.txt": "4125f0aee711ee8b30c86704e0aa3b20cf796e340fa1b34d68b8647941b34fc0",
+  "cgroup-red.txt": "234bf7f4264dcb0b40e7d45cfe298715600dd4ed01e6a59a3ae3448a01046e14",
+  "final-quality.txt": "e3367ac4159cd8d283940d32b04b758cb1158160fb7b3c827fd730f5f7c71d4a",
+  "json-green.txt": "f6de14f2905c8e513637bb1592e10911d6c77710d1e6a86965c0aa69f6e5e144",
+  "json-red.txt": "d6fc61ddc143efe8f4072cdb715a6bcc9484b7a6288f466f0d0c5cd59f05c0c2",
+  "partial-green.txt": "5abeee8bf2114bc74d4ffa56ca8ed758408cbfd0ccaf65045b60c91862797399",
+  "partial-red.txt": "4fd731f10e9845cb886da64c2129b32ee0790c893801ef39330d87ee09eaa62e",
+  "portable-cgroup-green.txt": "c8280724a1e0997a992f8f4ddc8780939ec4bdf78882801e4c1a28876c9aa48a",
+  "portable-cgroup-red.txt": "a4b63b3cdf6ce7be5bd321a8619e39d9a68a13a32d86a98cb0b1ca2d09680b02",
+  "request-green.txt": "b0579c085ae6912c51a1f56b82846019b884671246410bf99f0d207f433ef18b",
+  "request-red.txt": "64783f10d851c1bc3a084cd2ae5f2c70cd085432a17cf790334fb6ca790ac97d",
+  "schema-green.txt": "2dbae73582f70b0c0c39d99f2748d1b3feeb743e1be345833d32795ff4b65ead",
+  "schema-red.txt": "d92db78658ba4531f4f3fe97d3e12edddfb6129cad5db5d7e2bc7e73e898ba1b",
+  "scoped-static-green.txt": "f2191bbf4cd301357da33e6284ce708d9848f3efcdc8f6ff4b4517c266ae9043",
+  "size-green.txt": "e5d484f6bc535e358b4ab5831eb413140611dfed406657573f93ae89c5bde3f5",
+  "size-red.txt": "9e3e935162b379dedc5c10b6bbf92711d4936a485e373e1d468cf40a905c1b3f",
+  "stage-green.txt": "1653d130224bbe4f876f95bcd4149dfbbdada248486ef6a5533f55196e716ddb",
+  "stage-red.txt": "845d2fcb21209af0f2e279d91ded2a9ad90bda6f074b15b67844ada9b74f24b6",
+  "static-check.txt": "471c12dda2ca0c4fe9fb84b5c1b5faac010ca8527e5a297905e0326edaf7f9fc",
+  "static-fix.txt": "ecc5461324abc86438e77735c27e3fc01a18b557a5fa3540c96be27672532ebb"
+}

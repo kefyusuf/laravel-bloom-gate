@@ -1,0 +1,8 @@
+
+   PASS  Tests\Experiments\Swoole\GeneratorObserverTest
+  ✓ it preserves successful k6 evidence when the receiver request is un… 1.05s
+  ✓ it classifies malformed endpoint JSON at its original stage without… 1.06s
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.02s
+
+  Tests:    3 passed (46 assertions)
+  Duration: 3.19s

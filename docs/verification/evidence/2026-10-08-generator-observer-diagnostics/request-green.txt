@@ -1,0 +1,6 @@
+
+   PASS  Tests\Experiments\Swoole\GeneratorObserverTest
+  ✓ it retains an unavailable observation instead of inventing zero los… 1.03s
+
+  Tests:    1 passed (20 assertions)
+  Duration: 1.07s
