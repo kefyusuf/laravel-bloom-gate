@@ -1,4 +1,4 @@
-param([ValidateSet('all', 'conflicting-modes', 'invalid-negative', 'unsafe-negative', 'coverage-failure', 'admission-failure', 'success', 'short', 'default')][string]$Case = 'all')
+param([ValidateSet('all', 'conflicting-modes', 'invalid-negative', 'unsafe-negative', 'coverage-failure', 'admission-failure', 'success', 'short', 'default', 'timeout-after-cleanup')][string]$Case = 'all')
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $evidence = Join-Path $repo '.build/loss-diagnostic'
@@ -46,10 +46,7 @@ import os
 import subprocess
 import sys
 with open(os.environ['COLLECTOR_STDOUT'], 'wb') as stdout, open(os.environ['COLLECTOR_STDERR'], 'wb') as stderr:
-    try:
-        result = subprocess.run(sys.argv[1:], stdout=stdout, stderr=stderr, timeout=170)
-    except subprocess.TimeoutExpired:
-        sys.exit(124)
+    result = subprocess.run(sys.argv[1:], stdout=stdout, stderr=stderr)
 sys.exit(result.returncode)
 '@)
         $start = [Diagnostics.ProcessStartInfo]::new($python)
@@ -67,10 +64,20 @@ sys.exit(result.returncode)
         $start.Environment['COLLECTOR_STDERR'] = $stderrPath
         $process = [Diagnostics.Process]::Start($start)
         $deadline = [Diagnostics.Stopwatch]::StartNew()
-        while (-not $process.HasExited -and $deadline.Elapsed.TotalSeconds -lt 180) {
+        $limitSeconds = if ($Scenario -eq 'timeout-after-cleanup') { 30 } else { 180 }
+        while (-not $process.HasExited -and $deadline.Elapsed.TotalSeconds -lt $limitSeconds) {
             Start-Sleep -Milliseconds 100
         }
         if (-not $process.HasExited) {
+            $process.Kill($true)
+            $process.WaitForExit()
+            if ($Scenario -eq 'timeout-after-cleanup') {
+                $outcomePath = Join-Path $owned '.build/generator-qualification/synthetic-case-outcome.json'
+                Assert-True ((Get-Content $outcomePath -Raw | ConvertFrom-Json).verdict -eq 'INCONCLUSIVE') 'timeout fixture reached expected collector rejection'
+                $stalledPid = [int](Get-Content (Join-Path $owned '.build/generator-qualification/stalled-docker-pid.txt'))
+                Assert-True ($null -eq (Get-Process -Id $stalledPid -ErrorAction SilentlyContinue)) 'deadline kills the owned descendant fixture'
+                return
+            }
             $diagnostics = @("Scenario: $Scenario", "Owned PID: $($process.Id)", "HasExited: $($process.HasExited)",
                 'Last synthetic Docker commands:')
             if (Test-Path $calls) { $diagnostics += Get-Content $calls -Tail 5 }
@@ -81,6 +88,7 @@ sys.exit(result.returncode)
             throw 'Collector subprocess exceeded test bound.'
         }
         $output = [IO.File]::ReadAllText($stdoutPath) + [IO.File]::ReadAllText($stderrPath)
+        if ($Scenario -eq 'timeout-after-cleanup') { throw 'Assertion failed: timed-out collector escaped the parent deadline rejection.' }
         [IO.File]::WriteAllText((Join-Path $evidence "$Scenario-subprocess.txt"), $output)
         if ($Scenario -eq 'conflicting-modes') {
             Assert-True ($process.ExitCode -ne 0) 'conflicting modes must fail'
@@ -165,7 +173,7 @@ sys.exit(result.returncode)
         Remove-Item -LiteralPath $resolved -Recurse -Force
     }
 }
-$cases = if ($Case -eq 'all') { @('conflicting-modes', 'invalid-negative', 'unsafe-negative', 'coverage-failure', 'admission-failure', 'success', 'short', 'default') } else { @($Case) }
+$cases = if ($Case -eq 'all') { @('conflicting-modes', 'invalid-negative', 'unsafe-negative', 'coverage-failure', 'admission-failure', 'success', 'short', 'default', 'timeout-after-cleanup') } else { @($Case) }
 foreach ($scenario in $cases) {
     Invoke-CollectorCase $scenario
     Write-Host "PASS $scenario (actual collector subprocess; synthetic Docker boundary only)"

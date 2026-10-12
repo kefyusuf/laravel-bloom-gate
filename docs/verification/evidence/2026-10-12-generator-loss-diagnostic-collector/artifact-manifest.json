@@ -1,6 +1,7 @@
 {
   "admission-green-completion.txt": "9896f5b782e58194b801512a523553d5a8ef121591a52eca75b17caffbfab7b2",
   "admission-red-completion.txt": "b2379cbf73ea5dcdebdb420a5dbfb3e838f5a50c1f52c50a7c98a7bd929cc40a",
+  "collector-direct-files-final.txt": "bedcda6020b47704830d06ac3911a88d472a972125169ca5f9b1d626c1c5c1de",
   "collector-final-verified.txt": "88fc62fb81eb5c698edf445411a106d93a71c128ab8cd20108e5153c8199e9d9",
   "conflicting-modes-final-green.txt": "c1194d84079fcf01a3770e91a828ce874cf8cc1289328dc887c5e86027d90d80",
   "control-green.txt": "42d15cb65219e2567f7fe2e16117ea6c3e9da457bb5a0f61768d5e2f3dadef42",
@@ -15,5 +16,7 @@
   "profile-red.txt": "fdc85b6ce513e6bf135eb82c3a33dc7f618d75eded6804aca24f1876ce1a1df6",
   "short-final-green.txt": "2cf7834e55da7bc545a1f583d87f2d2fc0c7bd56f0f585acf2161e928f25ca4b",
   "success-final-green.txt": "2fdd25628c4b473ce48931cfaeb661bba67242152ca71d246b8b3a10e264f72b",
+  "timeout-regression-green.txt": "896dedaad5999207fb4988d5d37594683ab0b772d4ea0ced791641410173f6d7",
+  "timeout-regression-red.txt": "0d7cead98fdaa25a9dbda0887558a626961865e9de5874eb72759fe56dd7ed24",
   "unsafe-negative-final-green.txt": "49d33e90dc1ada2e272936af7c20549d2e884ed8be0f37e80c9f7c7badabfbd1"
 }

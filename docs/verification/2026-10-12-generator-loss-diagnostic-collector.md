@@ -60,9 +60,20 @@ after all task cleanup commands. Direct file capture also exposed an output-file
 handle still in use after process exit. These observations do not identify a
 collector/runtime root cause. The candidate harness now uses a bounded Python
 launcher with file handles owned by its subprocess context, rather than parent
-PowerShell asynchronous output readers. It forwards the actual PowerShell CLI,
-keeps per-child environment overrides and kills/disposes its own process on
-failure. This change still requires a complete combined run and final review.
+PowerShell asynchronous output readers. It forwards the actual PowerShell CLI
+and keeps per-child environment overrides. Independent review rejected its
+initial inner timeout: exit 124 could be accepted as an expected failure while
+descendants survived. The parent is now the only deadline owner (180 seconds),
+killing/waiting the full process tree and always rejecting an ordinary timed-out
+case. A controlled cleanup-stage stall reproduces the leaked output handle RED;
+the corrected deadline kills the recorded descendant PID and passes two checks.
+That regression uses a shorter 30-second parent deadline and never changes the
+collector/runtime budgets. Process handles are disposed in finally.
+
+The first candidate's Linux Quality CI passed all eight orchestration cases;
+that does not validate this later review correction. Final source now has nine
+cases and requires refreshed complete combined CI and independent review.
+Local combined Windows completion remains unverified.
 
 Retained [evidence](evidence/2026-10-12-generator-loss-diagnostic-collector/)
 distinguishes successful slices from failed combined runs. Do not treat a file

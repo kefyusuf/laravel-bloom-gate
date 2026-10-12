@@ -73,6 +73,9 @@ elif args[0] == "stats":
     for name in args[-2:]:
         emit({"Name": name, "CPUPerc": "10.0%", "MemPerc": "1.0%"})
 elif args[0] in ("logs", "rm") or args[:2] == ["image", "rm"]:
+    if scenario == "timeout-after-cleanup" and args[:2] == ["image", "rm"] and "k6" in args[2]:
+        (results / "stalled-docker-pid.txt").write_text(str(os.getpid()))
+        time.sleep(60)
     pass
 elif args[0] == "compose":
     command = args[5]
@@ -86,7 +89,7 @@ elif args[0] == "compose":
         name = env["OUTPUT"]
         results.mkdir(parents=True, exist_ok=True)
         now = int(time.time() * 1000)
-        drops = 0 if scenario == "invalid-negative" or "negative" not in name else 1
+        drops = 0 if scenario in ("invalid-negative", "timeout-after-cleanup") or "negative" not in name else 1
         cell = {"responses": 7, "dropped_iterations": drops, "p99_ms": 25,
                 "warmup_seconds": int(env["WARMUP"]), "duration_seconds": int(env["DURATION"]),
                 "measurement_start_epoch_ms": now - 10000, "measurement_end_epoch_ms": now + 120000}
@@ -113,7 +116,7 @@ elif args[0] == "compose":
             elif "--qualification" in tail:
                 emit({"verdict": "PASS", "reasons": []})
             else:
-                failed = negative and scenario != "invalid-negative" or scenario == "admission-failure"
+                failed = negative and scenario not in ("invalid-negative", "timeout-after-cleanup") or scenario == "admission-failure"
                 emit({"verdict": "INCONCLUSIVE" if failed else "PASS",
                       "reasons": ["dropped_iterations must be zero."] if failed else []})
         elif "generator-info" in joined:

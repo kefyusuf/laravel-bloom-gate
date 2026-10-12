@@ -1,0 +1,11 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+Remove-Item: E:\projects\laravel-bloom-gate\tests\Experiments\Swoole\test-collector.ps1:177
+Line |
+ 177 |          Remove-Item -LiteralPath $resolved -Recurse -Force
+     |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | The process cannot access the file
+     | 'E:\projects\laravel-bloom-gate\.build\loss-diagnostic\synthetic-4154170efc6d4151938ef35574a6569d\bin\stderr.txt' because it is being used by another process.
