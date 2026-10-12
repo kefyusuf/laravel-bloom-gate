@@ -1,9 +1,11 @@
 param(
     [Parameter(Mandatory)][ValidatePattern('^[a-z0-9][a-z0-9-]+$')][string]$Task,
     [switch]$OwnedBuiltImage,
-    [switch]$Diagnostic
+    [switch]$Diagnostic,
+    [switch]$LossDiagnostic
 )
 $ErrorActionPreference = 'Stop'
+if ($Diagnostic -and $LossDiagnostic) { throw 'Diagnostic and LossDiagnostic are mutually exclusive.' }
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location $repo
 $docker = (Get-Command docker -ErrorAction SilentlyContinue).Source
@@ -43,7 +45,7 @@ function Get-Info {
 function Inspect-Container([string]$Name) {
     return (Invoke-Docker @('inspect', $Name) | ConvertFrom-Json -AsHashtable -NoEnumerate)[0]
 }
-function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$Duration, [string]$Label, [int]$Block = 0) {
+function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$Duration, [string]$Label, [int]$Block = 0, [hashtable]$Attempt = $null) {
     $name = "$Task-$Label"
     $before = Get-Info
     $loadCommand = 'while true; do printf "%s " "$(date +%s)"; tr "\n" "," < /sys/fs/cgroup/cpu.stat; printf " memory_current "; cat /sys/fs/cgroup/memory.current; sleep 1; done > /results/${OUTPUT}-generator-cgroup.txt & exec k6 run --paused --address 0.0.0.0:6565 --quiet /fixture/load.js'
@@ -123,11 +125,24 @@ function Invoke-Profile([int]$Rate, [int]$Delay, [int]$Vus, [int]$Warmup, [int]$
         receiver_nano_cpus = $receiver.HostConfig.NanoCpus; receiver_memory_bytes = $receiver.HostConfig.Memory }
     Write-Json $rawPath $raw
     Write-Json (Join-Path $results "$name-cell.json") $raw.cell
+    if ($null -ne $Attempt) {
+        $Attempt.cell = $raw.cell
+        Write-Json (Join-Path $results "$Task-attempt.json") $Attempt
+    }
     $coverage = Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', '/fixture/generator-coverage.php',
         "/results/$name-timeline.jsonl", "/results/$name-generator-cgroup.txt", "/results/$name-cell.json")) | ConvertFrom-Json -AsHashtable
     Write-Json (Join-Path $results "$name-coverage.json") $coverage
+    if ($null -ne $Attempt) {
+        $Attempt.coverage = $coverage
+        Write-Json (Join-Path $results "$Task-attempt.json") $Attempt
+    }
     if ($coverage.verdict -ne 'OBSERVED') { throw ($coverage.reasons -join ' ') }
     $evaluation = Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', '/fixture/generator-evaluate.php', "/results/$name-cell.json")) | ConvertFrom-Json -AsHashtable
+    if ($null -ne $Attempt) {
+        $Attempt.evaluation = $evaluation
+        Write-Json (Join-Path $results "$name-evaluation.json") $evaluation
+        Write-Json (Join-Path $results "$Task-attempt.json") $Attempt
+    }
     Write-Host "$Label responses=$($raw.cell.responses) drops=$($raw.cell.dropped_iterations) p99=$($raw.cell.p99_ms) verdict=$($evaluation.verdict)"
     return @{ cell = $raw.cell; evaluation = $evaluation; raw = "$name.json" }
 }
@@ -174,6 +189,21 @@ try {
     $controlCheck = Invoke-Docker ($compose + @('exec', '-T', 'php', 'php', '/fixture/generator-evaluate.php', "/results/$Task-negative-control-check.json", '--negative-control')) | ConvertFrom-Json -AsHashtable
     Write-Json (Join-Path $results "$Task-negative-control-validation.json") $controlCheck
     if ($controlCheck.verdict -ne 'VALID_NEGATIVE_CONTROL') { throw ($controlCheck.reasons -join ' ') }
+    if ($LossDiagnostic) {
+        $name = "$Task-loss-diagnostic-delay-25"
+        $profiles = @(@{ label = 'loss-diagnostic-delay-25'; raw = "$name.json"; cell = $null; coverage = $null; evaluation = $null;
+            artifact_references = @{ timeline = "$name-timeline.jsonl"; generator_cgroup = "$name-generator-cgroup.txt";
+                resources = "$name-resources.json"; cell = "$name-cell.json"; coverage = "$name-coverage.json";
+                evaluation = "$name-evaluation.json"; log = "$name.log" } })
+        Write-Json (Join-Path $results "$Task-attempt.json") $profiles[0]
+        $profile = Invoke-Profile 4800 25 1024 30 60 'loss-diagnostic-delay-25' 0 $profiles[0]
+        if ($profile.evaluation.verdict -ne 'PASS') { throw ($profile.evaluation.reasons -join ' ') }
+        if ((git rev-parse HEAD) -ne $identity.source_ref -or (git status --porcelain)) { throw 'Diagnostic sources changed during the run.' }
+        Write-Json (Join-Path $results "$Task-outcome.json") @{ verdict = 'DIAGNOSTIC_ONLY'; reproduction = 'NOT_REPRODUCED';
+            identity = $identity; negative_control = $negative; profiles = $profiles;
+            scope = 'One frozen loss diagnostic. A successful cell does not prove capacity or identify the prior failure cause.' }
+        return
+    }
     foreach ($block in 1..3) {
         foreach ($delay in @(0, 25, 100, 150)) {
             $profile = Invoke-Profile 4800 $delay 1024 30 60 "block-$block-delay-$delay" $block

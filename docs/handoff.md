@@ -2,6 +2,17 @@
 
 ## Latest continuation
 
+The separate `-LossDiagnostic` collector increment is recorded in the
+[collector verification](verification/2026-10-12-generator-loss-diagnostic-collector.md).
+It validates the existing negative control before one 30/60-second 25 ms cell,
+retains attempted artifacts before coverage/admission failure and keeps success
+DIAGNOSTIC_ONLY. Real PowerShell orchestration tests use an isolated synthetic
+Git checkout and controlled external Docker responses; no new diagnostic or
+qualification load runs in this increment. Refresh its final review, exact-head
+CI and merged source before a separate freeze. Earlier outcomes remain
+INCONCLUSIVE; the loss cause is unproved and one cell cannot replay the prior
+five-cell history. Existing short and twelve-cell modes remain unchanged.
+
 The next boundary is the
 [bounded loss-diagnostic plan](plans/2026-10-08-generator-loss-diagnostic.md).
 PR100 merged at `cce340a4b9b58cf0caabcba5371ab490407d1ae1`; its five configured

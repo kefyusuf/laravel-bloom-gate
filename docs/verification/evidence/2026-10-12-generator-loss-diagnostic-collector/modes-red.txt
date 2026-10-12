@@ -1,0 +1,5 @@
+Exception: E:\projects\laravel-bloom-gate\tests\Experiments\Swoole\test-collector.ps1:9
+Line |
+   9 |      if (-not $Condition) { throw "Assertion failed: $Message" }
+     |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Assertion failed: conflicting modes report the intended refusal

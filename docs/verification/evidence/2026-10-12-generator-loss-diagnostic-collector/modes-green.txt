@@ -1,0 +1,1 @@
+PASS conflicting-modes (actual collector subprocess; no Docker invoked)
