@@ -1,0 +1,7 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+PASS success (actual collector subprocess; synthetic Docker boundary only)
+Tests: 1 passed (19 assertions)

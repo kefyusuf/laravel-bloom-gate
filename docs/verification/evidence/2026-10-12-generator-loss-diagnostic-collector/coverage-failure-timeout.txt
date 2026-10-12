@@ -1,0 +1,11 @@
+Scenario: coverage-failure
+Owned PID: 66452
+HasExited: True
+Stdout task: WaitingForActivation
+Stderr task: WaitingForActivation
+Last synthetic Docker commands:
+["rm", "lbg-generator-synthetic-case-load"]
+["compose", "-p", "lbg-generator-synthetic-case", "-f", "E:\\projects\\laravel-bloom-gate\\.build\\loss-diagnostic\\synthetic-5cebe3684d1247ff894555b391dcc950\\tests\\Experiments\\Swoole/generator-compose.yaml", "exec", "-T", "php", "php", "/fixture/generator-coverage.php", "/results/synthetic-case-loss-diagnostic-delay-25-timeline.jsonl", "/results/synthetic-case-loss-diagnostic-delay-25-generator-cgroup.txt", "/results/synthetic-case-loss-diagnostic-delay-25-cell.json"]
+["compose", "-p", "lbg-generator-synthetic-case", "-f", "E:\\projects\\laravel-bloom-gate\\.build\\loss-diagnostic\\synthetic-5cebe3684d1247ff894555b391dcc950\\tests\\Experiments\\Swoole/generator-compose.yaml", "down", "--volumes", "--remove-orphans"]
+["image", "rm", "lbg-generator-php:synthetic-case"]
+["image", "rm", "lbg-generator-k6:synthetic-case"]

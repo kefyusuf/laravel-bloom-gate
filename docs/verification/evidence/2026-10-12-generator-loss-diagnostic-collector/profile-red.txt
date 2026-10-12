@@ -1,0 +1,10 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+Exception: E:\projects\laravel-bloom-gate\tests\Experiments\Swoole\test-collector.ps1:9
+Line |
+   9 |      if (-not $Condition) { throw "Assertion failed: $Message" }
+     |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Assertion failed: one existing negative and exactly one positive cell

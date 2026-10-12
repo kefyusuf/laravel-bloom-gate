@@ -1,0 +1,28 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+PASS conflicting-modes (actual collector subprocess; synthetic Docker boundary only)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+PASS invalid-negative (actual collector subprocess; synthetic Docker boundary only)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+PASS unsafe-negative (actual collector subprocess; synthetic Docker boundary only)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/K6Boundary/arrival-slot-boundary.patch', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/collector-docker-fixture.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/run.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Experiments/Swoole/test-collector.ps1', LF will be replaced by CRLF the next time Git touches it
+Exception: E:\projects\laravel-bloom-gate\tests\Experiments\Swoole\test-collector.ps1:53
+Line |
+  53 |  … cess.Kill($true); throw 'Collector subprocess exceeded test bound.' }
+     |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Collector subprocess exceeded test bound.

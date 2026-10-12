@@ -42,5 +42,9 @@ jobs:
       - name: Verify load window boundaries
         run: node --test tests/Experiments/Swoole/load-window.test.cjs
 
+      - name: Verify generator collector orchestration without Docker load
+        shell: pwsh
+        run: ./tests/Experiments/Swoole/test-collector.ps1
+
       - name: Verify Testbench CLI boot
         run: vendor/bin/testbench --version
