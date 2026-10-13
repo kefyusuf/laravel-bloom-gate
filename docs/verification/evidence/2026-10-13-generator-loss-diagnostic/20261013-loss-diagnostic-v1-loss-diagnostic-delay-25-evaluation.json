@@ -1,0 +1,6 @@
+{
+  "verdict": "INCONCLUSIVE",
+  "reasons": [
+    "dropped_iterations must be zero."
+  ]
+}

@@ -1,0 +1,380 @@
+{
+  "verdict": "INCONCLUSIVE",
+  "profiles": [
+    {
+      "evaluation": {
+        "verdict": "INCONCLUSIVE",
+        "reasons": [
+          "dropped_iterations must be zero."
+        ]
+      },
+      "artifact_references": {
+        "resources": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-resources.json",
+        "cell": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-cell.json",
+        "evaluation": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-evaluation.json",
+        "coverage": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-coverage.json",
+        "log": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25.log",
+        "generator_cgroup": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-generator-cgroup.txt",
+        "timeline": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25-timeline.jsonl"
+      },
+      "coverage": {
+        "verdict": "OBSERVED",
+        "reasons": []
+      },
+      "label": "loss-diagnostic-delay-25",
+      "raw": "20261013-loss-diagnostic-v1-loss-diagnostic-delay-25.json",
+      "cell": {
+        "block": 0,
+        "path": "generator",
+        "workers": 4,
+        "vus": 1024,
+        "controlled_delay_ms": 25,
+        "offered_rate": 4800,
+        "absent_percent": 90,
+        "warmup_seconds": 30,
+        "duration_seconds": 60,
+        "window_basis": "scenario-start-time",
+        "measurement_contract": "scheduled-completeness-actual-window-v1",
+        "execution_topology": "single-local-constant-arrival",
+        "builtin_iterations": 431549,
+        "builtin_http_requests": 431549,
+        "elapsed_seconds": 60.019,
+        "unfinished_iterations": 0,
+        "dropped_iterations": 451,
+        "generator_saturated": true,
+        "rps": 4798.330528665922,
+        "measurement_start_epoch_ms": 1791860105371,
+        "measurement_end_epoch_ms": 1791860165390,
+        "p50_ms": 25.857539,
+        "p95_ms": 27.063420999999998,
+        "p99_ms": 32.29241079999999,
+        "query_ms": {
+          "min": 25.001641,
+          "med": 25.493945,
+          "p(95)": 26.366268,
+          "p(99)": 26.8905751,
+          "max": 64.548858
+        },
+        "started_iterations": 287991,
+        "completed_iterations": 287991,
+        "responses": 287991,
+        "present_responses": 28799,
+        "absent_responses": 259192,
+        "errors": 0,
+        "parity_failures": 0,
+        "false_negatives": 0,
+        "unknown_membership": 0,
+        "sql_calls": 0,
+        "redis_calls": 0,
+        "total_started_iterations": 431549,
+        "total_completed_iterations": 431549,
+        "total_errors": 0,
+        "total_parity_failures": 0,
+        "total_false_negatives": 0,
+        "total_unknown_membership": 0,
+        "total_delay_mismatches": 0,
+        "window_audit": {
+          "index_interpretation": "unavailable",
+          "start_offset_ms": {
+            "min": -29978,
+            "med": 15043,
+            "p(95)": 55497.59999999998,
+            "p(99)": 59093.52000000002,
+            "max": 59993
+          },
+          "crossing_offset_ms": {
+            "med": 45,
+            "p(95)": 86.94999999999999,
+            "p(99)": 90.58999999999997,
+            "max": 92,
+            "min": 0
+          },
+          "scheduled_started": 287549,
+          "scheduled_completed": 287549,
+          "warmup_entered": 442,
+          "scheduled_outside": 0,
+          "scheduled_early": 0,
+          "scheduled_late": 0,
+          "extra_entered": 0
+        },
+        "identity": {
+          "source_ref": "5ae2688d9f3d4485b06c66f52cac7791a2c286cc",
+          "sources": {
+            "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+            "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+            "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+            "generator-observe.php": "296d0208e58129f782576a1515436b99701e764a7daefa2f7b87c644a3b3dbba",
+            "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+            "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+            "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+            "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+            "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+            "qualify-generator.ps1": "f786d3dbd6cd1c3bd58cac9eb3d2d08bd9ad3ad15d3d6e02f87e90ff3384f3f4",
+            "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+            "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+            "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+            "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+            "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+            "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+          },
+          "receiver_image": "sha256:a59caaa91c9727c8b016a1f831d311be660baa9658dc8f9b6f524caed8a2b36d",
+          "k6_image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+          "k6_provenance": {
+            "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+            "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+            "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+            "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+            "instrumented_clock": false,
+            "image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+            "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+            "go_version": "go1.23.7",
+            "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+            "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+            "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+          },
+          "php": "8.4.26",
+          "swoole": "26.2.0",
+          "workers": 4,
+          "generator_cpus": 4,
+          "generator_memory_bytes": 4294967296,
+          "receiver_cpus": 2,
+          "receiver_memory_bytes": 268435456,
+          "fixed_vus": 1024
+        },
+        "receiver_delta": {
+          "completed": 431549,
+          "started": 431549,
+          "failed": 0
+        },
+        "worker_pids": [
+          12,
+          13,
+          14,
+          15
+        ],
+        "worker_requests": [
+          107882,
+          107889,
+          107884,
+          107894
+        ],
+        "resources": {
+          "generator_oom": false,
+          "generator_exit": 0,
+          "samples": 12,
+          "generator_cpu_max": 237.83,
+          "receiver_running": true,
+          "receiver_memory_percent_max": 18.54,
+          "receiver_oom": false,
+          "receiver_cpu_max": 115.01,
+          "generator_memory_percent_max": 13.08,
+          "receiver_restarts": 0
+        }
+      }
+    }
+  ],
+  "identity": {
+    "source_ref": "5ae2688d9f3d4485b06c66f52cac7791a2c286cc",
+    "sources": {
+      "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+      "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+      "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+      "generator-observe.php": "296d0208e58129f782576a1515436b99701e764a7daefa2f7b87c644a3b3dbba",
+      "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+      "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+      "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+      "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+      "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+      "qualify-generator.ps1": "f786d3dbd6cd1c3bd58cac9eb3d2d08bd9ad3ad15d3d6e02f87e90ff3384f3f4",
+      "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+      "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+      "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+      "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+      "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+      "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+    },
+    "receiver_image": "sha256:a59caaa91c9727c8b016a1f831d311be660baa9658dc8f9b6f524caed8a2b36d",
+    "k6_image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+    "k6_provenance": {
+      "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+      "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+      "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+      "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+      "instrumented_clock": false,
+      "image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+      "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+      "go_version": "go1.23.7",
+      "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+      "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+      "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+    },
+    "php": "8.4.26",
+    "swoole": "26.2.0",
+    "workers": 4,
+    "generator_cpus": 4,
+    "generator_memory_bytes": 4294967296,
+    "receiver_cpus": 2,
+    "receiver_memory_bytes": 268435456,
+    "fixed_vus": 1024
+  },
+  "negative_control": {
+    "cell": {
+      "block": 0,
+      "path": "generator",
+      "workers": 4,
+      "vus": 128,
+      "controlled_delay_ms": 150,
+      "offered_rate": 1200,
+      "absent_percent": 90,
+      "warmup_seconds": 2,
+      "duration_seconds": 5,
+      "window_basis": "scenario-start-time",
+      "measurement_contract": "scheduled-completeness-actual-window-v1",
+      "execution_topology": "single-local-constant-arrival",
+      "builtin_iterations": 5888,
+      "builtin_http_requests": 5888,
+      "elapsed_seconds": 5.147,
+      "unfinished_iterations": 0,
+      "dropped_iterations": 2512,
+      "generator_saturated": true,
+      "rps": 817.3693413639013,
+      "measurement_start_epoch_ms": 1791860062021,
+      "measurement_end_epoch_ms": 1791860067168,
+      "p50_ms": 150.96678,
+      "p95_ms": 151.8029551,
+      "p99_ms": 152.39727942,
+      "query_ms": {
+        "min": 150.003086,
+        "med": 150.633244,
+        "p(95)": 151.3975715,
+        "p(99)": 151.88364701999998,
+        "max": 161.35724
+      },
+      "started_iterations": 4207,
+      "completed_iterations": 4207,
+      "responses": 4207,
+      "present_responses": 420,
+      "absent_responses": 3787,
+      "errors": 0,
+      "parity_failures": 0,
+      "false_negatives": 0,
+      "unknown_membership": 0,
+      "sql_calls": 0,
+      "redis_calls": 0,
+      "total_started_iterations": 5888,
+      "total_completed_iterations": 5888,
+      "total_errors": 0,
+      "total_parity_failures": 0,
+      "total_false_negatives": 0,
+      "total_unknown_membership": 0,
+      "total_delay_mismatches": 0,
+      "window_audit": {
+        "index_interpretation": "unavailable",
+        "start_offset_ms": {
+          "min": -1998,
+          "med": 1495.5,
+          "p(95)": 4648.65,
+          "p(99)": 4936,
+          "max": 4996
+        },
+        "crossing_offset_ms": {
+          "p(95)": 805.2,
+          "p(99)": 839.6400000000001,
+          "max": 846,
+          "min": 1,
+          "med": 410
+        },
+        "scheduled_started": 3488,
+        "scheduled_completed": 3488,
+        "warmup_entered": 719,
+        "scheduled_outside": 0,
+        "scheduled_early": 0,
+        "scheduled_late": 0,
+        "extra_entered": 0
+      },
+      "identity": {
+        "source_ref": "5ae2688d9f3d4485b06c66f52cac7791a2c286cc",
+        "sources": {
+          "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+          "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+          "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+          "generator-observe.php": "296d0208e58129f782576a1515436b99701e764a7daefa2f7b87c644a3b3dbba",
+          "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+          "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+          "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+          "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+          "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+          "qualify-generator.ps1": "f786d3dbd6cd1c3bd58cac9eb3d2d08bd9ad3ad15d3d6e02f87e90ff3384f3f4",
+          "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+          "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+          "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+          "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+          "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+          "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+        },
+        "receiver_image": "sha256:a59caaa91c9727c8b016a1f831d311be660baa9658dc8f9b6f524caed8a2b36d",
+        "k6_image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+        "k6_provenance": {
+          "upstream_revision": "5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb",
+          "runtime_source_sha256": "e5cbf62b0eebd7088df5090046adf83d1793fed47279810d3300546cc724ccce",
+          "patch_sha256": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1",
+          "binary_sha256": "80dfd2c0b536ddbb9aa5a09dff9c5aef6fe4b63fea66aad45cb7bad818ab6b3b",
+          "instrumented_clock": false,
+          "image_id": "sha256:b9c3c90d274afe0fab87f3aaa93d11e76c7582429bdf4b26f56935d63aa867ae",
+          "version": "k6 v1.3.0 (commit/devel, go1.23.7, linux/amd64)",
+          "go_version": "go1.23.7",
+          "source_archive_sha256": "2c50056f2ae1db089b0438d161a13ba4b2e6e53497413a6e99dec2047c7c0ec0",
+          "builder_image": "golang:1.23.7-alpine@sha256:e438c135c348bd7677fde18d1576c2f57f265d5dfa1a6b26fca975d4aa40b3bb",
+          "runtime_base_image": "grafana/k6:1.3.0@sha256:3ddc8b1a33a2c3d8edc6e99b6a762ae36cba08788463458f5e6a7703e14eb77d"
+        },
+        "php": "8.4.26",
+        "swoole": "26.2.0",
+        "workers": 4,
+        "generator_cpus": 4,
+        "generator_memory_bytes": 4294967296,
+        "receiver_cpus": 2,
+        "receiver_memory_bytes": 268435456,
+        "fixed_vus": 1024
+      },
+      "receiver_delta": {
+        "completed": 5888,
+        "started": 5888,
+        "failed": 0
+      },
+      "worker_pids": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "worker_requests": [
+        1470,
+        1472,
+        1475,
+        1471
+      ],
+      "resources": {
+        "generator_oom": false,
+        "generator_exit": 0,
+        "samples": 1,
+        "generator_cpu_max": 42.88,
+        "receiver_running": true,
+        "receiver_memory_percent_max": 14.62,
+        "receiver_oom": false,
+        "receiver_cpu_max": 22.0,
+        "generator_memory_percent_max": 1.47,
+        "receiver_restarts": 0
+      }
+    },
+    "raw": "20261013-loss-diagnostic-v1-negative-128-vus.json",
+    "evaluation": {
+      "verdict": "INCONCLUSIVE",
+      "reasons": [
+        "dropped_iterations must be zero."
+      ]
+    }
+  },
+  "reasons": [
+    "dropped_iterations must be zero."
+  ]
+}

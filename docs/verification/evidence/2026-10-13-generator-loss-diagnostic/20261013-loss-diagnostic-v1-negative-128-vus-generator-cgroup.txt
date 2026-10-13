@@ -1,0 +1,9 @@
+1791860058 usage_usec 43138,user_usec 19172,system_usec 23965,nice_usec 0,nr_periods 1,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 5058560
+1791860060 usage_usec 228642,user_usec 169195,system_usec 59447,nice_usec 0,nr_periods 9,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 43847680
+1791860061 usage_usec 695317,user_usec 429998,system_usec 265318,nice_usec 0,nr_periods 19,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 56446976
+1791860062 usage_usec 1132893,user_usec 675461,system_usec 457432,nice_usec 0,nr_periods 29,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 62218240
+1791860063 usage_usec 1599635,user_usec 985410,system_usec 614224,nice_usec 0,nr_periods 40,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 64569344
+1791860064 usage_usec 2016796,user_usec 1252259,system_usec 764537,nice_usec 0,nr_periods 50,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 72310784
+1791860065 usage_usec 2457514,user_usec 1542391,system_usec 915123,nice_usec 0,nr_periods 60,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 72929280
+1791860066 usage_usec 2896779,user_usec 1856356,system_usec 1040422,nice_usec 0,nr_periods 70,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 73388032
+1791860067 usage_usec 3318983,user_usec 2116901,system_usec 1202081,nice_usec 0,nr_periods 80,nr_throttled 0,throttled_usec 0,nr_bursts 0,burst_usec 0, memory_current 74113024

@@ -2,6 +2,18 @@
 
 ## Latest continuation
 
+One separately frozen `-LossDiagnostic` invocation at merged source
+`5ae2688d9f3d4485b06c66f52cac7791a2c286cc` is INCONCLUSIVE: 431,549 completed +
+451 dropped = 432,000. Safety negative validated; exactly one 30/60-second 25 ms
+cell ran. All final drops were visible during warmup; measurement coverage was
+OBSERVED. The sole unavailable row identifies k6 transport/read failure after
+measurement, not the old in-window coverage failure. See the
+[single-cell record](verification/2026-10-13-generator-loss-diagnostic.md).
+No retry/tuning or tolerance change occurred; task stack/network/images cleaned,
+unrelated resources retained. Next: offline warmup loss investigation; no new
+load or capacity claim. Refresh this evidence PR review/CI/merge before relying
+on delivery. Earlier outcomes remain INCONCLUSIVE.
+
 The separate `-LossDiagnostic` collector increment is recorded in the
 [collector verification](verification/2026-10-12-generator-loss-diagnostic-collector.md).
 It validates the existing negative control before one 30/60-second 25 ms cell,
