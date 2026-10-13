@@ -1,0 +1,55 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 629B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.12kB done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/php:8.4-cli-bookworm@sha256:f1d32fb402fffba0b3dd8ba8c0aca474c9e9f04395fa846eedea77c503257dee
+#3 DONE 0.1s
+
+#4 [internal] load metadata for docker.io/library/composer:2@sha256:9715c7f69044da2a212a5fbde29ee7da24e364d426560ae6367b060236f847d7
+#4 DONE 0.1s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.1s
+
+#6 FROM docker.io/library/composer:2@sha256:9715c7f69044da2a212a5fbde29ee7da24e364d426560ae6367b060236f847d7
+#6 resolve docker.io/library/composer:2@sha256:9715c7f69044da2a212a5fbde29ee7da24e364d426560ae6367b060236f847d7 0.1s done
+#6 DONE 0.1s
+
+#7 [stage-0 1/6] FROM docker.io/library/php:8.4-cli-bookworm@sha256:f1d32fb402fffba0b3dd8ba8c0aca474c9e9f04395fa846eedea77c503257dee
+#7 resolve docker.io/library/php:8.4-cli-bookworm@sha256:f1d32fb402fffba0b3dd8ba8c0aca474c9e9f04395fa846eedea77c503257dee 0.1s done
+#7 DONE 0.1s
+
+#8 [stage-0 2/6] RUN apt-get update && apt-get install -y --no-install-recommends libssl-dev libzip-dev libonig-dev unzip git     && docker-php-ext-install -j2 pdo_mysql pcntl sockets zip mbstring bcmath     && pecl install -D 'enable-sockets="yes" enable-openssl="yes" enable-http2="no" enable-mysqlnd="yes" enable-hook-curl="no" enable-cares="no" with-postgres="no"' openswoole-26.2.0     && pecl install redis-6.3.0 apcu-5.1.28     && docker-php-ext-enable openswoole redis apcu     && mv /usr/local/etc/php/conf.d/docker-php-ext-openswoole.ini /usr/local/etc/php/conf.d/zz-openswoole.ini     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [stage-0 3/6] COPY --from=composer:2@sha256:9715c7f69044da2a212a5fbde29ee7da24e364d426560ae6367b060236f847d7 /usr/bin/composer /usr/local/bin/composer
+#9 CACHED
+
+#10 [stage-0 4/6] RUN printf 'apc.enable_cli=1\nmemory_limit=1G\n' > /usr/local/etc/php/conf.d/demo.ini
+#10 CACHED
+
+#11 [stage-0 5/6] WORKDIR /experiment
+#11 CACHED
+
+#12 [stage-0 6/6] RUN apt-get update && apt-get install -y --no-install-recommends procps     && rm -rf /var/lib/apt/lists/*
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 exporting manifest sha256:499277b059ee4d536b344608c8b2be04a5ffa081ca854711044d2dc26413913d 0.0s done
+#13 exporting config sha256:0cc1a1358577e065cbc0c5724bb30cc7f42a231cce9727238eddfaef8905ff52 0.0s done
+#13 exporting attestation manifest sha256:935217fb6aec47469437116f2005795491f80b47c1afa934df15ec5582dd71b4 0.0s done
+#13 exporting manifest list sha256:a59caaa91c9727c8b016a1f831d311be660baa9658dc8f9b6f524caed8a2b36d
+#13 exporting manifest list sha256:a59caaa91c9727c8b016a1f831d311be660baa9658dc8f9b6f524caed8a2b36d 0.0s done
+#13 naming to docker.io/library/lbg-generator-php:20261013-loss-diagnostic-v1 done
+#13 unpacking to docker.io/library/lbg-generator-php:20261013-loss-diagnostic-v1
+#13 unpacking to docker.io/library/lbg-generator-php:20261013-loss-diagnostic-v1 1.1s done
+#13 DONE 1.3s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s

@@ -1,0 +1,50 @@
+[
+  {
+    "BlockIO": "8.19kB / 0B",
+    "CPUPerc": "42.88%",
+    "Container": "lbg-generator-20261013-loss-diagnostic-v1-load",
+    "ID": "613b6b10c681",
+    "MemPerc": "1.47%",
+    "MemUsage": "60.24MiB / 4GiB",
+    "Name": "lbg-generator-20261013-loss-diagnostic-v1-load",
+    "NetIO": "746kB / 389kB",
+    "PIDs": "19",
+    "epoch_ms": 1791860062476
+  },
+  {
+    "BlockIO": "54.1MB / 0B",
+    "CPUPerc": "22.00%",
+    "Container": "lbg-generator-20261013-loss-diagnostic-v1-php-1",
+    "ID": "d6aef0a4bd64",
+    "MemPerc": "14.62%",
+    "MemUsage": "37.42MiB / 256MiB",
+    "Name": "lbg-generator-20261013-loss-diagnostic-v1-php-1",
+    "NetIO": "238kB / 419kB",
+    "PIDs": "11",
+    "epoch_ms": 1791860062479
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "0.00%",
+    "Container": "lbg-generator-20261013-loss-diagnostic-v1-load",
+    "ID": "613b6b10c681",
+    "MemPerc": "0.00%",
+    "MemUsage": "0B / 0B",
+    "Name": "lbg-generator-20261013-loss-diagnostic-v1-load",
+    "NetIO": "0B / 0B",
+    "PIDs": "0",
+    "epoch_ms": 1791860067902
+  },
+  {
+    "BlockIO": "54.1MB / 0B",
+    "CPUPerc": "24.14%",
+    "Container": "lbg-generator-20261013-loss-diagnostic-v1-php-1",
+    "ID": "d6aef0a4bd64",
+    "MemPerc": "14.50%",
+    "MemUsage": "37.12MiB / 256MiB",
+    "Name": "lbg-generator-20261013-loss-diagnostic-v1-php-1",
+    "NetIO": "1.08MB / 2.2MB",
+    "PIDs": "11",
+    "epoch_ms": 1791860067902
+  }
+]

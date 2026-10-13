@@ -1,0 +1,65 @@
+{
+  "task": "20261013-loss-diagnostic-v1",
+  "source_ref": "5ae2688d9f3d4485b06c66f52cac7791a2c286cc",
+  "reviewed_head": "4993b6607b9849401249484157196cf0c9ca68af",
+  "source_tree": "fa3d6a18f4d1419bdda2e939bcfc1fcf3ad821c2",
+  "command": "pwsh -NoProfile -File tests/Experiments/Swoole/qualify-generator.ps1 -Task 20261013-loss-diagnostic-v1 -LossDiagnostic",
+  "host": {
+    "memory_bytes": 16440242176,
+    "os_type": "linux",
+    "cpus": 12
+  },
+  "negative": {
+    "duration_seconds": 5,
+    "delay_ms": 150,
+    "vus": 128,
+    "warmup_seconds": 2,
+    "rate": 1200
+  },
+  "positive": {
+    "duration_seconds": 60,
+    "delay_ms": 25,
+    "vus": 1024,
+    "warmup_seconds": 30,
+    "rate": 4800
+  },
+  "budgets": {
+    "workers": 4,
+    "generator_cpus": 4,
+    "receiver_memory_bytes": 268435456,
+    "generator_memory_bytes": 4294967296,
+    "receiver_cpus": 2
+  },
+  "sources": {
+    "load.js": "f874cda608ecff363fd57a983c905956c13047e433d9a05fb2925e5090651f8a",
+    "generator-server.php": "4e88eca3585a96cea1f7e1c71b99842f02ff0f8dba074d2026b24cd20cf600f2",
+    "GeneratorDeadline.php": "4684f9afb36ce9783cef312b5cacabebc989cc44e93ca6ecf08c3ca985a4545c",
+    "generator-observe.php": "296d0208e58129f782576a1515436b99701e764a7daefa2f7b87c644a3b3dbba",
+    "GeneratorObservation.php": "0924f2289ed6f6e04df94549bc505216e236092e7b7922fcf892936402a7b035",
+    "generator-coverage.php": "29980d8eea206b226e770ce84702ddf782d686a402657f01a85422aba72a54fa",
+    "GeneratorReport.php": "9b5dbc505d5fe9d5bf5fd7f0f9e0843586cc67b30376760a38aceb8af403ca75",
+    "generator-evaluate.php": "e8b1aec108bf2a949af26fdd9762820e356c5617774426a23f432056c97cf43d",
+    "generator-compose.yaml": "a523153c5cb14623e16dbc05ffd2116e8c6ca7d2f5bc1e94a6eb7272e8b391ff",
+    "qualify-generator.ps1": "f786d3dbd6cd1c3bd58cac9eb3d2d08bd9ad3ad15d3d6e02f87e90ff3384f3f4",
+    "Dockerfile": "7c383199aa72df06a4132c7cd37df9fc9ff25fdbd68ec421e55fd05b4335220a",
+    "K6Boundary/Dockerfile": "5b7d876080afa87b69a56d54de99398bece072094ecf216386c5148a78d6f6aa",
+    "K6Boundary/.dockerignore": "cfbe1d34916aeebcdcaee2608e719a0ca23507adb3aa206cf19a740fc11c9176",
+    "K6Boundary/build-image.ps1": "61012200290ad887b0ce78e4829400890f37191ddf32972c175d0cbedfa44375",
+    "K6Boundary/verify-image.ps1": "0c1145b6c88ccd46051fd54e8af719725ef26c30a5081e543d5be63d91a46508",
+    "K6Boundary/arrival-slot-boundary.patch": "1232b8e7feded527f85ba0f7ea4e69823cbf258f53e537ad1fcbdb11bad8e4d1"
+  },
+  "existing_containers": [
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>",
+    "<REDACTED: unrelated host container>"
+  ],
+  "policy": "Single invocation; no retry, source change or tuning. Image/provenance/installed-source readbacks must pass before load. No aggregate qualification."
+}
