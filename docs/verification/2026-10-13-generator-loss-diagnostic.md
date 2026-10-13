@@ -21,8 +21,9 @@ zero. These counters and the low p99 do not override lost scheduled work.
 
 ## Loss and observer evidence
 
-The cumulative drop counter changes from zero in the snapshot starting at
-`1791860082952` to 451 in the next snapshot starting at `1791860083952`.
+The `dropped_iterations` metric is absent in the snapshot starting at
+`1791860082952` and first appears with count 451 in the next snapshot starting
+at `1791860083952`. Absence is not an independently measured zero.
 The latter is about 8.6 seconds after nominal load start and 21.4 seconds before
 measurement starts at `1791860105371`. All 451 final drops are already visible
 during warmup; the last successful snapshot still reports 451. Snapshot start
