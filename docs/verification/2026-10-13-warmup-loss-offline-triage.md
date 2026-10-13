@@ -61,6 +61,58 @@ each lost dispatch (busy VUs, scheduling delay, CPU throttling, initialization
 timing, or another interaction). A sampled `vus` gauge is not a per-slot
 pool-availability trace.
 
+## Exact active-VU pool behavior and test feasibility
+
+Read-only inspection of the **same pinned upstream revision**, rather than a
+new implementation, locates `activeVUPool` in
+[`lib/executor/ramping_arrival_rate.go` lines 498–559](https://github.com/grafana/k6/blob/5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb/lib/executor/ramping_arrival_rate.go#L498-L559).
+The pool shared with `ConstantArrivalRate.Run` creates **an unbuffered
+`chan struct{}`** and uses a **nonblocking** `select` send in
+`TryRunIteration()`; the default branch returns `false` if no receiver
+is ready at that instant. `AddVU()` runs a goroutine that receives from
+that channel, runs the actual iteration, then returns to receive again.
+The metric `vus` represents running/active work, not an atomic proof that
+a receiver is parked at the very moment of a dispatch. Therefore
+`vus.max=416` versus `vus_max=1024` **does not establish** that a
+`TryRunIteration()` call could not fail. That mechanism is possible,
+not an attribution of the observed 451 losses.
+
+The existing
+[boundary component fixture](../../tests/Experiments/Swoole/K6Boundary/arrival_boundary_test.go)
+already calls **the real** `ConstantArrivalRate.Run` plus upstream
+`activeVUPool`, `MiniRunner` and original drop metric; it controls
+external time/context using a Go overlay. Its busy-VU case produces
+visible dropped work, but **does not** distinguish receiver-not-ready
+from genuinely occupied VUs in the frozen real run. The
+[pinned upstream tests](https://github.com/grafana/k6/blob/5870e99ae8a690a2b0bfc9a7dd2b5feb7c9851bb/lib/executor/constant_arrival_rate_test.go#L286-L397)
+already cover saturated VUs, aggregate dropped work and active VU
+bounds; none provides per-dispatch warmup availability evidence.
+
+**Feasibility verdict: LIMITED / DESIGN ONLY.** The current test
+architecture plausibly supports a separately reviewed, deterministic
+non-HTTP reproduction through a *test-only* readiness barrier in the
+actual pinned pool and controlled executor timer. Such a barrier would
+demonstrate the scheduler's response to an artificial no-receiver
+interleaving; it would **not** demonstrate that the same interleaving,
+CPU throttling or a host contention event caused the real run.
+Do not introduce that overlay into the production binary or silently
+alter k6's drop accounting.
+
+| Proposed deterministic case | Required discriminating assertion | Explicit limit |
+| --- | --- | --- |
+| Ready receiver before a timer dispatch | The real pool accepts a slot; no artificial drop | Demonstrates fixture control, not 4,800 RPS capacity |
+| All available workers intentionally occupied | The real executor records a drop when a slot is offered | Already partially covered by the existing busy-VU fixture |
+| Temporarily no receiver parked at dispatch, even with VUs configured | The real nonblocking channel path rejects a slot and reports an actual drop; release eventually permits subsequent work | Artificial scheduling interleaving, not proof of warmup or quota root cause |
+| Terminal bound and account reconciliation | Accepted work plus drops equals the exact bounded offered slots under each synthetic case | Do not weaken the 432,000-slot and zero-loss admission rules |
+
+If a barrier needs a copied scheduler/pool or unbounded native timing to
+work, **reject the design** rather than adding a second implementation.
+Before implementation, a focused proposal must specify exact overlay
+source paths, cleanup of the ephemeral test file, synchronization,
+timeouts, RED before GREEN, and the existing `-race` and
+unmodified-binary regression checks. This review authorizes no such
+code, no new diagnostic, and no load replay.
+
 ## Hypotheses, not findings
 
 | Candidate | Why inspect it | What evidence is missing |
