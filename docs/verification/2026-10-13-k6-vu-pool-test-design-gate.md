@@ -55,6 +55,16 @@ original pinned sources remain untouched. A test failure must also
 unblock all receiver gates (including on watchdog expiry), preventing
 a hanging `vusPool.Close()`. Run no network/HTTP workload.
 
+**Single-owner release contract:** the success threshold, finite watchdog,
+and every error/cleanup exit **must** invoke one shared idempotent
+`releaseAllReceivers()` operation. Use a `sync.Once`-guarded closure of
+**one broadcast release channel** (or an equivalent single coordinator).
+Never independently close per-receiver channels from competing paths;
+the same release must unblock *every* gated goroutine, including if
+the watchdog and third-drop observation race. Keep release/gate state
+test-only, with no hook in the original runtime overlay or built binary.
+Watchdog expiration is a test failure, **not** an alternate success path.
+
 ## Deterministic proof and limit
 
 Use a tiny virtual-time scenario with `rate=3/s`, `duration=1s`,
