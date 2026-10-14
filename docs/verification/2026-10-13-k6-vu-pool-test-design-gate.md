@@ -48,6 +48,21 @@ the ephemeral `_test.go` file reads/sets it while testing the same Go
 package. Neither variable nor hook may be present in `runtimeOverlay`
 used for upstream regressions or the binary build.
 
+**Pre-dispatch readiness:** `AddVU` returning after `close(ch)`
+does **not** guarantee that its newly started goroutine has entered the
+test-only receive gate. Use the **existing test clock seam**
+`boundaryNewTimer` (invoked by the real `ConstantArrivalRate.Run`
+*after* planned-VU activation and *before* the first timer reset) to
+wait for **two distinct gate-entry acknowledgements** before offering
+slot zero. The acknowledgements must be generated only from inside
+the actual pool goroutines after entering the injected gate; use a
+bounded, synchronized channel, not sleeps or sampled VU gauges.
+On missing/duplicate acknowledgement or watchdog expiration, fail
+closed and call the common release function so the executor can exit.
+Do not change the real executor's slot loop, `TryRunIteration()`, or
+drop metric to enforce the barrier. The normal boundary tests must
+continue to run with this readiness wait disabled.
+
 **Lifecycle:** keep the existing clean-checkout + exact-SHA verification
 and temporary `lbg_arrival_boundary_test.go` creation/removal in a
 `finally` block. Test overlays must stay under task-local `.build/`;
@@ -74,8 +89,9 @@ before their channel receive; observe the genuine executor's metric
 channel, then release the gate **only after** all three drop samples are
 observed. Assert:
 
-- Both test-only hook entries were observed; no activated receiver
-  could read from the pool during the three offered slots.
+- Both **distinct** test-only hook entries were acknowledged
+  *before* the first timer dispatch; no activated receiver could read
+  from the pool during any of the three offered slots.
 - Actual completed runner work **0**, actual `DroppedIterations` **3**,
   and completed + dropped **3**. The original dropped-sample path and
   schedule count must remain unchanged.
