@@ -27,11 +27,20 @@ type boundaryClock struct {
 	releaseOnce       sync.Once
 	entered           chan struct{}
 	enteredOnce       sync.Once
-	receiverGate      *boundaryTestReceiverGate
-	receiverGateReady bool
+	receiverEntered    chan uint64
+	receiverRelease    chan struct{}
+	receiverReleaseOnce sync.Once
+	receiverNextID     atomic.Uint64
+	receiverGateReady  bool
 }
 
 var boundaryControl *boundaryClock
+
+func (clock *boundaryClock) releaseAllReceivers() {
+	if clock.receiverRelease != nil {
+		clock.receiverReleaseOnce.Do(func() { close(clock.receiverRelease) })
+	}
+}
 
 type boundaryTimer struct{ C chan time.Time }
 
@@ -39,24 +48,24 @@ func boundaryNewTimer(time.Duration) *boundaryTimer {
 	timer := &boundaryTimer{C: make(chan time.Time, 1)}
 	// Wait for both real pool goroutines before the executor can offer slot zero.
 	// The unhooked fixture must fail closed; AddVU's handshake alone is not readiness.
-	if gate := boundaryControl.receiverGate; gate != nil {
+	if boundaryControl.receiverEntered != nil {
 		deadline := time.NewTimer(5 * time.Second)
 		defer deadline.Stop()
 		seen := make(map[uint64]struct{}, 2)
 		for len(seen) < 2 {
 			select {
-			case id := <-gate.entered:
+			case id := <-boundaryControl.receiverEntered:
 				if id == 0 {
-					gate.releaseAllReceivers()
+					boundaryControl.releaseAllReceivers()
 					return timer
 				}
 				if _, duplicate := seen[id]; duplicate {
-					gate.releaseAllReceivers()
+					boundaryControl.releaseAllReceivers()
 					return timer
 				}
 				seen[id] = struct{}{}
 			case <-deadline.C:
-				gate.releaseAllReceivers()
+				boundaryControl.releaseAllReceivers()
 				return timer
 			}
 		}
@@ -209,23 +218,19 @@ func TestBoundaryUnavailableVUsRemainDroppedWork(t *testing.T) {
 	require.Positive(t, dropped, "busy VUs must produce visible drops, not hidden skipped work")
 }
 
-
 // TestBoundaryNoReadyReceiversReportRealDrops uses only the upstream VU pool,
 // executor and dropped-iteration metric. It is not a real-load capacity result.
 func TestBoundaryNoReadyReceiversReportRealDrops(t *testing.T) {
-	gate := &boundaryTestReceiverGate{
-		entered: make(chan uint64, 2),
-		release: make(chan struct{}),
+	clock := &boundaryClock{
+		stopAt: time.Second,
+		receiverEntered: make(chan uint64, 2),
+		receiverRelease: make(chan struct{}),
 	}
-	boundaryTestGate = gate
-	defer func() {
-		gate.releaseAllReceivers()
-		boundaryTestGate = nil
-	}()
-
-	clock := &boundaryClock{stopAt: time.Second, receiverGate: gate}
 	boundaryControl = clock
-	defer func() { boundaryControl = nil }()
+	defer func() {
+		clock.releaseAllReceivers()
+		boundaryControl = nil
+	}()
 
 	var completed atomic.Int64
 	runner := simpleRunner(func(context.Context, *lib.State) error {
@@ -251,7 +256,7 @@ func TestBoundaryNoReadyReceiversReportRealDrops(t *testing.T) {
 				if sample.Metric == fixture.state.Test.BuiltinMetrics.DroppedIterations {
 					dropped += int64(sample.Value)
 					if dropped >= 3 {
-						gate.releaseAllReceivers()
+						clock.releaseAllReceivers()
 					}
 				}
 			}
@@ -265,7 +270,7 @@ func TestBoundaryNoReadyReceiversReportRealDrops(t *testing.T) {
 	go func() {
 		select {
 		case <-time.After(5 * time.Second):
-			gate.releaseAllReceivers()
+			clock.releaseAllReceivers()
 			close(watchdogExpired)
 		case <-watchdogStopped:
 		}
