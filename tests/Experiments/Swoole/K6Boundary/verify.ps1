@@ -51,6 +51,31 @@ $instrumented = Join-Path $output 'instrumented.go'
 [IO.File]::WriteAllText($instrumented, $body, [Text.UTF8Encoding]::new($false))
 $replace = @{}
 $replace[$target] = $instrumented
+$poolTarget = Join-Path $source 'lib/executor/ramping_arrival_rate.go'
+$poolBody = [IO.File]::ReadAllText($poolTarget).Replace("`r`n", "`n")
+$poolAnchor = '// activeVUPool controls the activeVUs'
+if ([regex]::Matches($poolBody, [regex]::Escape($poolAnchor)).Count -ne 1) {
+    throw 'Pinned test pool declaration anchor changed.'
+}
+$poolBody = $poolBody.Replace($poolAnchor, @'
+// Test-only pool coordination: included exclusively in the Go test overlay.
+type boundaryTestReceiverGate struct {
+	entered chan uint64
+	release chan struct{}
+	releaseOnce sync.Once
+	nextID uint64
+}
+
+func (g *boundaryTestReceiverGate) releaseAllReceivers() {
+	g.releaseOnce.Do(func() { close(g.release) })
+}
+
+var boundaryTestGate *boundaryTestReceiverGate
+
+'@ + $poolAnchor)
+$poolOverlayFile = Join-Path $output 'instrumented-pool.go'
+[IO.File]::WriteAllText($poolOverlayFile, $poolBody, [Text.UTF8Encoding]::new($false))
+$replace[$poolTarget] = $poolOverlayFile
 $overlay = Join-Path $output 'overlay.json'
 [IO.File]::WriteAllText($overlay, (@{Replace=$replace} | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
 Push-Location $source
