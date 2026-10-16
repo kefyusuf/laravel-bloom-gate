@@ -27,6 +27,8 @@ type boundaryClock struct {
 	releaseOnce       sync.Once
 	entered           chan struct{}
 	enteredOnce       sync.Once
+	receiverGate      *boundaryTestReceiverGate
+	receiverGateReady bool
 }
 
 var boundaryControl *boundaryClock
@@ -34,7 +36,33 @@ var boundaryControl *boundaryClock
 type boundaryTimer struct{ C chan time.Time }
 
 func boundaryNewTimer(time.Duration) *boundaryTimer {
-	return &boundaryTimer{C: make(chan time.Time, 1)}
+	timer := &boundaryTimer{C: make(chan time.Time, 1)}
+	// Wait for both real pool goroutines before the executor can offer slot zero.
+	// The unhooked fixture must fail closed; AddVU's handshake alone is not readiness.
+	if gate := boundaryControl.receiverGate; gate != nil {
+		deadline := time.NewTimer(5 * time.Second)
+		defer deadline.Stop()
+		seen := make(map[uint64]struct{}, 2)
+		for len(seen) < 2 {
+			select {
+			case id := <-gate.entered:
+				if id == 0 {
+					gate.releaseAllReceivers()
+					return timer
+				}
+				if _, duplicate := seen[id]; duplicate {
+					gate.releaseAllReceivers()
+					return timer
+				}
+				seen[id] = struct{}{}
+			case <-deadline.C:
+				gate.releaseAllReceivers()
+				return timer
+			}
+		}
+		boundaryControl.receiverGateReady = true
+	}
+	return timer
 }
 
 func (timer *boundaryTimer) Reset(delay time.Duration) bool {
@@ -179,4 +207,83 @@ func TestBoundaryUnavailableVUsRemainDroppedWork(t *testing.T) {
 	require.Equal(t, int64(10), completed+dropped)
 	require.Positive(t, completed, "the first runner entry must complete after release")
 	require.Positive(t, dropped, "busy VUs must produce visible drops, not hidden skipped work")
+}
+
+
+// TestBoundaryNoReadyReceiversReportRealDrops uses only the upstream VU pool,
+// executor and dropped-iteration metric. It is not a real-load capacity result.
+func TestBoundaryNoReadyReceiversReportRealDrops(t *testing.T) {
+	gate := &boundaryTestReceiverGate{
+		entered: make(chan uint64, 2),
+		release: make(chan struct{}),
+	}
+	boundaryTestGate = gate
+	defer func() {
+		gate.releaseAllReceivers()
+		boundaryTestGate = nil
+	}()
+
+	clock := &boundaryClock{stopAt: time.Second, receiverGate: gate}
+	boundaryControl = clock
+	defer func() { boundaryControl = nil }()
+
+	var completed atomic.Int64
+	runner := simpleRunner(func(context.Context, *lib.State) error {
+		completed.Add(1)
+		return nil
+	})
+	config := &ConstantArrivalRateConfig{
+		BaseConfig: BaseConfig{GracefulStop: types.NullDurationFrom(15 * time.Second)},
+		Rate: null.IntFrom(3), TimeUnit: types.NullDurationFrom(time.Second),
+		Duration: types.NullDurationFrom(time.Second),
+		PreAllocatedVUs: null.IntFrom(2), MaxVUs: null.IntFrom(2),
+	}
+	fixture := setupExecutorTest(t, "", "", lib.Options{}, runner, config)
+	defer fixture.cancel()
+
+	output := make(chan metrics.SampleContainer, 32)
+	var dropped int64
+	drained := make(chan struct{})
+	go func() {
+		defer close(drained)
+		for container := range output {
+			for _, sample := range container.GetSamples() {
+				if sample.Metric == fixture.state.Test.BuiltinMetrics.DroppedIterations {
+					dropped += int64(sample.Value)
+					if dropped >= 3 {
+						gate.releaseAllReceivers()
+					}
+				}
+			}
+		}
+	}()
+
+	// A missing acknowledgement, metric or deadlocked Close must release both
+	// receivers and fail, not convert the watchdog into a successful result.
+	watchdogStopped := make(chan struct{})
+	watchdogExpired := make(chan struct{})
+	go func() {
+		select {
+		case <-time.After(5 * time.Second):
+			gate.releaseAllReceivers()
+			close(watchdogExpired)
+		case <-watchdogStopped:
+		}
+	}()
+	defer close(watchdogStopped)
+
+	err := fixture.executor.Run(fixture.ctx, output)
+	close(output)
+	<-drained
+
+	select {
+	case <-watchdogExpired:
+		t.Fatal("receiver gate watchdog expired")
+	default:
+	}
+	require.NoError(t, err)
+	require.True(t, clock.receiverGateReady, "two unique receiver-gate acknowledgements must precede dispatch")
+	require.Equal(t, int64(0), completed.Load(), "no receiver may take one of the three slots")
+	require.Equal(t, int64(3), dropped, "the real executor must emit three dropped iterations")
+	require.Equal(t, int64(3), completed.Load()+dropped, "all three virtual slots must be accounted for")
 }
