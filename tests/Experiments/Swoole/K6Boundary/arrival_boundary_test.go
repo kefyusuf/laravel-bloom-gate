@@ -36,6 +36,8 @@ type boundaryClock struct {
 
 var boundaryControl *boundaryClock
 
+// releaseAllReceivers unblocks every test-gated pool receiver exactly once.
+// The drop threshold, watchdog and cleanup paths may call it concurrently.
 func (clock *boundaryClock) releaseAllReceivers() {
 	if clock.receiverRelease != nil {
 		clock.receiverReleaseOnce.Do(func() { close(clock.receiverRelease) })
@@ -44,6 +46,8 @@ func (clock *boundaryClock) releaseAllReceivers() {
 
 type boundaryTimer struct{ C chan time.Time }
 
+// boundaryNewTimer blocks the first virtual dispatch until two distinct real
+// pool receivers acknowledge the test-only gate; it fails closed otherwise.
 func boundaryNewTimer(time.Duration) *boundaryTimer {
 	timer := &boundaryTimer{C: make(chan time.Time, 1)}
 	// Wait for both real pool goroutines before the executor can offer slot zero.
