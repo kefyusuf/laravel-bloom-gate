@@ -1,5 +1,50 @@
 # Project handoff — 2026-10-08
 
+## 2026-10-18 — pinned k6 receiver-readiness component proof
+
+[PR #106](https://github.com/kefyusuf/laravel-bloom-gate/pull/106)
+squash-merged the test-only no-ready-receiver characterization from
+`ef3006aa365a578e1b284a57fd599a559ef70420` into
+`main` at `12c343e4c848649e10145e25cf64b21cf67e02f4`.
+[Post-merge Quality](https://github.com/kefyusuf/laravel-bloom-gate/actions/runs/39119282579)
+passed on that exact `main` commit. The PR's final exact-head Quality,
+Compatibility, K6 Arrival Boundary and Shared Memory Capability runs passed;
+its independent incremental review found no actionable finding.
+
+The [merged test](../tests/Experiments/Swoole/K6Boundary/arrival_boundary_test.go)
+exercises the actual pinned k6 v1.3.0 `ConstantArrivalRate.Run`,
+`activeVUPool` and original dropped-iteration metric. In an artificial
+three-slot / two-VU case, both activated pool receivers acknowledge a
+test-only gate before dispatch; the executor reports three real drops and
+zero completed iterations. The missing-hook fixture fails closed, the gate
+releases through one idempotent broadcast, and the existing executor/binary
+checks preserve a hook-free runtime. Only the Go boundary test and
+`verify.ps1` changed; there was no native load, HTTP workload, production
+runtime change or package API change.
+
+**Interpretation remains INCONCLUSIVE.** This controlled interleaving proves
+that no ready receiver can yield visible dropped work; it does **not**
+attribute the frozen 451 warmup drops to VU scheduling, CPU throttling,
+receiver occupancy or any other cause. The frozen positive remains
+431,549 completed + 451 dropped = 432,000 offered, and the zero-drop
+qualification criterion is unchanged. The [evidence record](verification/2026-10-13-generator-loss-diagnostic.md),
+[offline triage](verification/2026-10-13-warmup-loss-offline-triage.md)
+and [accepted test design](verification/2026-10-13-k6-vu-pool-test-design-gate.md)
+retain their original scopes and conclusions.
+
+**Next boundary:** read-only evidence/causality reconciliation of what
+the synthetic test adds versus what remains unobserved in the frozen
+warmup. Do not infer a root cause from the test, widen the zero-drop gate,
+or start another native load, instrumentation, capacity benchmark,
+new driver, release or runtime fix. Any subsequent implementation or timing
+requires a separate narrow design/review gate and, for native load,
+explicit authorization. No automatic follow-on work is approved by #106.
+
+**Self-review:** scope limited to post-merge documentation; no public API or
+dependency-direction change; all historical evidence and fail-closed
+admission invariants preserved; exact-main CI URL and commit are explicit.
+This entry is not a fresh test run or causal finding.
+
 ## Latest continuation
 
 One separately frozen `-LossDiagnostic` invocation at merged source
