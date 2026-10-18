@@ -8,6 +8,19 @@ function Assert-True([bool]$Condition, [string]$Message) {
     $script:assertions++
     if (-not $Condition) { throw "Assertion failed: $Message" }
 }
+# Get-Process may still see a reaped-pending Linux zombie after tree kill.
+# Treat only an absent PID or Linux's terminal Z/X states as stopped.
+# Running, sleeping or uninspectable processes must fail closed.
+function Test-DescendantStopped([int]$ProcessId) {
+    if ($null -eq (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) { return $true }
+    if ($IsLinux) {
+        $statusPath = "/proc/$ProcessId/status"
+        $stateLine = Get-Content -LiteralPath $statusPath -ErrorAction SilentlyContinue |
+            Where-Object { $_ -match '^State:' } | Select-Object -First 1
+        if ($stateLine -match '^State:\s+[ZX]\b') { return $true }
+    }
+    return ($null -eq (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue))
+}
 function Invoke-CollectorCase([string]$Scenario) {
     $owned = Join-Path $evidence ('synthetic-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory $owned | Out-Null
@@ -75,7 +88,14 @@ sys.exit(result.returncode)
                 $outcomePath = Join-Path $owned '.build/generator-qualification/synthetic-case-outcome.json'
                 Assert-True ((Get-Content $outcomePath -Raw | ConvertFrom-Json).verdict -eq 'INCONCLUSIVE') 'timeout fixture reached expected collector rejection'
                 $stalledPid = [int](Get-Content (Join-Path $owned '.build/generator-qualification/stalled-docker-pid.txt'))
-                Assert-True ($null -eq (Get-Process -Id $stalledPid -ErrorAction SilentlyContinue)) 'deadline kills the owned descendant fixture'
+                Assert-True (-not (Test-DescendantStopped $PID)) 'live test parent cannot be mistaken for a stopped descendant'
+                # Kill(true)/WaitForExit() waits for the launcher, not its children.
+                # Bound the descendant check; do not accept a still-running child.
+                $childWait = [Diagnostics.Stopwatch]::StartNew()
+                while ($childWait.Elapsed.TotalSeconds -lt 5 -and -not (Test-DescendantStopped $stalledPid)) {
+                    Start-Sleep -Milliseconds 100
+                }
+                Assert-True (Test-DescendantStopped $stalledPid) 'deadline kills the owned descendant fixture'
                 return
             }
             $diagnostics = @("Scenario: $Scenario", "Owned PID: $($process.Id)", "HasExited: $($process.HasExited)",
