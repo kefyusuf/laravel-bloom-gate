@@ -8,6 +8,36 @@ function Assert-True([bool]$Condition, [string]$Message) {
     $script:assertions++
     if (-not $Condition) { throw "Assertion failed: $Message" }
 }
+# Get-Process may still see a reaped-pending Linux zombie after tree kill.
+# Treat only an absent PID or Linux's terminal Z/X states as stopped.
+# Running, sleeping or uninspectable processes must fail closed.
+function Test-DescendantStopped([int]$ProcessId, [datetime]$ExpectedStartTime) {
+    try { $candidate = Get-Process -Id $ProcessId -ErrorAction Stop }
+    catch {
+        # A missing PID means the owned child has exited; inspection errors do not.
+        return ($_.CategoryInfo.Category -eq [Management.Automation.ErrorCategory]::ObjectNotFound)
+    }
+    try {
+        if ($candidate.StartTime -ne $ExpectedStartTime) { return $true }
+    } catch { return $false }
+    if ($IsLinux) {
+        $statusPath = "/proc/$ProcessId/status"
+        $stateLine = Get-Content -LiteralPath $statusPath -ErrorAction SilentlyContinue |
+            Where-Object { $_ -match '^State:' } | Select-Object -First 1
+        if ($stateLine -match '^State:\s+[ZX]\b') { return $true }
+    }
+    # Recheck both identity and presence in case the PID was recycled meanwhile.
+    try { $candidate = Get-Process -Id $ProcessId -ErrorAction Stop }
+    catch {
+        return ($_.CategoryInfo.Category -eq [Management.Automation.ErrorCategory]::ObjectNotFound)
+    }
+    try { return ($candidate.StartTime -ne $ExpectedStartTime) }
+    catch { return $false }
+}
+# Regression RED: a reused PID with a different creation time is no longer
+# the original live descendant. The previous PID-only predicate fails here.
+$liveStart = (Get-Process -Id $PID -ErrorAction Stop).StartTime
+Assert-True (Test-DescendantStopped $PID ($liveStart.AddTicks(-1))) 'reused PID must not be mistaken for the original descendant'
 function Invoke-CollectorCase([string]$Scenario) {
     $owned = Join-Path $evidence ('synthetic-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory $owned | Out-Null
@@ -69,13 +99,26 @@ sys.exit(result.returncode)
             Start-Sleep -Milliseconds 100
         }
         if (-not $process.HasExited) {
+            if ($Scenario -eq 'timeout-after-cleanup') {
+                # Capture the owned child identity while it is still sleeping.
+                # Refuse to certify cleanup if identity cannot be inspected.
+                $stalledPid = [int](Get-Content (Join-Path $owned '.build/generator-qualification/stalled-docker-pid.txt'))
+                $stalledStartTime = (Get-Process -Id $stalledPid -ErrorAction Stop).StartTime
+            }
             $process.Kill($true)
             $process.WaitForExit()
             if ($Scenario -eq 'timeout-after-cleanup') {
                 $outcomePath = Join-Path $owned '.build/generator-qualification/synthetic-case-outcome.json'
                 Assert-True ((Get-Content $outcomePath -Raw | ConvertFrom-Json).verdict -eq 'INCONCLUSIVE') 'timeout fixture reached expected collector rejection'
-                $stalledPid = [int](Get-Content (Join-Path $owned '.build/generator-qualification/stalled-docker-pid.txt'))
-                Assert-True ($null -eq (Get-Process -Id $stalledPid -ErrorAction SilentlyContinue)) 'deadline kills the owned descendant fixture'
+                $liveStartTime = (Get-Process -Id $PID -ErrorAction Stop).StartTime
+                Assert-True (-not (Test-DescendantStopped $PID $liveStartTime)) 'live test parent cannot be mistaken for a stopped descendant'
+                # Kill(true)/WaitForExit() waits for the launcher, not its children.
+                # Bound the descendant check; do not accept a still-running child.
+                $childWait = [Diagnostics.Stopwatch]::StartNew()
+                while ($childWait.Elapsed.TotalSeconds -lt 5 -and -not (Test-DescendantStopped $stalledPid $stalledStartTime)) {
+                    Start-Sleep -Milliseconds 100
+                }
+                Assert-True (Test-DescendantStopped $stalledPid $stalledStartTime) 'deadline kills the owned descendant fixture'
                 return
             }
             $diagnostics = @("Scenario: $Scenario", "Owned PID: $($process.Id)", "HasExited: $($process.HasExited)",
