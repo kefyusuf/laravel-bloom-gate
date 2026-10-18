@@ -16,9 +16,12 @@ exercises the actual pinned k6 v1.3.0 `ConstantArrivalRate.Run`,
 `activeVUPool` and original dropped-iteration metric. In an artificial
 three-slot / two-VU case, both activated pool receivers acknowledge a
 test-only gate before dispatch; the executor reports three real drops and
-zero completed iterations. The missing-hook fixture fails closed, the gate
-releases through one idempotent broadcast, and the existing executor/binary
-checks preserve a hook-free runtime. Only the Go boundary test and
+zero completed iterations. In a separate deliberately unhooked RED
+candidate (`4e2ad6c9c476736d76cf5337970b671feb863484`), the same test
+[failed with `receiver gate watchdog expired`](https://github.com/kefyusuf/laravel-bloom-gate/actions/runs/38975240171).
+That is historical CI evidence, not a missing-hook fixture executed by the
+merged verifier. The test gate releases through one idempotent broadcast,
+and the existing executor/binary checks preserve a hook-free runtime. Only the Go boundary test and
 `verify.ps1` changed; there was no native load, HTTP workload, production
 runtime change or package API change.
 
