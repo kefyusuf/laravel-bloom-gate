@@ -21,6 +21,10 @@ function Test-DescendantStopped([int]$ProcessId) {
     }
     return ($null -eq (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue))
 }
+# Regression RED: a reused PID with a different creation time is no longer
+# the original live descendant. The previous PID-only predicate fails here.
+$liveStart = (Get-Process -Id $PID -ErrorAction Stop).StartTime
+Assert-True (Test-DescendantStopped $PID ($liveStart.AddTicks(-1))) 'reused PID must not be mistaken for the original descendant'
 function Invoke-CollectorCase([string]$Scenario) {
     $owned = Join-Path $evidence ('synthetic-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory $owned | Out-Null
