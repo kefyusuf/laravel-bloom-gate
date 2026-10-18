@@ -51,6 +51,28 @@ $instrumented = Join-Path $output 'instrumented.go'
 [IO.File]::WriteAllText($instrumented, $body, [Text.UTF8Encoding]::new($false))
 $replace = @{}
 $replace[$target] = $instrumented
+# Inject only into the executor component-test overlay, never runtimeOverlay/binary.
+$poolTarget = Join-Path $source 'lib/executor/ramping_arrival_rate.go'
+$poolBody = [IO.File]::ReadAllText($poolTarget).Replace("`r`n", "`n")
+$poolAnchor = "`t`tclose(ch)`n`t`tfor range p.iterations {"
+if ([regex]::Matches($poolBody, [regex]::Escape($poolAnchor)).Count -ne 1) {
+    throw 'Pinned VU receiver-gate hook anchor changed.'
+}
+$poolHook = @'
+		close(ch)
+		// Test-only: hold genuine VU receivers before their unbuffered channel receive.
+		// The real nonblocking dispatch and dropped-iteration metric are unchanged.
+		if boundaryControl != nil && boundaryControl.receiverEntered != nil {
+			id := boundaryControl.receiverNextID.Add(1)
+			boundaryControl.receiverEntered <- id
+			<-boundaryControl.receiverRelease
+		}
+		for range p.iterations {
+'@
+$poolBody = $poolBody.Replace($poolAnchor, $poolHook)
+$poolOverlayFile = Join-Path $output 'instrumented-pool.go'
+[IO.File]::WriteAllText($poolOverlayFile, $poolBody, [Text.UTF8Encoding]::new($false))
+$replace[$poolTarget] = $poolOverlayFile
 $overlay = Join-Path $output 'overlay.json'
 [IO.File]::WriteAllText($overlay, (@{Replace=$replace} | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
 Push-Location $source
